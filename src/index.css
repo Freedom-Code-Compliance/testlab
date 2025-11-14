@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --system-color: #3366FF;
+  /* Dark mode colors (default) */
+  --fcc-black: #000000;
+  --fcc-dark: #1a1a1a;
+  --fcc-divider: #2a2a2a;
+  --fcc-white: #ffffff;
+}
+
+:root.light,
+.light {
+  /* Light mode colors */
+  --fcc-black: #ffffff;
+  --fcc-dark: #f5f5f5;
+  --fcc-divider: #e5e5e5;
+  --fcc-white: #000000;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--fcc-black);
+  color: var(--fcc-white);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+

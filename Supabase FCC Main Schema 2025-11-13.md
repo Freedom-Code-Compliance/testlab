@@ -1,6 +1,6 @@
 # Supabase Schema Documentation - FCC Main
 
-**Generated:** 2025-11-13 10:13:53
+**Generated:** 2025-11-13 23:09:33
 
 ---
 
@@ -36,9 +36,9 @@ _Note: Only installed extensions are shown. Many other extensions are available 
 
 ## Schema Overview
 
-This database contains **111 tables** across 3 schemas:
+This database contains **115 tables** across 3 schemas:
 
-- **public**: Main application tables (111 tables)
+- **public**: Main application tables (115 tables)
 - **auth**: Authentication and user management (0 tables)
 - **storage**: File storage management (0 tables)
 
@@ -50,21 +50,22 @@ This database contains **111 tables** across 3 schemas:
 
 | Table Name | Columns | Description |
 |------------|---------|-------------|
-| `agreements` | 9 |  |
+| `activity_log` | 8 |  |
+| `agreements` | 9 | Agreements table with Realtime enabled for CRM subscriptions |
 | `agreements_status_field` | 8 |  |
 | `apps` | 9 |  |
 | `apps__roles` | 7 |  |
-| `bcp` | 15 |  |
-| `bcp_availability_field` | 8 |  |
-| `bcp_qualified_services` | 9 |  |
-| `bd_inspection_types` | 10 |  |
-| `building_departments` | 20 |  |
+| `bcp` | 15 | Airtable: Building Code Professionals (id: tblaRr54lKgDNDQpK) |
+| `bcp_availability_field` | 8 | Building Code Professionals |
+| `bcp_qualified_services` | 9 | Airtable: BCP Qualified Services (id: tblwC2ylPSCYbzNSI) |
+| `bd_inspection_types` | 10 | List of all Inspection Types from Building Departments. Names may be duplicates. Each record should be linked to a Standard Inspection Type. |
+| `building_departments` | 20 | Airtable: Building Departments (id: tblqGl0OVemJ14B3m) |
 | `building_departments__bcp` | 9 |  |
-| `building_departments_registration_status_field` | 8 |  |
+| `building_departments_registration_status_field` | 8 | Building Departments |
 | `client_users` | 7 |  |
-| `companies` | 32 |  |
+| `companies` | 32 | Companies table with Realtime enabled for CRM subscriptions |
 | `companies__building_departments` | 8 |  |
-| `companies__contacts` | 7 |  |
+| `companies__contacts` | 7 | Companies-Contacts junction table with Realtime enabled for CRM subscriptions |
 | `companies__industry_roles` | 8 |  |
 | `companies__permit_expediting` | 9 |  |
 | `companies__professional_licenses` | 8 |  |
@@ -72,95 +73,98 @@ This database contains **111 tables** across 3 schemas:
 | `companies__subcontractors` | 8 |  |
 | `companies__tech_tools` | 8 |  |
 | `companies__work_types` | 9 |  |
-| `companies_account_type_field` | 8 |  |
+| `companies_account_type_field` | 8 | Companies |
 | `companies_annual_revenue_field` | 7 |  |
-| `companies_client_stage_field` | 8 |  |
-| `companies_industry_role_field` | 8 |  |
+| `companies_client_stage_field` | 8 | Companies |
+| `companies_industry_role_field` | 8 | Companies |
 | `companies_interest_field` | 9 |  |
 | `companies_organization_field` | 9 |  |
 | `companies_referral_source_field` | 8 |  |
 | `companies_tech_savvy_field` | 9 |  |
 | `companies_tech_tools_field` | 9 |  |
 | `companies_work_types_field` | 9 |  |
-| `construction_types` | 10 |  |
+| `construction_types` | 10 | Airtable: Construction Types (id: tblCZN3wSdVZORUry) |
 | `construction_types__project_types` | 8 |  |
-| `contacts` | 12 |  |
+| `contacts` | 12 | Contacts table with Realtime enabled for CRM subscriptions |
 | `contacts__building_departments` | 8 |  |
 | `contacts__projects` | 8 |  |
-| `contacts_type_field` | 9 |  |
+| `contacts_type_field` | 9 | Contacts |
 | `deal_phase_field` | 8 |  |
 | `deal_qualification_field` | 8 |  |
-| `deals` | 14 |  |
+| `deals` | 14 | Deals table with Realtime enabled for CRM subscriptions |
 | `deals__other_contacts` | 8 |  |
-| `disciplines` | 8 |  |
+| `disciplines` | 8 | Airtable: Disciplines (id: tblzLh0p7RePoLEs2) |
 | `employee_users` | 9 |  |
 | `files` | 13 |  |
-| `inspection_modes` | 7 |  |
-| `inspection_sessions` | 12 |  |
+| `inspection_modes` | 7 | Airtable: Inspection Modes (id: tblLzVFPKXcm5Wz1l) |
+| `inspection_sessions` | 12 | Airtable: Inspection Sessions (id: tblKw2HSfUAI8vSEZ) |
 | `inspection_sessions__contacts` | 8 |  |
 | `inspection_sessions__project_media` | 10 |  |
-| `inspection_sessions_status_field` | 8 |  |
-| `inspections` | 10 |  |
-| `inspections_result_field` | 8 |  |
-| `invoice_line_items` | 13 |  |
+| `inspection_sessions_status_field` | 8 | Inspection Sessions |
+| `inspections` | 10 | Airtable: Inspections (id: tblKaVcietpUYwJhN) |
+| `inspections_result_field` | 8 | Inspections |
+| `invoice_line_items` | 13 | Airtable: Invoice Line Items (id: tblAX449iJaYOV6cA) |
 | `invoice_line_items_status_field` | 9 |  |
-| `invoices` | 13 |  |
-| `invoices_collection_status_field` | 9 |  |
-| `invoices_payment_status_field` | 9 |  |
-| `issue_comments` | 10 |  |
-| `occupancies` | 7 |  |
+| `invoices` | 13 | Airtable: Invoices (id: tblNETmcNwKt90r3t) |
+| `invoices_collection_status_field` | 9 | Invoices |
+| `invoices_payment_status_field` | 9 | Invoices |
+| `issue_comments` | 10 | Airtable: Issue Comments (id: tblZqISSIHty3zNF1) |
+| `occupancies` | 7 | Airtable: Occupancies (id: tblo3OJeaDkud20sB) |
 | `payment_processors` | 7 |  |
 | `payments` | 15 |  |
-| `payments__invoices` | 8 |  |
-| `permit_expediting` | 23 |  |
-| `permit_expediting_document_status_field` | 9 |  |
-| `permit_expediting_fees_status_field` | 10 |  |
-| `permit_expediting_noc_status_field` | 9 |  |
-| `permit_expediting_ntbo_status_field` | 9 |  |
-| `permit_expediting_permit_app_status_field` | 9 |  |
-| `permit_expediting_private_provider_field` | 9 |  |
-| `permit_expediting_status_field` | 9 |  |
-| `permit_expediting_sub_form_field` | 9 |  |
-| `permit_expediting_sub_permit_type_field` | 10 |  |
-| `permit_expediting_subcontractor_info_field` | 9 |  |
-| `permit_expediting_workability_field` | 9 |  |
-| `plan_review_result_field` | 7 |  |
-| `plan_reviews` | 11 |  |
+| `payments__invoices` | 8 | Junction between payments and invoices. Technically an invoice can have multiple partial payments and a payment can be applied to multiple invoices, |
+| `permit_expediting` | 23 | Airtable: Permit Expediting (id: tblBdoEIcb2ISpOuD) |
+| `permit_expediting_document_status_field` | 9 | Permit Expediting |
+| `permit_expediting_fees_status_field` | 10 | Permit Expediting |
+| `permit_expediting_noc_status_field` | 9 | Permit Expediting |
+| `permit_expediting_ntbo_status_field` | 9 | Permit Expediting |
+| `permit_expediting_permit_app_status_field` | 9 | Permit Expediting |
+| `permit_expediting_private_provider_field` | 9 | Permit Expediting |
+| `permit_expediting_status_field` | 9 | Permit Expediting |
+| `permit_expediting_sub_form_field` | 9 | Permit Expediting |
+| `permit_expediting_sub_permit_type_field` | 10 | Permits |
+| `permit_expediting_subcontractor_info_field` | 9 | Permit Expediting |
+| `permit_expediting_workability_field` | 9 | Permit Expediting |
+| `plan_review_result_field` | 7 | Result field for Plan Review table |
+| `plan_reviews` | 11 | Airtable: Plan Reviews (id: tbl77NbisHn3IZ8i1) |
 | `plan_reviews_status_field` | 8 |  |
-| `plan_sets` | 10 |  |
-| `plan_sets__files` | 14 |  |
-| `plan_sets_document_review_field` | 8 |  |
-| `plan_sets_type_field` | 8 |  |
-| `plan_sets_working_set_field` | 8 |  |
-| `price_list` | 14 |  |
+| `plan_sets` | 10 | Airtable: Plan Sets (id: tblI6oMRSrK1R0pQY) |
+| `plan_sets__files` | 14 | Junction Table |
+| `plan_sets_document_review_field` | 8 | Plan Sets |
+| `plan_sets_file_types` | 7 |  |
+| `plan_sets_type_field` | 8 | Services |
+| `plan_sets_working_set_field` | 8 | Plan Sets |
+| `price_list` | 14 | Airtable: Price List (id: tblERwCBV0gFANrME) |
 | `price_list_status_field` | 9 |  |
-| `professional_licenses` | 14 |  |
+| `professional_licenses` | 14 | Airtable: Professional Licenses (id: tblVAjkspFrbaGPhu) |
 | `professional_licenses__bcp_qualified_services` | 8 |  |
 | `professional_licenses_status_field` | 9 |  |
-| `professional_licenses_type_field` | 9 |  |
-| `project_media` | 12 |  |
-| `project_media_upload_method_field` | 8 |  |
-| `project_phases` | 8 |  |
-| `project_phases_status_field` | 9 |  |
-| `project_types` | 8 |  |
-| `projects` | 27 |  |
+| `professional_licenses_type_field` | 9 | Professional Licenses |
+| `project_media` | 12 | Airtable: Project Media (id: tblkXHdC92grrZGmf) |
+| `project_media_upload_method_field` | 8 | Project Media |
+| `project_phases` | 8 | Airtable: Project Phases (id: tblGoqDSCi75HtBHp) |
+| `project_phases_status_field` | 9 | Airtable: Project Phase Statuses (id: tblRNyEiLRCrnYa6C) |
+| `project_types` | 8 | Airtable: Project Types (id: tblrjoQ9XJXX055fZ) |
+| `projects` | 27 | Airtable: Projects (id: tbloBrkVaFgQS6Lee) |
 | `projects__services` | 7 |  |
-| `quotes` | 14 |  |
-| `quotes_status_field` | 9 |  |
+| `quotes` | 14 | Airtable: Quotes (id: tblMcQXwAKR6hAGw8) |
+| `quotes_status_field` | 9 | Quotes |
 | `rls_permissions` | 16 |  |
 | `rls_permissions_audit` | 20 |  |
 | `roles` | 8 |  |
-| `services` | 9 |  |
+| `services` | 9 | Airtable: Services (id: tblHYVbRZWgiPYrt9) |
 | `services__deals` | 7 |  |
-| `services_type_field` | 10 |  |
+| `services_type_field` | 10 | Type single select field for the Services table |
 | `spatial_ref_sys` | 5 |  |
-| `standard_inspection_types` | 9 |  |
+| `standard_inspection_types` | 9 | List of Standard Inspection Types. We will set behavior such as Allowable Inspection Modes, Inspection Guide Sheets, etc by relating each of thousands of BD types to a smaller list of Standard Types. |
 | `standard_inspection_types__inspection_modes` | 8 |  |
+| `test_records` | 8 |  |
+| `test_runs` | 7 |  |
+| `test_scenarios` | 8 |  |
 | `threads` | 17 |  |
-| `trades` | 8 |  |
-| `user_profiles` | 12 |  |
+| `trades` | 8 | Airtable: Trades (id: tbleXdO6KoYvHbKLs) |
+| `user_profiles` | 12 | Airtable: User Profiles (id: tblcDOqYc24Djhzvo) |
 | `user_profiles_status_field` | 9 |  |
-| `z_junction_plan_sets_files_file_type_field` | 10 |  |
 
 ### Auth Schema Tables
 
@@ -178,17 +182,30 @@ This database contains **111 tables** across 3 schemas:
 
 ### Public Schema Tables
 
+#### activity_log
+
+| Column Name | Data Type | Nullable | Default |
+|-------------|-----------|----------|---------|
+| `id` | bigint(64,0) | NO | AUTO_INCREMENT |
+| `occurred_at` | timestamptz | NO | now() |
+| `actor_id` | uuid | YES |  |
+| `actor_type` | text | YES |  |
+| `action` | text | NO |  |
+| `target_table` | text | YES |  |
+| `target_id` | uuid | YES |  |
+| `context` | jsonb | NO | '{}'::jsonb |
+
 #### agreements
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `company_id` | uuid | YES |  |
-| `number` | bigint | YES |  |
+| `number` | bigint(64,0) | YES |  |
 | `status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -200,10 +217,10 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### apps
 
@@ -211,13 +228,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `description` | text | YES |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `api_key` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `deleted_at` | timestamptz | YES |  |
 
 #### apps__roles
 
@@ -226,8 +243,8 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `role_code` | text | YES |  |
 | `app_id` | uuid | YES |  |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -236,8 +253,8 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `plan_review_license_id` | uuid | YES |  |
 | `inspector_license_id` | uuid | YES |  |
 | `private_provider_license_id` | uuid | YES |  |
@@ -247,7 +264,7 @@ This database contains **111 tables** across 3 schemas:
 | `photo_file_id` | uuid | YES |  |
 | `resume_file_id` | uuid | YES |  |
 | `availability_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -259,22 +276,22 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### bcp_qualified_services
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `name` | text | YES |  |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -283,13 +300,13 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `building_department_id` | uuid | YES |  |
 | `value` | text | YES |  |
 | `notes` | text | YES |  |
 | `standard_inspection_type_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -298,8 +315,8 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `name` | text | YES |  |
 | `permitting_instructions_url` | text | YES |  |
 | `public_website_url` | text | YES |  |
@@ -312,9 +329,9 @@ This database contains **111 tables** across 3 schemas:
 | `pp_phone` | text | YES |  |
 | `address_text` | text | YES |  |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
+| `active` | bool | YES | true |
 | `registration_status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -325,10 +342,10 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `building_department_id` | uuid | NO |  |
 | `bcp_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
 | `reason` | text | YES |  |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -340,10 +357,10 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### client_users
 
@@ -351,9 +368,9 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
 | `company_id` | uuid | YES |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -362,27 +379,27 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `name` | text | YES |  |
 | `address` | text | YES |  |
 | `billing_contact_name` | text | YES |  |
 | `billing_phone` | text | YES |  |
 | `billing_email` | text | YES |  |
-| `banned` | boolean | YES | false |
+| `banned` | bool | YES | false |
 | `website_url` | text | YES |  |
-| `monthly_permitted_projects` | bigint | YES |  |
+| `monthly_permitted_projects` | bigint(64,0) | YES |  |
 | `tech_description` | text | YES |  |
-| `employee_quantity` | text | YES |  |
-| `field_staff` | boolean | YES | false |
-| `field_staff_quantity` | text | YES |  |
-| `office_staff` | boolean | YES | false |
-| `office_staff_quantity` | bigint | YES |  |
-| `previous_private_provider` | boolean | YES | false |
+| `employee_quantity` | integer(32,0) | YES |  |
+| `field_staff` | bool | YES | false |
+| `field_staff_quantity` | integer(32,0) | YES |  |
+| `office_staff` | bool | YES | false |
+| `office_staff_quantity` | bigint(64,0) | YES |  |
+| `previous_private_provider` | bool | YES | false |
 | `previous_pp_name` | text | YES |  |
 | `interest_description` | text | YES |  |
-| `licensed` | boolean | YES | false |
-| `has_website` | boolean | YES | false |
+| `licensed` | bool | YES | false |
+| `has_website` | bool | YES | false |
 | `tech_savvy_id` | uuid | YES |  |
 | `organization_id` | uuid | YES |  |
 | `referral_source_id` | uuid | YES |  |
@@ -390,7 +407,7 @@ This database contains **111 tables** across 3 schemas:
 | `account_type_id` | uuid | YES |  |
 | `annual_revenue_id` | uuid | YES |  |
 | `client_stage_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -401,9 +418,9 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `company_id` | uuid | NO |  |
 | `building_department_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -414,8 +431,8 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `company_id` | uuid | NO |  |
 | `contact_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -425,10 +442,10 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
 | `company_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
 | `industry_role_id` | uuid | YES |  |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -439,10 +456,10 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | gen_random_uuid() |
 | `company_id` | uuid | NO |  |
 | `permit_expediting_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | YES | now() |
 | `trade_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -453,9 +470,9 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `company_id` | uuid | NO |  |
 | `professional_license_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -465,9 +482,9 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
 | `company_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
 | `service_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -478,9 +495,9 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `company_id` | uuid | NO |  |
 | `subcontractor_company_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -490,9 +507,9 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `company_id` | uuid | NO |  |
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 | `tech_tool_id` | uuid | YES |  |
@@ -503,13 +520,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
 | `company_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
 | `service_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 | `work_type_id` | uuid | YES |  |
-| `updated_at` | timestamp with time zone | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
 
 #### companies_account_type_field
 
@@ -519,10 +536,10 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_annual_revenue_field
 
@@ -531,10 +548,10 @@ This database contains **111 tables** across 3 schemas:
 | `name` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_client_stage_field
 
@@ -544,10 +561,10 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_industry_role_field
 
@@ -557,93 +574,93 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_interest_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `id` | integer | NO | nextval('"salesApplications_InterestField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `name` | text | YES |  |
 | `description` | text | YES |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_organization_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `id` | integer | NO | nextval('"salesApplications_OrganizationField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `name` | text | YES |  |
 | `helper_text` | text | YES |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_referral_source_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `id` | integer | NO | nextval('"salesApplications_ReferralSourceField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `name` | text | YES |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_tech_savvy_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `id` | integer | NO | nextval('"salesApplications_TechSavvyField_id_seq1"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `name` | text | YES |  |
 | `helper_text` | text | YES |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_tech_tools_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `id` | integer | NO | nextval('"salesApplications_TechSavvyField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `name` | text | YES |  |
 | `helper_text` | text | YES |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### companies_work_types_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `id` | bigint | NO |  |
+| `id` | bigint(64,0) | NO |  |
 | `name` | text | YES |  |
-| `created_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
 | `description` | text | YES |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### construction_types
 
@@ -653,10 +670,10 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `occupancy_id` | uuid | YES |  |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -665,11 +682,11 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | gen_random_uuid() |
-| `created_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
 | `construction_type_id` | uuid | YES |  |
 | `project_type_id` | uuid | YES |  |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -678,15 +695,15 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `first_name` | text | YES |  |
 | `last_name` | text | YES |  |
 | `email` | text | YES |  |
 | `phone` | text | YES |  |
 | `phone_extension` | text | YES |  |
 | `contact_type_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -697,9 +714,9 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `contact_id` | uuid | NO |  |
 | `building_department_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -710,9 +727,9 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `contact_id` | uuid | NO |  |
 | `project_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -722,46 +739,46 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"contacts_TypeField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### deal_phase_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `id` | integer | NO | nextval('"deal_PhaseField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `name` | text | YES |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### deal_qualification_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `id` | integer | NO | nextval('"deal_QualificationField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `name` | text | YES |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### deals
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 | `title` | text | YES |  |
@@ -773,7 +790,7 @@ This database contains **111 tables** across 3 schemas:
 | `agreement_id` | uuid | YES |  |
 | `deal_phase_id` | uuid | YES |  |
 | `deal_qualification_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 
 #### deals__other_contacts
 
@@ -782,9 +799,9 @@ This database contains **111 tables** across 3 schemas:
 | `other_contact_id` | uuid | NO |  |
 | `id` | uuid | NO | uuid_v7() |
 | `deal_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -795,10 +812,10 @@ This database contains **111 tables** across 3 schemas:
 | `name` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `trade_id` | uuid | YES |  |
 
 #### employee_users
@@ -809,9 +826,9 @@ This database contains **111 tables** across 3 schemas:
 | `department` | text | YES |  |
 | `title` | text | YES |  |
 | `manager_id` | uuid | YES |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -822,16 +839,16 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `filename` | text | NO |  |
 | `file_type` | text | YES |  |
-| `size_bytes` | bigint | YES |  |
+| `size_bytes` | bigint(64,0) | YES |  |
 | `bucket` | text | YES |  |
 | `object_key` | text | YES |  |
 | `url` | text | YES |  |
 | `metadata` | jsonb | YES |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 
 #### inspection_modes
 
@@ -840,25 +857,25 @@ This database contains **111 tables** across 3 schemas:
 | `name` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### inspection_sessions
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `project_id` | uuid | YES |  |
 | `inspection_contact_id` | uuid | YES |  |
-| `inspection_number` | integer | YES |  |
+| `inspection_number` | integer(32,0) | YES |  |
 | `inspector_id` | uuid | YES |  |
 | `inspection_mode_id` | uuid | YES |  |
 | `session_status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -869,9 +886,9 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `contact_id` | uuid | NO |  |
 | `inspection_session_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -882,11 +899,11 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `inspection_session_id` | uuid | NO |  |
 | `project_media_id` | uuid | YES |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `version` | integer | YES | 1 |
+| `created_at` | timestamptz | NO | now() |
+| `version` | integer(32,0) | YES | 1 |
 | `preview_version_file_id` | uuid | YES |  |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -898,23 +915,23 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### inspections
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `inspection_session_id` | uuid | YES |  |
 | `inspection_type_id` | uuid | YES |  |
 | `project_id` | uuid | YES |  |
 | `result_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -926,26 +943,26 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### invoice_line_items
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `service_id` | uuid | YES |  |
 | `project_id` | uuid | YES |  |
-| `amount_cents` | bigint | YES |  |
-| `quantity_int` | integer | YES |  |
+| `amount_cents` | bigint(64,0) | YES |  |
+| `quantity_int` | integer(32,0) | YES |  |
 | `quote_id` | uuid | YES |  |
 | `invoice_id` | uuid | YES |  |
 | `status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -955,29 +972,29 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"invoiceLineItems_StatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### invoices
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
-| `amount_cents` | bigint | YES |  |
-| `open_balance_cents` | bigint | YES |  |
-| `invoice_number` | integer | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
+| `amount_cents` | bigint(64,0) | YES |  |
+| `open_balance_cents` | bigint(64,0) | YES |  |
+| `invoice_number` | integer(32,0) | YES |  |
 | `company_id` | uuid | YES |  |
 | `deal_id` | uuid | YES |  |
 | `collection_status_id` | uuid | YES |  |
 | `payment_status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -987,13 +1004,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"invoices_CollectionStatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### invoices_payment_status_field
 
@@ -1001,26 +1018,26 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"invoices_PaymentStatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### issue_comments
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `plan_review_id` | uuid | YES |  |
 | `code_reference` | text | YES |  |
 | `inspection_id` | uuid | YES |  |
 | `comment` | text | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1031,40 +1048,40 @@ This database contains **111 tables** across 3 schemas:
 | `name` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### payment_processors
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
 | `name` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 
 #### payments
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `amount_cents` | bigint | YES |  |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `amount_cents` | bigint(64,0) | YES |  |
 | `payment_date` | date | YES |  |
 | `deposit_date` | date | YES |  |
 | `payment_method` | text | YES |  |
 | `status` | text | YES |  |
 | `memo` | text | YES |  |
-| `processor_fee_amount_cents` | bigint | YES |  |
-| `net_amount_cents` | bigint | YES |  |
+| `processor_fee_amount_cents` | bigint(64,0) | YES |  |
+| `net_amount_cents` | bigint(64,0) | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `payment_processor_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1074,9 +1091,9 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `invoice_id` | uuid | NO |  |
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 | `payment_id` | uuid | YES |  |
@@ -1086,14 +1103,14 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
-| `project_value_cents` | bigint | YES |  |
-| `mechanical_trade_value_cents` | bigint | YES |  |
-| `electrical_trade_value_cents` | bigint | YES |  |
-| `plumbing_trade_value_cents` | bigint | YES |  |
-| `roofing_trade_value_cents` | bigint | YES |  |
-| `building_trade_value_int` | integer | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
+| `project_value_cents` | bigint(64,0) | YES |  |
+| `mechanical_trade_value_cents` | bigint(64,0) | YES |  |
+| `electrical_trade_value_cents` | bigint(64,0) | YES |  |
+| `plumbing_trade_value_cents` | bigint(64,0) | YES |  |
+| `roofing_trade_value_cents` | bigint(64,0) | YES |  |
+| `building_trade_value_int` | integer(32,0) | YES |  |
 | `permit_number` | text | YES |  |
 | `project_id` | uuid | YES |  |
 | `document_completion_status_id` | uuid | YES |  |
@@ -1105,7 +1122,7 @@ This database contains **111 tables** across 3 schemas:
 | `sub_form_id` | uuid | YES |  |
 | `subcontractor_info_id` | uuid | YES |  |
 | `workability_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1115,13 +1132,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_DocumentStatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### permit_expediting_fees_status_field
 
@@ -1131,10 +1148,10 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1144,13 +1161,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_NOCStatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### permit_expediting_ntbo_status_field
 
@@ -1158,13 +1175,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_NTBOStatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### permit_expediting_permit_app_status_field
 
@@ -1172,13 +1189,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_PermitAppStatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### permit_expediting_private_provider_field
 
@@ -1186,13 +1203,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_PrivateProviderField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### permit_expediting_status_field
 
@@ -1200,13 +1217,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_StatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### permit_expediting_sub_form_field
 
@@ -1214,13 +1231,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_SubFormField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### permit_expediting_sub_permit_type_field
 
@@ -1230,10 +1247,10 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1243,13 +1260,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_SubcontractorInfoField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### permit_expediting_workability_field
 
@@ -1257,13 +1274,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"permitExpediting_WorkabilityField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### plan_review_result_field
 
@@ -1272,24 +1289,24 @@ This database contains **111 tables** across 3 schemas:
 | `name` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### plan_reviews
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `plan_set_id` | uuid | YES |  |
 | `plans_examiner_id` | uuid | YES |  |
 | `discipline_id` | uuid | YES |  |
 | `result_id` | uuid | YES |  |
 | `status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1301,23 +1318,23 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### plan_sets
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `project_id` | uuid | YES |  |
 | `document_review_status_id` | uuid | YES |  |
 | `type_id` | uuid | YES |  |
 | `working_set_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1326,8 +1343,8 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `file_summary` | text | YES |  |
 | `number_of_pages` | text | YES |  |
 | `signer` | text | YES |  |
@@ -1335,10 +1352,10 @@ This database contains **111 tables** across 3 schemas:
 | `plan_set_id` | uuid | YES |  |
 | `previous_version_file_id` | uuid | YES |  |
 | `version` | text | YES | '1'::text |
-| `file_type_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
+| `file_type_id` | uuid | YES |  |
 
 #### plan_sets_document_review_field
 
@@ -1348,10 +1365,22 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
+
+#### plan_sets_file_types
+
+| Column Name | Data Type | Nullable | Default |
+|-------------|-----------|----------|---------|
+| `id` | uuid | NO | uuid_v7() |
+| `code` | text | NO |  |
+| `name` | text | NO |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### plan_sets_type_field
 
@@ -1361,10 +1390,10 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### plan_sets_working_set_field
 
@@ -1374,25 +1403,25 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### price_list
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
-| `price_cents` | bigint | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
+| `price_cents` | bigint(64,0) | YES |  |
 | `agreement_id` | uuid | YES |  |
 | `company_id` | uuid | YES |  |
 | `service_id` | uuid | YES |  |
 | `occupancy_id` | uuid | YES |  |
 | `status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 | `construction_type_id` | uuid | YES |  |
@@ -1404,21 +1433,21 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"priceList_StatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### professional_licenses
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `license_number` | text | YES |  |
 | `license_identifier` | text | YES |  |
 | `file_id` | uuid | YES |  |
@@ -1427,7 +1456,7 @@ This database contains **111 tables** across 3 schemas:
 | `expiration_date` | date | YES |  |
 | `status_id` | uuid | YES |  |
 | `license_type_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1438,9 +1467,9 @@ This database contains **111 tables** across 3 schemas:
 | `id` | uuid | NO | uuid_v7() |
 | `professional_license_id` | uuid | NO |  |
 | `bcp_qualified_service_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1450,13 +1479,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"professionalLicenses_StatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### professional_licenses_type_field
 
@@ -1464,30 +1493,30 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"professionalLicenses_TypeField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### project_media
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `coordinates` | jsonb | YES |  |
 | `folder_path` | text | YES |  |
 | `file_id` | uuid | YES |  |
 | `project_id` | uuid | YES |  |
 | `upload_method_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
-| `location_geom` | USER-DEFINED | YES |  |
+| `location_geom` | geometry | YES |  |
 
 #### project_media_upload_method_field
 
@@ -1497,36 +1526,36 @@ This database contains **111 tables** across 3 schemas:
 | `color` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### project_phases
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
-| `id` | integer | NO | nextval('"projectPhases_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### project_phases_status_field
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `name` | text | YES |  |
-| `id` | integer | NO | nextval('"projectPhases_StatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `phase_id` | uuid | YES |  |
 
 #### project_types
@@ -1536,10 +1565,10 @@ This database contains **111 tables** across 3 schemas:
 | `name` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `construction_type_id` | uuid | YES |  |
 
 #### projects
@@ -1547,23 +1576,23 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `building_department_id` | uuid | YES |  |
 | `submitted_by_id` | uuid | YES |  |
 | `company_id` | uuid | YES |  |
 | `coordinates` | jsonb | YES |  |
-| `has_legal_address` | boolean | NO | true |
-| `deleted` | boolean | NO | false |
+| `has_legal_address` | bool | NO | true |
+| `deleted` | bool | NO | false |
 | `address_line1` | text | YES |  |
 | `address_line2` | text | YES |  |
 | `city` | text | YES |  |
-| `state` | USER-DEFINED | YES |  |
+| `state` | us_state | YES |  |
 | `county` | text | YES |  |
 | `zipcode` | text | YES |  |
-| `country` | USER-DEFINED | YES |  |
+| `country` | country | YES |  |
 | `name` | text | YES |  |
-| `needs_quote` | boolean | YES |  |
+| `needs_quote` | bool | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 | `construction_type_id` | uuid | YES |  |
@@ -1571,8 +1600,8 @@ This database contains **111 tables** across 3 schemas:
 | `occupancy_id` | uuid | YES |  |
 | `phase_id` | uuid | YES |  |
 | `status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
-| `location_geom` | USER-DEFINED | YES |  |
+| `deleted_at` | timestamptz | YES |  |
+| `location_geom` | geometry | YES |  |
 
 #### projects__services
 
@@ -1580,9 +1609,9 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
 | `project_id` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
 | `service_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1591,17 +1620,17 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `project_id` | uuid | YES |  |
-| `price_cents` | bigint | YES |  |
-| `quote_number` | bigint | YES |  |
+| `price_cents` | bigint(64,0) | YES |  |
+| `quote_number` | bigint(64,0) | YES |  |
 | `link` | text | YES |  |
 | `sent_date` | date | YES |  |
 | `expiration_date` | date | YES |  |
 | `completed_date` | date | YES |  |
 | `quote_status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1611,13 +1640,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"quotes_StatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### rls_permissions
 
@@ -1625,18 +1654,18 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `table_name` | text | NO |  |
 | `role_code` | text | NO |  |
-| `can_select` | boolean | YES | false |
-| `can_insert` | boolean | YES | false |
-| `can_update` | boolean | YES | false |
-| `can_delete` | boolean | YES | false |
+| `can_select` | bool | YES | false |
+| `can_insert` | bool | YES | false |
+| `can_update` | bool | YES | false |
+| `can_delete` | bool | YES | false |
 | `scoping_type` | text | YES | 'none'::text |
-| `disabled_at` | timestamp with time zone | YES |  |
+| `disabled_at` | timestamptz | YES |  |
 | `notes` | text | YES |  |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
 | `id` | uuid | NO | uuid_v7() |
 | `app_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1646,22 +1675,22 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `table_name` | text | NO |  |
 | `role_code` | text | NO |  |
-| `can_select` | boolean | YES | false |
-| `can_insert` | boolean | YES | false |
-| `can_update` | boolean | YES | false |
-| `can_delete` | boolean | YES | false |
+| `can_select` | bool | YES | false |
+| `can_insert` | bool | YES | false |
+| `can_update` | bool | YES | false |
+| `can_delete` | bool | YES | false |
 | `scoping_type` | text | YES | 'none'::text |
-| `disabled_at` | timestamp with time zone | YES |  |
+| `disabled_at` | timestamptz | YES |  |
 | `notes` | text | YES |  |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
 | `action` | text | NO |  |
 | `actor_id` | uuid | YES |  |
-| `changed_at` | timestamp with time zone | YES | now() |
+| `changed_at` | timestamptz | YES | now() |
 | `id` | uuid | NO | uuid_v7() |
 | `permission_id` | uuid | YES |  |
 | `app_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1673,10 +1702,10 @@ This database contains **111 tables** across 3 schemas:
 | `name` | text | NO |  |
 | `description` | text | YES |  |
 | `id` | uuid | YES | uuid_v7() |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### services
 
@@ -1685,10 +1714,10 @@ This database contains **111 tables** across 3 schemas:
 | `name` | text | NO |  |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `service_type_id` | uuid | YES |  |
 
@@ -1699,8 +1728,8 @@ This database contains **111 tables** across 3 schemas:
 | `deal_id` | uuid | YES |  |
 | `service_id` | uuid | YES |  |
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1709,13 +1738,13 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `name` | text | YES |  |
-| `id` | integer | NO | nextval('"services_TypeField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 
@@ -1723,11 +1752,11 @@ This database contains **111 tables** across 3 schemas:
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
-| `srid` | integer | NO |  |
-| `auth_name` | character varying | YES |  |
-| `auth_srid` | integer | YES |  |
-| `srtext` | character varying | YES |  |
-| `proj4text` | character varying | YES |  |
+| `srid` | integer(32,0) | NO |  |
+| `auth_name` | character varying(256) | YES |  |
+| `auth_srid` | integer(32,0) | YES |  |
+| `srtext` | character varying(2048) | YES |  |
+| `proj4text` | character varying(2048) | YES |  |
 
 #### standard_inspection_types
 
@@ -1737,10 +1766,10 @@ This database contains **111 tables** across 3 schemas:
 | `notes` | text | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `trade_id` | uuid | YES |  |
 
 #### standard_inspection_types__inspection_modes
@@ -1748,13 +1777,51 @@ This database contains **111 tables** across 3 schemas:
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
 | `standard_inspection_type_id` | uuid | YES |  |
 | `inspection_mode_id` | uuid | YES |  |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
+
+#### test_records
+
+| Column Name | Data Type | Nullable | Default |
+|-------------|-----------|----------|---------|
+| `id` | bigint(64,0) | NO | AUTO_INCREMENT |
+| `run_id` | uuid | NO |  |
+| `scenario_id` | uuid | NO |  |
+| `table_name` | text | NO |  |
+| `table_id` | text | YES |  |
+| `record_id` | uuid | NO |  |
+| `created_at` | timestamptz | NO | now() |
+| `created_by` | uuid | YES |  |
+
+#### test_runs
+
+| Column Name | Data Type | Nullable | Default |
+|-------------|-----------|----------|---------|
+| `id` | uuid | NO | gen_random_uuid() |
+| `scenario_id` | uuid | NO |  |
+| `run_at` | timestamptz | NO | now() |
+| `run_by` | uuid | YES |  |
+| `purged_at` | timestamptz | YES |  |
+| `purged_by` | uuid | YES |  |
+| `purge_reason` | text | YES |  |
+
+#### test_scenarios
+
+| Column Name | Data Type | Nullable | Default |
+|-------------|-----------|----------|---------|
+| `id` | uuid | NO | gen_random_uuid() |
+| `name` | text | NO |  |
+| `description` | text | YES |  |
+| `call_function` | text | NO |  |
+| `active` | bool | NO | true |
+| `metadata` | jsonb | NO | '{}'::jsonb |
+| `created_at` | timestamptz | NO | now() |
+| `created_by` | uuid | YES |  |
 
 #### threads
 
@@ -1764,17 +1831,17 @@ This database contains **111 tables** across 3 schemas:
 | `target_id` | uuid | NO |  |
 | `target_type` | text | NO |  |
 | `created_by` | uuid | NO |  |
-| `created_at` | timestamp with time zone | NO | now() |
-| `last_activity_at` | timestamp with time zone | NO | now() |
-| `comment_count` | integer | NO | 0 |
-| `is_resolved` | boolean | NO | false |
-| `resolved_at` | timestamp with time zone | YES |  |
+| `created_at` | timestamptz | NO | now() |
+| `last_activity_at` | timestamptz | NO | now() |
+| `comment_count` | integer(32,0) | NO | 0 |
+| `is_resolved` | bool | NO | false |
+| `resolved_at` | timestamptz | YES |  |
 | `resolved_by` | uuid | YES |  |
-| `is_closed` | boolean | NO | false |
-| `closed_at` | timestamp with time zone | YES |  |
+| `is_closed` | bool | NO | false |
+| `closed_at` | timestamptz | YES |  |
 | `closed_by` | uuid | YES |  |
 | `closure_message` | text | YES |  |
-| `reopened_at` | timestamp with time zone | YES |  |
+| `reopened_at` | timestamptz | YES |  |
 | `reopened_by` | uuid | YES |  |
 | `reopening_message` | text | YES |  |
 
@@ -1786,23 +1853,23 @@ This database contains **111 tables** across 3 schemas:
 | `permit_expediting_id` | uuid | YES |  |
 | `id` | uuid | NO | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 #### user_profiles
 
 | Column Name | Data Type | Nullable | Default |
 |-------------|-----------|----------|---------|
 | `id` | uuid | NO | uuid_v7() |
-| `created_at` | timestamp with time zone | NO | now() |
-| `updated_at` | timestamp with time zone | NO | now() |
+| `created_at` | timestamptz | NO | now() |
+| `updated_at` | timestamptz | NO | now() |
 | `contact_id` | uuid | YES |  |
 | `role_code` | text | YES |  |
 | `app_id` | uuid | YES |  |
 | `status_id` | uuid | YES |  |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `deleted_at` | timestamptz | YES |  |
 | `created_by` | uuid | YES |  |
 | `updated_by` | uuid | YES |  |
 | `mimic_role_code` | text | YES |  |
@@ -1814,28 +1881,13 @@ This database contains **111 tables** across 3 schemas:
 |-------------|-----------|----------|---------|
 | `name` | text | NO |  |
 | `color` | text | YES |  |
-| `id` | integer | NO | nextval('"userProfiles_StatusField_id_seq"'::regclass) |
+| `id` | integer(32,0) | NO | AUTO_INCREMENT |
 | `id_uuid` | uuid | YES | uuid_v7() |
 | `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
-
-#### z_junction_plan_sets_files_file_type_field
-
-| Column Name | Data Type | Nullable | Default |
-|-------------|-----------|----------|---------|
-| `type` | text | NO |  |
-| `color` | text | YES |  |
-| `id` | integer | NO | nextval('"zJunction_PlanSets_FilesFileTypeField_id_seq"'::regclass) |
-| `id_uuid` | uuid | YES | uuid_v7() |
-| `name` | text | YES |  |
-| `code` | text | YES |  |
-| `active` | boolean | YES | true |
-| `created_at` | timestamp with time zone | YES | now() |
-| `updated_at` | timestamp with time zone | YES | now() |
-| `deleted_at` | timestamp with time zone | YES |  |
+| `active` | bool | YES | true |
+| `created_at` | timestamptz | YES | now() |
+| `updated_at` | timestamptz | YES | now() |
+| `deleted_at` | timestamptz | YES |  |
 
 ---
 
@@ -1967,7 +2019,7 @@ This database contains **111 tables** across 3 schemas:
 | `plan_sets` | `type_id` | `plan_sets_type_field` | `id` |
 | `plan_sets` | `working_set_id` | `plan_sets_working_set_field` | `id` |
 | `plan_sets__files` | `file_id` | `files` | `id` |
-| `plan_sets__files` | `file_type_id` | `z_junction_plan_sets_files_file_type_field` | `id_uuid` |
+| `plan_sets__files` | `file_type_id` | `plan_sets_file_types` | `id` |
 | `plan_sets__files` | `plan_set_id` | `plan_sets` | `id` |
 | `plan_sets__files` | `previous_version_file_id` | `files` | `id` |
 | `price_list` | `agreement_id` | `agreements` | `id` |
@@ -2011,6 +2063,9 @@ This database contains **111 tables** across 3 schemas:
 | `standard_inspection_types` | `trade_id` | `trades` | `id` |
 | `standard_inspection_types__inspection_modes` | `inspection_mode_id` | `inspection_modes` | `id` |
 | `standard_inspection_types__inspection_modes` | `standard_inspection_type_id` | `standard_inspection_types` | `id` |
+| `test_records` | `run_id` | `test_runs` | `id` |
+| `test_records` | `scenario_id` | `test_scenarios` | `id` |
+| `test_runs` | `scenario_id` | `test_scenarios` | `id` |
 | `trades` | `permit_expediting_id` | `permit_expediting` | `id` |
 | `user_profiles` | `app_id` | `apps` | `id` |
 | `user_profiles` | `contact_id` | `contacts` | `id` |
@@ -2027,6 +2082,10 @@ This database contains **111 tables** across 3 schemas:
 
 | Table | Index Name | Definition |
 |-------|------------|------------|
+| `activity_log` | `activity_log_pkey` | CREATE UNIQUE INDEX activity_log_pkey ON public.activity_log USING btree (id) |
+| `activity_log` | `idx_activity_log_action` | CREATE INDEX idx_activity_log_action ON public.activity_log USING btree (action) |
+| `activity_log` | `idx_activity_log_actor_id` | CREATE INDEX idx_activity_log_actor_id ON public.activity_log USING btree (actor_id) |
+| `activity_log` | `idx_activity_log_target` | CREATE INDEX idx_activity_log_target ON public.activity_log USING btree (target_table, target_id) |
 | `agreements` | `agreements_pkey` | CREATE UNIQUE INDEX agreements_pkey ON public.agreements USING btree (id) |
 | `agreements` | `idx_agreements__company_id` | CREATE INDEX idx_agreements__company_id ON public.agreements USING btree (company_id) WHERE (deleted_at IS NULL) |
 | `agreements` | `idx_agreements__deleted_at` | CREATE INDEX idx_agreements__deleted_at ON public.agreements USING btree (deleted_at) |
@@ -2078,7 +2137,7 @@ This database contains **111 tables** across 3 schemas:
 | `companies` | `idx_companies__tech_savvy_id` | CREATE INDEX idx_companies__tech_savvy_id ON public.companies USING btree (tech_savvy_id) WHERE (deleted_at IS NULL) |
 | `companies__building_departments` | `companies__building_departments_pkey` | CREATE UNIQUE INDEX companies__building_departments_pkey ON public.companies__building_departments USING btree (id) |
 | `companies__building_departments` | `idx_companies__building_departments__building_department_id` | CREATE INDEX idx_companies__building_departments__building_department_id ON public.companies__building_departments USING btree (building_department_id) WHERE (deleted_at IS NULL) |
-| `companies__building_departments` | `uq_companies__building_departments__company_id__building_depart` | CREATE UNIQUE INDEX uq_companies__building_departments__company_id__building_depart ON public.companies__building_departments USING btree (company_id, building_department_id) WHERE (deleted_at IS NULL) |
+| `companies__building_departments` | `uq_companies__building_departments__company_id__building_depart` | CREATE UNIQUE INDEX uq_companies__building_departments__company_id__building_depart ON public.companies__building_departments USING btree (company_id, building_department_id) WHERE (deleted_at IS N... |
 | `companies__contacts` | `companies__contacts_pkey` | CREATE UNIQUE INDEX companies__contacts_pkey ON public.companies__contacts USING btree (id) |
 | `companies__contacts` | `companies__contacts_uniq` | CREATE UNIQUE INDEX companies__contacts_uniq ON public.companies__contacts USING btree (company_id, contact_id) |
 | `companies__contacts` | `idx_companies__contacts__company_id` | CREATE INDEX idx_companies__contacts__company_id ON public.companies__contacts USING btree (company_id) WHERE (deleted_at IS NULL) |
@@ -2091,7 +2150,7 @@ This database contains **111 tables** across 3 schemas:
 | `companies__permit_expediting` | `uq_companies__permit_expediting__company_id__permit_expediting_` | CREATE UNIQUE INDEX uq_companies__permit_expediting__company_id__permit_expediting_ ON public.companies__permit_expediting USING btree (company_id, permit_expediting_id) WHERE (deleted_at IS NULL) |
 | `companies__permit_expediting` | `zjunction_companies_permit_expediting_pkey` | CREATE UNIQUE INDEX zjunction_companies_permit_expediting_pkey ON public.companies__permit_expediting USING btree (id) |
 | `companies__professional_licenses` | `companies__professional_licenses_pkey` | CREATE UNIQUE INDEX companies__professional_licenses_pkey ON public.companies__professional_licenses USING btree (id) |
-| `companies__professional_licenses` | `uq_companies__professional_licenses__company_id__professional_l` | CREATE UNIQUE INDEX uq_companies__professional_licenses__company_id__professional_l ON public.companies__professional_licenses USING btree (company_id, professional_license_id) WHERE (deleted_at IS NULL) |
+| `companies__professional_licenses` | `uq_companies__professional_licenses__company_id__professional_l` | CREATE UNIQUE INDEX uq_companies__professional_licenses__company_id__professional_l ON public.companies__professional_licenses USING btree (company_id, professional_license_id) WHERE (deleted_at IS... |
 | `companies__services` | `companies__services_pkey` | CREATE UNIQUE INDEX companies__services_pkey ON public.companies__services USING btree (id) |
 | `companies__services` | `idx_companies__services__deleted_at` | CREATE INDEX idx_companies__services__deleted_at ON public.companies__services USING btree (deleted_at) |
 | `companies__services` | `uq_companies__services__company_id__service_id` | CREATE UNIQUE INDEX uq_companies__services__company_id__service_id ON public.companies__services USING btree (company_id, service_id) WHERE (deleted_at IS NULL) |
@@ -2135,7 +2194,7 @@ This database contains **111 tables** across 3 schemas:
 | `construction_types` | `idx_construction_types__active` | CREATE INDEX idx_construction_types__active ON public.construction_types USING btree (active) WHERE (deleted_at IS NULL) |
 | `construction_types` | `idx_construction_types__name` | CREATE INDEX idx_construction_types__name ON public.construction_types USING btree (lower(name)) WHERE (deleted_at IS NULL) |
 | `construction_types__project_types` | `idx_construction_types__project_types__deleted_at` | CREATE INDEX idx_construction_types__project_types__deleted_at ON public.construction_types__project_types USING btree (deleted_at) |
-| `construction_types__project_types` | `uq_construction_types__project_types__construction_type_id__pro` | CREATE UNIQUE INDEX uq_construction_types__project_types__construction_type_id__pro ON public.construction_types__project_types USING btree (construction_type_id, project_type_id) WHERE (deleted_at IS NULL) |
+| `construction_types__project_types` | `uq_construction_types__project_types__construction_type_id__pro` | CREATE UNIQUE INDEX uq_construction_types__project_types__construction_type_id__pro ON public.construction_types__project_types USING btree (construction_type_id, project_type_id) WHERE (deleted_at... |
 | `construction_types__project_types` | `zjunction_construction_types_project_types_pkey` | CREATE UNIQUE INDEX zjunction_construction_types_project_types_pkey ON public.construction_types__project_types USING btree (id) |
 | `contacts` | `contacts_pkey` | CREATE UNIQUE INDEX contacts_pkey ON public.contacts USING btree (id) |
 | `contacts` | `idx_contacts__contact_type_id` | CREATE INDEX idx_contacts__contact_type_id ON public.contacts USING btree (contact_type_id) WHERE (deleted_at IS NULL) |
@@ -2204,7 +2263,7 @@ This database contains **111 tables** across 3 schemas:
 | `inspection_sessions__contacts` | `uq_inspection_sessions__contacts__inspection_session_id__contac` | CREATE UNIQUE INDEX uq_inspection_sessions__contacts__inspection_session_id__contac ON public.inspection_sessions__contacts USING btree (inspection_session_id, contact_id) WHERE (deleted_at IS NULL) |
 | `inspection_sessions__project_media` | `idx_inspection_sessions__project_media__project_media_id` | CREATE INDEX idx_inspection_sessions__project_media__project_media_id ON public.inspection_sessions__project_media USING btree (project_media_id) WHERE (deleted_at IS NULL) |
 | `inspection_sessions__project_media` | `inspection_sessions__project_media_pkey` | CREATE UNIQUE INDEX inspection_sessions__project_media_pkey ON public.inspection_sessions__project_media USING btree (id) |
-| `inspection_sessions__project_media` | `uq_inspection_sessions__project_media__inspection_session_id__p` | CREATE UNIQUE INDEX uq_inspection_sessions__project_media__inspection_session_id__p ON public.inspection_sessions__project_media USING btree (inspection_session_id, project_media_id) WHERE (deleted_at IS NULL) |
+| `inspection_sessions__project_media` | `uq_inspection_sessions__project_media__inspection_session_id__p` | CREATE UNIQUE INDEX uq_inspection_sessions__project_media__inspection_session_id__p ON public.inspection_sessions__project_media USING btree (inspection_session_id, project_media_id) WHERE (deleted... |
 | `inspection_sessions_status_field` | `inspection_sessions_status_field_pkey` | CREATE UNIQUE INDEX inspection_sessions_status_field_pkey ON public.inspection_sessions_status_field USING btree (id) |
 | `inspection_sessions_status_field` | `uq_inspection_sessions_status_field__code` | CREATE UNIQUE INDEX uq_inspection_sessions_status_field__code ON public.inspection_sessions_status_field USING btree (code) WHERE (deleted_at IS NULL) |
 | `inspection_sessions_status_field` | `uq_inspection_sessions_status_field__id_uuid` | CREATE UNIQUE INDEX uq_inspection_sessions_status_field__id_uuid ON public.inspection_sessions_status_field USING btree (id) |
@@ -2332,12 +2391,16 @@ This database contains **111 tables** across 3 schemas:
 | `plan_sets` | `plan_sets_pkey` | CREATE UNIQUE INDEX plan_sets_pkey ON public.plan_sets USING btree (id) |
 | `plan_sets` | `plansets_projectid_idx` | CREATE INDEX plansets_projectid_idx ON public.plan_sets USING btree (project_id) |
 | `plan_sets__files` | `idx_plan_sets__files__file_id` | CREATE INDEX idx_plan_sets__files__file_id ON public.plan_sets__files USING btree (file_id) WHERE (deleted_at IS NULL) |
+| `plan_sets__files` | `idx_plan_sets__files__file_type_id` | CREATE INDEX idx_plan_sets__files__file_type_id ON public.plan_sets__files USING btree (file_type_id) WHERE (deleted_at IS NULL) |
 | `plan_sets__files` | `idx_plan_sets__files__plan_set_id` | CREATE INDEX idx_plan_sets__files__plan_set_id ON public.plan_sets__files USING btree (plan_set_id) WHERE (deleted_at IS NULL) |
 | `plan_sets__files` | `plan_sets__files_pkey` | CREATE UNIQUE INDEX plan_sets__files_pkey ON public.plan_sets__files USING btree (id) |
 | `plan_sets__files` | `uq_plan_sets__files__plan_set_id__file_id__version` | CREATE UNIQUE INDEX uq_plan_sets__files__plan_set_id__file_id__version ON public.plan_sets__files USING btree (plan_set_id, file_id, version) WHERE (deleted_at IS NULL) |
 | `plan_sets_document_review_field` | `plan_sets_document_review_field_pkey` | CREATE UNIQUE INDEX plan_sets_document_review_field_pkey ON public.plan_sets_document_review_field USING btree (id) |
 | `plan_sets_document_review_field` | `uq_plan_sets_document_review_field__code` | CREATE UNIQUE INDEX uq_plan_sets_document_review_field__code ON public.plan_sets_document_review_field USING btree (code) WHERE (deleted_at IS NULL) |
 | `plan_sets_document_review_field` | `uq_plan_sets_document_review_field__id_uuid` | CREATE UNIQUE INDEX uq_plan_sets_document_review_field__id_uuid ON public.plan_sets_document_review_field USING btree (id) |
+| `plan_sets_file_types` | `idx_plan_sets_file_types__id` | CREATE INDEX idx_plan_sets_file_types__id ON public.plan_sets_file_types USING btree (id) WHERE (deleted_at IS NULL) |
+| `plan_sets_file_types` | `plan_sets_file_types_pkey` | CREATE UNIQUE INDEX plan_sets_file_types_pkey ON public.plan_sets_file_types USING btree (id) |
+| `plan_sets_file_types` | `uq_plan_sets_file_types__code` | CREATE UNIQUE INDEX uq_plan_sets_file_types__code ON public.plan_sets_file_types USING btree (code) WHERE (deleted_at IS NULL) |
 | `plan_sets_type_field` | `plan_sets_type_field_pkey` | CREATE UNIQUE INDEX plan_sets_type_field_pkey ON public.plan_sets_type_field USING btree (id) |
 | `plan_sets_type_field` | `uq_plan_sets_type_field__code` | CREATE UNIQUE INDEX uq_plan_sets_type_field__code ON public.plan_sets_type_field USING btree (code) WHERE (deleted_at IS NULL) |
 | `plan_sets_type_field` | `uq_plan_sets_type_field__id_uuid` | CREATE UNIQUE INDEX uq_plan_sets_type_field__id_uuid ON public.plan_sets_type_field USING btree (id) |
@@ -2362,7 +2425,7 @@ This database contains **111 tables** across 3 schemas:
 | `professional_licenses` | `idx_professional_licenses__status_id` | CREATE INDEX idx_professional_licenses__status_id ON public.professional_licenses USING btree (status_id) WHERE (deleted_at IS NULL) |
 | `professional_licenses` | `professional_licenses_pkey` | CREATE UNIQUE INDEX professional_licenses_pkey ON public.professional_licenses USING btree (id) |
 | `professional_licenses__bcp_qualified_services` | `professional_licenses__bcp_qualified_services_pkey` | CREATE UNIQUE INDEX professional_licenses__bcp_qualified_services_pkey ON public.professional_licenses__bcp_qualified_services USING btree (id) |
-| `professional_licenses__bcp_qualified_services` | `uq_professional_licenses__bcp_qualified_services` | CREATE UNIQUE INDEX uq_professional_licenses__bcp_qualified_services ON public.professional_licenses__bcp_qualified_services USING btree (professional_license_id, bcp_qualified_service_id) WHERE (deleted_at IS NULL) |
+| `professional_licenses__bcp_qualified_services` | `uq_professional_licenses__bcp_qualified_services` | CREATE UNIQUE INDEX uq_professional_licenses__bcp_qualified_services ON public.professional_licenses__bcp_qualified_services USING btree (professional_license_id, bcp_qualified_service_id) WHERE (d... |
 | `professional_licenses_status_field` | `professionalLicenses_StatusField_id_unique` | CREATE UNIQUE INDEX "professionalLicenses_StatusField_id_unique" ON public.professional_licenses_status_field USING btree (id) |
 | `professional_licenses_status_field` | `professionalLicenses_StatusField_pkey` | CREATE UNIQUE INDEX "professionalLicenses_StatusField_pkey" ON public.professional_licenses_status_field USING btree (id) |
 | `professional_licenses_status_field` | `uq_professional_licenses_status_field__code` | CREATE UNIQUE INDEX uq_professional_licenses_status_field__code ON public.professional_licenses_status_field USING btree (code) WHERE (deleted_at IS NULL) |
@@ -2441,7 +2504,17 @@ This database contains **111 tables** across 3 schemas:
 | `standard_inspection_types` | `uq_standard_inspection_types__code` | CREATE UNIQUE INDEX uq_standard_inspection_types__code ON public.standard_inspection_types USING btree (code) WHERE (deleted_at IS NULL) |
 | `standard_inspection_types` | `uq_standard_inspection_types__id_uuid` | CREATE UNIQUE INDEX uq_standard_inspection_types__id_uuid ON public.standard_inspection_types USING btree (id) |
 | `standard_inspection_types__inspection_modes` | `standard_inspection_types__inspection_modes_pkey` | CREATE UNIQUE INDEX standard_inspection_types__inspection_modes_pkey ON public.standard_inspection_types__inspection_modes USING btree (id) |
-| `standard_inspection_types__inspection_modes` | `uq_standard_inspection_types__inspection_modes` | CREATE UNIQUE INDEX uq_standard_inspection_types__inspection_modes ON public.standard_inspection_types__inspection_modes USING btree (standard_inspection_type_id, inspection_mode_id) WHERE (deleted_at IS NULL) |
+| `standard_inspection_types__inspection_modes` | `uq_standard_inspection_types__inspection_modes` | CREATE UNIQUE INDEX uq_standard_inspection_types__inspection_modes ON public.standard_inspection_types__inspection_modes USING btree (standard_inspection_type_id, inspection_mode_id) WHERE (deleted... |
+| `test_records` | `idx_test_records_run_id` | CREATE INDEX idx_test_records_run_id ON public.test_records USING btree (run_id) |
+| `test_records` | `idx_test_records_scenario_id` | CREATE INDEX idx_test_records_scenario_id ON public.test_records USING btree (scenario_id) |
+| `test_records` | `idx_test_records_table_name` | CREATE INDEX idx_test_records_table_name ON public.test_records USING btree (table_name) |
+| `test_records` | `idx_test_records_table_record` | CREATE INDEX idx_test_records_table_record ON public.test_records USING btree (table_name, record_id) |
+| `test_records` | `test_records_pkey` | CREATE UNIQUE INDEX test_records_pkey ON public.test_records USING btree (id) |
+| `test_runs` | `idx_test_runs_purged_at` | CREATE INDEX idx_test_runs_purged_at ON public.test_runs USING btree (purged_at) |
+| `test_runs` | `idx_test_runs_run_by` | CREATE INDEX idx_test_runs_run_by ON public.test_runs USING btree (run_by) |
+| `test_runs` | `idx_test_runs_scenario_id` | CREATE INDEX idx_test_runs_scenario_id ON public.test_runs USING btree (scenario_id) |
+| `test_runs` | `test_runs_pkey` | CREATE UNIQUE INDEX test_runs_pkey ON public.test_runs USING btree (id) |
+| `test_scenarios` | `test_scenarios_pkey` | CREATE UNIQUE INDEX test_scenarios_pkey ON public.test_scenarios USING btree (id) |
 | `threads` | `idx_threads_is_closed` | CREATE INDEX idx_threads_is_closed ON public.threads USING btree (is_closed) WHERE (is_closed = false) |
 | `threads` | `idx_threads_last_activity` | CREATE INDEX idx_threads_last_activity ON public.threads USING btree (last_activity_at DESC) |
 | `threads` | `idx_threads_target` | CREATE INDEX idx_threads_target ON public.threads USING btree (target_type, target_id) |
@@ -2462,10 +2535,6 @@ This database contains **111 tables** across 3 schemas:
 | `user_profiles_status_field` | `uq_user_profiles_status_field__id_uuid` | CREATE UNIQUE INDEX uq_user_profiles_status_field__id_uuid ON public.user_profiles_status_field USING btree (id_uuid) |
 | `user_profiles_status_field` | `userProfiles_StatusField_id_unique` | CREATE UNIQUE INDEX "userProfiles_StatusField_id_unique" ON public.user_profiles_status_field USING btree (id) |
 | `user_profiles_status_field` | `userProfiles_StatusField_pkey` | CREATE UNIQUE INDEX "userProfiles_StatusField_pkey" ON public.user_profiles_status_field USING btree (id) |
-| `z_junction_plan_sets_files_file_type_field` | `uq_z_junction_plan_sets_files_file_type_field__code` | CREATE UNIQUE INDEX uq_z_junction_plan_sets_files_file_type_field__code ON public.z_junction_plan_sets_files_file_type_field USING btree (code) WHERE (deleted_at IS NULL) |
-| `z_junction_plan_sets_files_file_type_field` | `uq_z_junction_plan_sets_files_file_type_field__id_uuid` | CREATE UNIQUE INDEX uq_z_junction_plan_sets_files_file_type_field__id_uuid ON public.z_junction_plan_sets_files_file_type_field USING btree (id_uuid) |
-| `z_junction_plan_sets_files_file_type_field` | `zJunction_PlanSets_FilesFileTypeField_id_unique` | CREATE UNIQUE INDEX "zJunction_PlanSets_FilesFileTypeField_id_unique" ON public.z_junction_plan_sets_files_file_type_field USING btree (id) |
-| `z_junction_plan_sets_files_file_type_field` | `zJunction_PlanSets_FilesFileTypeField_pkey` | CREATE UNIQUE INDEX "zJunction_PlanSets_FilesFileTypeField_pkey" ON public.z_junction_plan_sets_files_file_type_field USING btree (id) |
 
 ---
 
@@ -2475,264 +2544,264 @@ This database contains **111 tables** across 3 schemas:
 
 | Table | Policy Name | Command | Roles |
 |-------|-------------|---------|-------|
-| `agreements` | agreementsDelete | DELETE | {authenticated} |
-| `agreements` | agreementsInsert | INSERT | {authenticated} |
-| `agreements` | agreementsSelect | SELECT | {authenticated} |
-| `agreements` | agreementsUpdate | UPDATE | {authenticated} |
-| `agreements_status_field` | agreements_StatusField_select_authenticated | SELECT | {authenticated} |
-| `apps` | apps_select_authenticated | SELECT | {authenticated} |
-| `apps__roles` | apps_roles_select_authenticated | SELECT | {authenticated} |
-| `apps__roles` | zjunction_apps_roles_insert_authenticated | INSERT | {authenticated} |
-| `apps__roles` | zjunction_apps_roles_update_authenticated | UPDATE | {authenticated} |
-| `bcp` | bcpDelete | DELETE | {authenticated} |
-| `bcp` | bcpInsert | INSERT | {authenticated} |
-| `bcp` | bcpSelect | SELECT | {authenticated} |
-| `bcp` | bcpUpdate | UPDATE | {authenticated} |
-| `bcp_availability_field` | bcp_AvailabilityField_select_authenticated | SELECT | {authenticated} |
-| `bcp_qualified_services` | bcpQualifiedServices_select_authenticated | SELECT | {authenticated} |
-| `bd_inspection_types` | bdInspectionTypes_select_authenticated | SELECT | {authenticated} |
-| `building_departments` | building_departmentsDelete | DELETE | {authenticated} |
-| `building_departments` | building_departmentsInsert | INSERT | {authenticated} |
-| `building_departments` | building_departmentsSelect | SELECT | {authenticated} |
-| `building_departments` | building_departmentsUpdate | UPDATE | {authenticated} |
-| `building_departments__bcp` | bd_bcp_select_authenticated | SELECT | {authenticated} |
-| `building_departments__bcp` | zjunction_buildingdepartments_bcp_insert_authenticated | INSERT | {authenticated} |
-| `building_departments__bcp` | zjunction_buildingdepartments_bcp_update_authenticated | UPDATE | {authenticated} |
-| `building_departments_registration_status_field` | buildingDepartments_RegistrationStatusField_select_authenticate | SELECT | {authenticated} |
-| `client_users` | clientusersdelete | DELETE | {authenticated} |
-| `client_users` | clientusersinsert | INSERT | {authenticated} |
-| `client_users` | clientusersselect | SELECT | {authenticated} |
-| `client_users` | clientusersupdate | UPDATE | {authenticated} |
-| `companies` | companiesDelete | DELETE | {authenticated} |
-| `companies` | companiesInsert | INSERT | {authenticated} |
-| `companies` | companiesSelect | SELECT | {authenticated} |
-| `companies` | companiesUpdate | UPDATE | {authenticated} |
-| `companies__building_departments` | zJunction_Companies_BuildingDepartments_delete_authenticated | DELETE | {authenticated} |
-| `companies__building_departments` | zJunction_Companies_BuildingDepartments_insert_authenticated | INSERT | {authenticated} |
-| `companies__building_departments` | zJunction_Companies_BuildingDepartments_select_authenticated | SELECT | {authenticated} |
-| `companies__building_departments` | zJunction_Companies_BuildingDepartments_update_authenticated | UPDATE | {authenticated} |
-| `companies__building_departments` | zjunction_companies_buildingdepartments_insert_authenticated | INSERT | {authenticated} |
-| `companies__building_departments` | zjunction_companies_buildingdepartments_update_authenticated | UPDATE | {authenticated} |
-| `companies__contacts` | zJunction_Companies_Contacts_select_authenticated | SELECT | {authenticated} |
-| `companies__contacts` | zjunction_companies_contacts_insert_authenticated | INSERT | {authenticated} |
-| `companies__contacts` | zjunction_companies_contacts_update_authenticated | UPDATE | {authenticated} |
-| `companies__industry_roles` | companies_industry_select_company_users | SELECT | {authenticated} |
-| `companies__industry_roles` | zJunction_Companies_CompaniesIndustryRolesField_select_authenti | SELECT | {authenticated} |
-| `companies__industry_roles` | zjunction_companies_companiesindustryrolesfield_insert_authenti | INSERT | {authenticated} |
-| `companies__industry_roles` | zjunction_companies_companiesindustryrolesfield_update_authenti | UPDATE | {authenticated} |
-| `companies__permit_expediting` | companies_pe_select_company_users | SELECT | {authenticated} |
-| `companies__permit_expediting` | zjunction_companies_permitexpediting_insert_authenticated | INSERT | {authenticated} |
-| `companies__permit_expediting` | zjunction_companies_permitexpediting_update_authenticated | UPDATE | {authenticated} |
-| `companies__professional_licenses` | companies_licenses_select_company_users | SELECT | {authenticated} |
-| `companies__professional_licenses` | zjunction_companies_professionallicenses_insert_authenticated | INSERT | {authenticated} |
-| `companies__professional_licenses` | zjunction_companies_professionallicenses_update_authenticated | UPDATE | {authenticated} |
-| `companies__services` | zJunction_Companies_Services_select_authenticated | SELECT | {authenticated} |
-| `companies__services` | zjunction_companies_services_insert_authenticated | INSERT | {authenticated} |
-| `companies__services` | zjunction_companies_services_update_authenticated | UPDATE | {authenticated} |
-| `companies__subcontractors` | companies_subcontractors_select_company_users | SELECT | {authenticated} |
-| `companies__subcontractors` | zjunction_companies_companiessubcontractors_insert_authenticate | INSERT | {authenticated} |
-| `companies__subcontractors` | zjunction_companies_companiessubcontractors_update_authenticate | UPDATE | {authenticated} |
-| `companies__tech_tools` | zJunction_Companies_CompaniesTechToolsField_select_authenticate | SELECT | {authenticated} |
-| `companies__tech_tools` | zjunction_companies_companiestechtoolsfield_insert_authenticate | INSERT | {authenticated} |
-| `companies__tech_tools` | zjunction_companies_companiestechtoolsfield_update_authenticate | UPDATE | {authenticated} |
-| `companies__work_types` | zJunction_Companies_CompaniesWorkTypesField_select_authenticate | SELECT | {authenticated} |
-| `companies__work_types` | zjunction_companies_companiesworktypesfield_insert_authenticate | INSERT | {authenticated} |
-| `companies__work_types` | zjunction_companies_companiesworktypesfield_update_authenticate | UPDATE | {authenticated} |
-| `companies_account_type_field` | companies_AccountTypeField_select_authenticated | SELECT | {authenticated} |
-| `companies_annual_revenue_field` | companies_AnnualRevenueField_select_authenticated | SELECT | {authenticated} |
-| `companies_client_stage_field` | companies_ClientStageField_select_authenticated | SELECT | {authenticated} |
-| `companies_industry_role_field` | companies_IndustryRoleField_select_anon | SELECT | {public} |
-| `companies_industry_role_field` | companies_IndustryRoleField_select_authenticated | SELECT | {authenticated} |
-| `companies_interest_field` | companies_InterestField_select_anon | SELECT | {public} |
-| `companies_interest_field` | companies_InterestField_select_authenticated | SELECT | {authenticated} |
-| `companies_organization_field` | companies_OrganizationField_select_anon | SELECT | {public} |
-| `companies_organization_field` | companies_OrganizationField_select_authenticated | SELECT | {authenticated} |
-| `companies_referral_source_field` | companies_ReferralSourceField_select_anon | SELECT | {public} |
-| `companies_referral_source_field` | companies_ReferralSourceField_select_authenticated | SELECT | {authenticated} |
-| `companies_tech_savvy_field` | companies_TechSavvyField_select_anon | SELECT | {public} |
-| `companies_tech_savvy_field` | companies_TechSavvyField_select_authenticated | SELECT | {authenticated} |
-| `companies_tech_tools_field` | companies_TechToolsField_select_anon | SELECT | {public} |
-| `companies_tech_tools_field` | companies_TechToolsField_select_authenticated | SELECT | {authenticated} |
-| `companies_work_types_field` | companies_WorkTypesField_select_anon | SELECT | {public} |
-| `companies_work_types_field` | companies_WorkTypesField_select_authenticated | SELECT | {authenticated} |
-| `construction_types` | constructionTypes_select_authenticated | SELECT | {authenticated} |
-| `construction_types__project_types` | ct_pt_select_authenticated | SELECT | {authenticated} |
-| `construction_types__project_types` | zjunction_constructiontypes_projecttypes_insert_authenticated | INSERT | {authenticated} |
-| `construction_types__project_types` | zjunction_constructiontypes_projecttypes_update_authenticated | UPDATE | {authenticated} |
-| `contacts` | contactsDelete | DELETE | {authenticated} |
-| `contacts` | contactsInsert | INSERT | {authenticated} |
-| `contacts` | contactsSelect | SELECT | {authenticated} |
-| `contacts` | contactsUpdate | UPDATE | {authenticated} |
-| `contacts__building_departments` | contacts_bd_select_company_users | SELECT | {authenticated} |
-| `contacts__building_departments` | zjunction_contacts_buildingdepartments_insert_authenticated | INSERT | {authenticated} |
-| `contacts__building_departments` | zjunction_contacts_buildingdepartments_update_authenticated | UPDATE | {authenticated} |
-| `contacts__projects` | contacts_projects_select_company_users | SELECT | {authenticated} |
-| `contacts__projects` | zjunction_contacts_projects_insert_authenticated | INSERT | {authenticated} |
-| `contacts__projects` | zjunction_contacts_projects_update_authenticated | UPDATE | {authenticated} |
-| `contacts_type_field` | contacts_TypeField_select_authenticated | SELECT | {authenticated} |
-| `deal_phase_field` | deal_PhaseField_select_authenticated | SELECT | {authenticated} |
-| `deal_qualification_field` | deal_QualificationField_select_authenticated | SELECT | {authenticated} |
-| `deals` | dealsDelete | DELETE | {authenticated} |
-| `deals` | dealsInsert | INSERT | {authenticated} |
-| `deals` | dealsSelect | SELECT | {authenticated} |
-| `deals` | dealsUpdate | UPDATE | {authenticated} |
-| `deals__other_contacts` | zJunction_Deals_ContactsOtherContactsField_select_authenticated | SELECT | {authenticated} |
-| `deals__other_contacts` | zjunction_deals_contactsothercontactsfield_insert_authenticated | INSERT | {authenticated} |
-| `deals__other_contacts` | zjunction_deals_contactsothercontactsfield_update_authenticated | UPDATE | {authenticated} |
-| `disciplines` | disciplines_select_authenticated | SELECT | {authenticated} |
-| `employee_users` | employeeusersdelete | DELETE | {authenticated} |
-| `employee_users` | employeeusersinsert | INSERT | {authenticated} |
-| `employee_users` | employeeusersselect | SELECT | {authenticated} |
-| `employee_users` | employeeusersupdate | UPDATE | {authenticated} |
-| `files` | filesDelete | DELETE | {authenticated} |
-| `files` | filesInsert | INSERT | {authenticated} |
-| `files` | filesSelect | SELECT | {authenticated} |
-| `files` | filesUpdate | UPDATE | {authenticated} |
-| `inspection_modes` | inspectionModes_select_authenticated | SELECT | {authenticated} |
-| `inspection_sessions` | inspectionSessionsDelete | DELETE | {authenticated} |
-| `inspection_sessions` | inspectionSessionsInsert | INSERT | {authenticated} |
-| `inspection_sessions` | inspectionSessionsSelect | SELECT | {authenticated} |
-| `inspection_sessions` | inspectionSessionsUpdate | UPDATE | {authenticated} |
-| `inspection_sessions__contacts` | contacts_insp_sessions_select_company_users | SELECT | {authenticated} |
-| `inspection_sessions__contacts` | zjunction_contacts_inspectionsessions_insert_authenticated | INSERT | {authenticated} |
-| `inspection_sessions__contacts` | zjunction_contacts_inspectionsessions_update_authenticated | UPDATE | {authenticated} |
-| `inspection_sessions__project_media` | ispm_select_company_users | SELECT | {authenticated} |
-| `inspection_sessions__project_media` | zjunction_inspectionsessions_projectmedia_insert_authenticated | INSERT | {authenticated} |
-| `inspection_sessions__project_media` | zjunction_inspectionsessions_projectmedia_update_authenticated | UPDATE | {authenticated} |
-| `inspection_sessions_status_field` | inspectionSessions_StatusField_select_authenticated | SELECT | {authenticated} |
-| `inspections` | inspectionsDelete | DELETE | {authenticated} |
-| `inspections` | inspectionsInsert | INSERT | {authenticated} |
-| `inspections` | inspectionsSelect | SELECT | {authenticated} |
-| `inspections` | inspectionsUpdate | UPDATE | {authenticated} |
-| `inspections_result_field` | inspections_ResultField_select_authenticated | SELECT | {authenticated} |
-| `invoice_line_items` | invoiceLineItemsDelete | DELETE | {authenticated} |
-| `invoice_line_items` | invoiceLineItemsInsert | INSERT | {authenticated} |
-| `invoice_line_items` | invoiceLineItemsSelect | SELECT | {authenticated} |
-| `invoice_line_items` | invoiceLineItemsUpdate | UPDATE | {authenticated} |
-| `invoice_line_items_status_field` | invoiceLineItems_StatusField_select_authenticated | SELECT | {authenticated} |
-| `invoices` | invoicesDelete | DELETE | {authenticated} |
-| `invoices` | invoicesInsert | INSERT | {authenticated} |
-| `invoices` | invoicesSelect | SELECT | {authenticated} |
-| `invoices` | invoicesUpdate | UPDATE | {authenticated} |
-| `invoices_collection_status_field` | invoices_CollectionStatusField_select_authenticated | SELECT | {authenticated} |
-| `invoices_payment_status_field` | invoices_PaymentStatusField_select_authenticated | SELECT | {authenticated} |
-| `issue_comments` | issueCommentsDelete | DELETE | {authenticated} |
-| `issue_comments` | issueCommentsInsert | INSERT | {authenticated} |
-| `issue_comments` | issueCommentsSelect | SELECT | {authenticated} |
-| `issue_comments` | issueCommentsUpdate | UPDATE | {authenticated} |
-| `occupancies` | occupancies_select_authenticated | SELECT | {authenticated} |
-| `payment_processors` | paymentProcessors_delete_admin | DELETE | {authenticated} |
-| `payment_processors` | paymentProcessors_insert_admin | INSERT | {authenticated} |
-| `payment_processors` | paymentProcessors_select_admin | SELECT | {authenticated} |
-| `payment_processors` | paymentProcessors_update_admin | UPDATE | {authenticated} |
-| `payments` | paymentsDelete | DELETE | {authenticated} |
-| `payments` | paymentsInsert | INSERT | {authenticated} |
-| `payments` | paymentsSelect | SELECT | {authenticated} |
-| `payments` | paymentsUpdate | UPDATE | {authenticated} |
-| `payments__invoices` | zJunction_Payments_InvoicesDelete | DELETE | {authenticated} |
-| `payments__invoices` | zJunction_Payments_InvoicesInsert | INSERT | {authenticated} |
-| `payments__invoices` | zJunction_Payments_InvoicesSelect | SELECT | {authenticated} |
-| `payments__invoices` | zJunction_Payments_InvoicesUpdate | UPDATE | {authenticated} |
-| `payments__invoices` | zjunction_payments_invoices_insert_authenticated | INSERT | {authenticated} |
-| `payments__invoices` | zjunction_payments_invoices_update_authenticated | UPDATE | {authenticated} |
-| `permit_expediting` | permit_expeditingDelete | DELETE | {authenticated} |
-| `permit_expediting` | permit_expeditingInsert | INSERT | {authenticated} |
-| `permit_expediting` | permit_expeditingSelect | SELECT | {authenticated} |
-| `permit_expediting` | permit_expeditingUpdate | UPDATE | {authenticated} |
-| `permit_expediting_document_status_field` | permitExpediting_DocumentStatusField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_fees_status_field` | permitExpediting_FeesStatusField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_noc_status_field` | permitExpediting_NOCStatusField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_ntbo_status_field` | permitExpediting_NTBOStatusField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_permit_app_status_field` | permitExpediting_PermitAppStatusField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_private_provider_field` | permitExpediting_PrivateProviderField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_status_field` | permitExpediting_StatusField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_sub_form_field` | permitExpediting_SubFormField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_sub_permit_type_field` | permitExpediting_SubPermitTypeField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_subcontractor_info_field` | permitExpediting_SubcontractorInfoField_select_authenticated | SELECT | {authenticated} |
-| `permit_expediting_workability_field` | permitExpediting_WorkabilityField_select_authenticated | SELECT | {authenticated} |
-| `plan_review_result_field` | planReview_ResultField_select_authenticated | SELECT | {authenticated} |
-| `plan_reviews` | planReviewsDelete | DELETE | {authenticated} |
-| `plan_reviews` | planReviewsInsert | INSERT | {authenticated} |
-| `plan_reviews` | planReviewsSelect | SELECT | {authenticated} |
-| `plan_reviews` | planReviewsUpdate | UPDATE | {authenticated} |
-| `plan_reviews_status_field` | planReviews_StatusField_select_authenticated | SELECT | {authenticated} |
-| `plan_sets` | planSetsDelete | DELETE | {authenticated} |
-| `plan_sets` | planSetsInsert | INSERT | {authenticated} |
-| `plan_sets` | planSetsSelect | SELECT | {authenticated} |
-| `plan_sets` | planSetsUpdate | UPDATE | {authenticated} |
-| `plan_sets__files` | plansets_files_select_company_users | SELECT | {authenticated} |
-| `plan_sets__files` | zjunction_plansets_files_insert_authenticated | INSERT | {authenticated} |
-| `plan_sets__files` | zjunction_plansets_files_update_authenticated | UPDATE | {authenticated} |
-| `plan_sets_document_review_field` | planSets_DocumentReviewField_select_authenticated | SELECT | {authenticated} |
-| `plan_sets_type_field` | planSets_TypeField_select_authenticated | SELECT | {authenticated} |
-| `plan_sets_working_set_field` | planSets_WorkingSetField_select_authenticated | SELECT | {authenticated} |
-| `price_list` | priceListDelete | DELETE | {authenticated} |
-| `price_list` | priceListInsert | INSERT | {authenticated} |
-| `price_list` | priceListSelect | SELECT | {authenticated} |
-| `price_list` | priceListUpdate | UPDATE | {authenticated} |
-| `price_list_status_field` | priceList_StatusField_select_authenticated | SELECT | {authenticated} |
-| `professional_licenses` | professionalLicensesDelete | DELETE | {authenticated} |
-| `professional_licenses` | professionalLicensesInsert | INSERT | {authenticated} |
-| `professional_licenses` | professionalLicensesSelect | SELECT | {authenticated} |
-| `professional_licenses` | professionalLicensesUpdate | UPDATE | {authenticated} |
-| `professional_licenses__bcp_qualified_services` | pl_bqs_select_authenticated | SELECT | {authenticated} |
-| `professional_licenses__bcp_qualified_services` | zjunction_professionallicenses_bcpqualifiedservices_insert_auth | INSERT | {authenticated} |
-| `professional_licenses__bcp_qualified_services` | zjunction_professionallicenses_bcpqualifiedservices_update_auth | UPDATE | {authenticated} |
-| `professional_licenses_status_field` | professionalLicenses_StatusField_select_authenticated | SELECT | {authenticated} |
-| `professional_licenses_type_field` | professionalLicenses_TypeField_select_authenticated | SELECT | {authenticated} |
-| `project_media` | projects_files_select_company_users | SELECT | {authenticated} |
-| `project_media` | zjunction_projects_files_insert_authenticated | INSERT | {authenticated} |
-| `project_media` | zjunction_projects_files_update_authenticated | UPDATE | {authenticated} |
-| `project_media_upload_method_field` | projectMedia_UploadMethodField_select_authenticated | SELECT | {authenticated} |
-| `project_phases` | projectPhases_select_authenticated | SELECT | {authenticated} |
-| `project_phases_status_field` | project_phases_status_fieldDelete | DELETE | {authenticated} |
-| `project_phases_status_field` | project_phases_status_fieldInsert | INSERT | {authenticated} |
-| `project_phases_status_field` | project_phases_status_fieldSelect | SELECT | {authenticated} |
-| `project_phases_status_field` | project_phases_status_fieldUpdate | UPDATE | {authenticated} |
-| `project_types` | projectTypes_select_authenticated | SELECT | {authenticated} |
-| `projects` | projectsDelete | DELETE | {authenticated} |
-| `projects` | projectsInsert | INSERT | {authenticated} |
-| `projects` | projectsSelect | SELECT | {authenticated} |
-| `projects` | projectsUpdate | UPDATE | {authenticated} |
-| `projects__services` | projects_services_select_company_users | SELECT | {authenticated} |
-| `projects__services` | zjunction_projects_services_insert_authenticated | INSERT | {authenticated} |
-| `projects__services` | zjunction_projects_services_update_authenticated | UPDATE | {authenticated} |
-| `quotes` | quotesDelete | DELETE | {authenticated} |
-| `quotes` | quotesInsert | INSERT | {authenticated} |
-| `quotes` | quotesSelect | SELECT | {authenticated} |
-| `quotes` | quotesUpdate | UPDATE | {authenticated} |
-| `quotes_status_field` | quotes_StatusField_select_authenticated | SELECT | {authenticated} |
-| `rls_permissions` | rlspermissionsadminrw | ALL | {authenticated} |
-| `rls_permissions_audit` | rlspermissions_audit_delete_admin | DELETE | {authenticated} |
-| `rls_permissions_audit` | rlspermissions_audit_insert_admin | INSERT | {authenticated} |
-| `rls_permissions_audit` | rlspermissions_audit_select_admin | SELECT | {authenticated} |
-| `rls_permissions_audit` | rlspermissions_audit_update_admin | UPDATE | {authenticated} |
-| `roles` | roles_select_authenticated | SELECT | {authenticated} |
-| `services` | services_select_authenticated | SELECT | {authenticated} |
-| `services__deals` | zJunction_Services_DealsDelete | DELETE | {authenticated} |
-| `services__deals` | zJunction_Services_DealsInsert | INSERT | {authenticated} |
-| `services__deals` | zJunction_Services_DealsSelect | SELECT | {authenticated} |
-| `services__deals` | zJunction_Services_DealsUpdate | UPDATE | {authenticated} |
-| `services__deals` | zjunction_services_deals_insert_authenticated | INSERT | {authenticated} |
-| `services__deals` | zjunction_services_deals_update_authenticated | UPDATE | {authenticated} |
-| `services_type_field` | services_TypeField_select_authenticated | SELECT | {authenticated} |
-| `standard_inspection_types` | standardInspectionTypes_select_authenticated | SELECT | {authenticated} |
-| `standard_inspection_types__inspection_modes` | sit_im_select_authenticated | SELECT | {authenticated} |
-| `standard_inspection_types__inspection_modes` | zjunction_standardinspectiontypes_inspectionmodes_insert_authen | INSERT | {authenticated} |
-| `standard_inspection_types__inspection_modes` | zjunction_standardinspectiontypes_inspectionmodes_update_authen | UPDATE | {authenticated} |
-| `threads` | Users can create threads | INSERT | {public} |
-| `threads` | Users can read threads | SELECT | {public} |
-| `threads` | Users can update threads | UPDATE | {public} |
-| `trades` | trades_select_authenticated | SELECT | {authenticated} |
-| `user_profiles` | userprofilesdelete | DELETE | {authenticated} |
-| `user_profiles` | userprofilesinsert | INSERT | {authenticated} |
-| `user_profiles` | userprofilesselect | SELECT | {authenticated} |
-| `user_profiles` | userprofilesupdate | UPDATE | {authenticated} |
-| `user_profiles_status_field` | userProfiles_StatusField_select_authenticated | SELECT | {authenticated} |
-| `z_junction_plan_sets_files_file_type_field` | zJunction_PlanSets_FilesFileTypeField_select_authenticated | SELECT | {authenticated} |
-| `z_junction_plan_sets_files_file_type_field` | zJunction_PlanSets_Files_FileTypeField_select_authenticated | SELECT | {authenticated} |
-| `z_junction_plan_sets_files_file_type_field` | zjunction_plansets_filesfiletypefield_insert_authenticated | INSERT | {authenticated} |
-| `z_junction_plan_sets_files_file_type_field` | zjunction_plansets_filesfiletypefield_update_authenticated | UPDATE | {authenticated} |
+| `agreements` | agreementsDelete | DELETE | authenticated |
+| `agreements` | agreementsInsert | INSERT | authenticated |
+| `agreements` | agreementsSelect | SELECT | authenticated |
+| `agreements` | agreementsUpdate | UPDATE | authenticated |
+| `agreements_status_field` | agreements_StatusField_select_authenticated | SELECT | authenticated |
+| `apps` | apps_select_authenticated | SELECT | authenticated |
+| `apps__roles` | apps_roles_select_authenticated | SELECT | authenticated |
+| `apps__roles` | zjunction_apps_roles_insert_authenticated | INSERT | authenticated |
+| `apps__roles` | zjunction_apps_roles_update_authenticated | UPDATE | authenticated |
+| `bcp` | bcpDelete | DELETE | authenticated |
+| `bcp` | bcpInsert | INSERT | authenticated |
+| `bcp` | bcpSelect | SELECT | authenticated |
+| `bcp` | bcpUpdate | UPDATE | authenticated |
+| `bcp_availability_field` | bcp_AvailabilityField_select_authenticated | SELECT | authenticated |
+| `bcp_qualified_services` | bcpQualifiedServices_select_authenticated | SELECT | authenticated |
+| `bd_inspection_types` | bdInspectionTypes_select_authenticated | SELECT | authenticated |
+| `building_departments` | building_departmentsDelete | DELETE | authenticated |
+| `building_departments` | building_departmentsInsert | INSERT | authenticated |
+| `building_departments` | building_departmentsSelect | SELECT | authenticated |
+| `building_departments` | building_departmentsUpdate | UPDATE | authenticated |
+| `building_departments__bcp` | bd_bcp_select_authenticated | SELECT | authenticated |
+| `building_departments__bcp` | zjunction_buildingdepartments_bcp_insert_authenticated | INSERT | authenticated |
+| `building_departments__bcp` | zjunction_buildingdepartments_bcp_update_authenticated | UPDATE | authenticated |
+| `building_departments_registration_status_field` | buildingDepartments_RegistrationStatusField_select_authenticate | SELECT | authenticated |
+| `client_users` | clientusersdelete | DELETE | authenticated |
+| `client_users` | clientusersinsert | INSERT | authenticated |
+| `client_users` | clientusersselect | SELECT | authenticated |
+| `client_users` | clientusersupdate | UPDATE | authenticated |
+| `companies` | companiesDelete | DELETE | authenticated |
+| `companies` | companiesInsert | INSERT | authenticated |
+| `companies` | companiesSelect | SELECT | authenticated |
+| `companies` | companiesUpdate | UPDATE | authenticated |
+| `companies__building_departments` | zJunction_Companies_BuildingDepartments_delete_authenticated | DELETE | authenticated |
+| `companies__building_departments` | zJunction_Companies_BuildingDepartments_insert_authenticated | INSERT | authenticated |
+| `companies__building_departments` | zJunction_Companies_BuildingDepartments_select_authenticated | SELECT | authenticated |
+| `companies__building_departments` | zJunction_Companies_BuildingDepartments_update_authenticated | UPDATE | authenticated |
+| `companies__building_departments` | zjunction_companies_buildingdepartments_insert_authenticated | INSERT | authenticated |
+| `companies__building_departments` | zjunction_companies_buildingdepartments_update_authenticated | UPDATE | authenticated |
+| `companies__contacts` | zJunction_Companies_Contacts_select_authenticated | SELECT | authenticated |
+| `companies__contacts` | zjunction_companies_contacts_insert_authenticated | INSERT | authenticated |
+| `companies__contacts` | zjunction_companies_contacts_update_authenticated | UPDATE | authenticated |
+| `companies__industry_roles` | companies_industry_select_company_users | SELECT | authenticated |
+| `companies__industry_roles` | zJunction_Companies_CompaniesIndustryRolesField_select_authenti | SELECT | authenticated |
+| `companies__industry_roles` | zjunction_companies_companiesindustryrolesfield_insert_authenti | INSERT | authenticated |
+| `companies__industry_roles` | zjunction_companies_companiesindustryrolesfield_update_authenti | UPDATE | authenticated |
+| `companies__permit_expediting` | companies_pe_select_company_users | SELECT | authenticated |
+| `companies__permit_expediting` | zjunction_companies_permitexpediting_insert_authenticated | INSERT | authenticated |
+| `companies__permit_expediting` | zjunction_companies_permitexpediting_update_authenticated | UPDATE | authenticated |
+| `companies__professional_licenses` | companies_licenses_select_company_users | SELECT | authenticated |
+| `companies__professional_licenses` | zjunction_companies_professionallicenses_insert_authenticated | INSERT | authenticated |
+| `companies__professional_licenses` | zjunction_companies_professionallicenses_update_authenticated | UPDATE | authenticated |
+| `companies__services` | zJunction_Companies_Services_select_authenticated | SELECT | authenticated |
+| `companies__services` | zjunction_companies_services_insert_authenticated | INSERT | authenticated |
+| `companies__services` | zjunction_companies_services_update_authenticated | UPDATE | authenticated |
+| `companies__subcontractors` | companies_subcontractors_select_company_users | SELECT | authenticated |
+| `companies__subcontractors` | zjunction_companies_companiessubcontractors_insert_authenticate | INSERT | authenticated |
+| `companies__subcontractors` | zjunction_companies_companiessubcontractors_update_authenticate | UPDATE | authenticated |
+| `companies__tech_tools` | zJunction_Companies_CompaniesTechToolsField_select_authenticate | SELECT | authenticated |
+| `companies__tech_tools` | zjunction_companies_companiestechtoolsfield_insert_authenticate | INSERT | authenticated |
+| `companies__tech_tools` | zjunction_companies_companiestechtoolsfield_update_authenticate | UPDATE | authenticated |
+| `companies__work_types` | zJunction_Companies_CompaniesWorkTypesField_select_authenticate | SELECT | authenticated |
+| `companies__work_types` | zjunction_companies_companiesworktypesfield_insert_authenticate | INSERT | authenticated |
+| `companies__work_types` | zjunction_companies_companiesworktypesfield_update_authenticate | UPDATE | authenticated |
+| `companies_account_type_field` | companies_AccountTypeField_select_authenticated | SELECT | authenticated |
+| `companies_annual_revenue_field` | companies_AnnualRevenueField_select_authenticated | SELECT | authenticated |
+| `companies_client_stage_field` | companies_ClientStageField_select_authenticated | SELECT | authenticated |
+| `companies_industry_role_field` | companies_IndustryRoleField_select_anon | SELECT | public |
+| `companies_industry_role_field` | companies_IndustryRoleField_select_authenticated | SELECT | authenticated |
+| `companies_interest_field` | companies_InterestField_select_anon | SELECT | public |
+| `companies_interest_field` | companies_InterestField_select_authenticated | SELECT | authenticated |
+| `companies_organization_field` | companies_OrganizationField_select_anon | SELECT | public |
+| `companies_organization_field` | companies_OrganizationField_select_authenticated | SELECT | authenticated |
+| `companies_referral_source_field` | companies_ReferralSourceField_select_anon | SELECT | public |
+| `companies_referral_source_field` | companies_ReferralSourceField_select_authenticated | SELECT | authenticated |
+| `companies_tech_savvy_field` | companies_TechSavvyField_select_anon | SELECT | public |
+| `companies_tech_savvy_field` | companies_TechSavvyField_select_authenticated | SELECT | authenticated |
+| `companies_tech_tools_field` | companies_TechToolsField_select_anon | SELECT | public |
+| `companies_tech_tools_field` | companies_TechToolsField_select_authenticated | SELECT | authenticated |
+| `companies_work_types_field` | companies_WorkTypesField_select_anon | SELECT | public |
+| `companies_work_types_field` | companies_WorkTypesField_select_authenticated | SELECT | authenticated |
+| `construction_types` | constructionTypes_select_authenticated | SELECT | authenticated |
+| `construction_types__project_types` | ct_pt_select_authenticated | SELECT | authenticated |
+| `construction_types__project_types` | zjunction_constructiontypes_projecttypes_insert_authenticated | INSERT | authenticated |
+| `construction_types__project_types` | zjunction_constructiontypes_projecttypes_update_authenticated | UPDATE | authenticated |
+| `contacts` | contactsDelete | DELETE | authenticated |
+| `contacts` | contactsInsert | INSERT | authenticated |
+| `contacts` | contactsSelect | SELECT | authenticated |
+| `contacts` | contactsUpdate | UPDATE | authenticated |
+| `contacts__building_departments` | contacts_bd_select_company_users | SELECT | authenticated |
+| `contacts__building_departments` | zjunction_contacts_buildingdepartments_insert_authenticated | INSERT | authenticated |
+| `contacts__building_departments` | zjunction_contacts_buildingdepartments_update_authenticated | UPDATE | authenticated |
+| `contacts__projects` | contacts_projects_select_company_users | SELECT | authenticated |
+| `contacts__projects` | zjunction_contacts_projects_insert_authenticated | INSERT | authenticated |
+| `contacts__projects` | zjunction_contacts_projects_update_authenticated | UPDATE | authenticated |
+| `contacts_type_field` | contacts_TypeField_select_authenticated | SELECT | authenticated |
+| `deal_phase_field` | deal_PhaseField_select_authenticated | SELECT | authenticated |
+| `deal_qualification_field` | deal_QualificationField_select_authenticated | SELECT | authenticated |
+| `deals` | dealsDelete | DELETE | authenticated |
+| `deals` | dealsInsert | INSERT | authenticated |
+| `deals` | dealsSelect | SELECT | authenticated |
+| `deals` | dealsUpdate | UPDATE | authenticated |
+| `deals__other_contacts` | zJunction_Deals_ContactsOtherContactsField_select_authenticated | SELECT | authenticated |
+| `deals__other_contacts` | zjunction_deals_contactsothercontactsfield_insert_authenticated | INSERT | authenticated |
+| `deals__other_contacts` | zjunction_deals_contactsothercontactsfield_update_authenticated | UPDATE | authenticated |
+| `disciplines` | disciplines_select_authenticated | SELECT | authenticated |
+| `employee_users` | employeeusersdelete | DELETE | authenticated |
+| `employee_users` | employeeusersinsert | INSERT | authenticated |
+| `employee_users` | employeeusersselect | SELECT | authenticated |
+| `employee_users` | employeeusersupdate | UPDATE | authenticated |
+| `files` | filesDelete | DELETE | authenticated |
+| `files` | filesInsert | INSERT | authenticated |
+| `files` | filesSelect | SELECT | authenticated |
+| `files` | filesUpdate | UPDATE | authenticated |
+| `inspection_modes` | inspectionModes_select_authenticated | SELECT | authenticated |
+| `inspection_sessions` | inspectionSessionsDelete | DELETE | authenticated |
+| `inspection_sessions` | inspectionSessionsInsert | INSERT | authenticated |
+| `inspection_sessions` | inspectionSessionsSelect | SELECT | authenticated |
+| `inspection_sessions` | inspectionSessionsUpdate | UPDATE | authenticated |
+| `inspection_sessions__contacts` | contacts_insp_sessions_select_company_users | SELECT | authenticated |
+| `inspection_sessions__contacts` | zjunction_contacts_inspectionsessions_insert_authenticated | INSERT | authenticated |
+| `inspection_sessions__contacts` | zjunction_contacts_inspectionsessions_update_authenticated | UPDATE | authenticated |
+| `inspection_sessions__project_media` | ispm_select_company_users | SELECT | authenticated |
+| `inspection_sessions__project_media` | zjunction_inspectionsessions_projectmedia_insert_authenticated | INSERT | authenticated |
+| `inspection_sessions__project_media` | zjunction_inspectionsessions_projectmedia_update_authenticated | UPDATE | authenticated |
+| `inspection_sessions_status_field` | inspectionSessions_StatusField_select_authenticated | SELECT | authenticated |
+| `inspections` | inspectionsDelete | DELETE | authenticated |
+| `inspections` | inspectionsInsert | INSERT | authenticated |
+| `inspections` | inspectionsSelect | SELECT | authenticated |
+| `inspections` | inspectionsUpdate | UPDATE | authenticated |
+| `inspections_result_field` | inspections_ResultField_select_authenticated | SELECT | authenticated |
+| `invoice_line_items` | invoiceLineItemsDelete | DELETE | authenticated |
+| `invoice_line_items` | invoiceLineItemsInsert | INSERT | authenticated |
+| `invoice_line_items` | invoiceLineItemsSelect | SELECT | authenticated |
+| `invoice_line_items` | invoiceLineItemsUpdate | UPDATE | authenticated |
+| `invoice_line_items_status_field` | invoiceLineItems_StatusField_select_authenticated | SELECT | authenticated |
+| `invoices` | invoicesDelete | DELETE | authenticated |
+| `invoices` | invoicesInsert | INSERT | authenticated |
+| `invoices` | invoicesSelect | SELECT | authenticated |
+| `invoices` | invoicesUpdate | UPDATE | authenticated |
+| `invoices_collection_status_field` | invoices_CollectionStatusField_select_authenticated | SELECT | authenticated |
+| `invoices_payment_status_field` | invoices_PaymentStatusField_select_authenticated | SELECT | authenticated |
+| `issue_comments` | issueCommentsDelete | DELETE | authenticated |
+| `issue_comments` | issueCommentsInsert | INSERT | authenticated |
+| `issue_comments` | issueCommentsSelect | SELECT | authenticated |
+| `issue_comments` | issueCommentsUpdate | UPDATE | authenticated |
+| `occupancies` | occupancies_select_authenticated | SELECT | authenticated |
+| `payment_processors` | paymentProcessors_delete_admin | DELETE | authenticated |
+| `payment_processors` | paymentProcessors_insert_admin | INSERT | authenticated |
+| `payment_processors` | paymentProcessors_select_admin | SELECT | authenticated |
+| `payment_processors` | paymentProcessors_update_admin | UPDATE | authenticated |
+| `payments` | paymentsDelete | DELETE | authenticated |
+| `payments` | paymentsInsert | INSERT | authenticated |
+| `payments` | paymentsSelect | SELECT | authenticated |
+| `payments` | paymentsUpdate | UPDATE | authenticated |
+| `payments__invoices` | zJunction_Payments_InvoicesDelete | DELETE | authenticated |
+| `payments__invoices` | zJunction_Payments_InvoicesInsert | INSERT | authenticated |
+| `payments__invoices` | zJunction_Payments_InvoicesSelect | SELECT | authenticated |
+| `payments__invoices` | zJunction_Payments_InvoicesUpdate | UPDATE | authenticated |
+| `payments__invoices` | zjunction_payments_invoices_insert_authenticated | INSERT | authenticated |
+| `payments__invoices` | zjunction_payments_invoices_update_authenticated | UPDATE | authenticated |
+| `permit_expediting` | permit_expeditingDelete | DELETE | authenticated |
+| `permit_expediting` | permit_expeditingInsert | INSERT | authenticated |
+| `permit_expediting` | permit_expeditingSelect | SELECT | authenticated |
+| `permit_expediting` | permit_expeditingUpdate | UPDATE | authenticated |
+| `permit_expediting_document_status_field` | permitExpediting_DocumentStatusField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_fees_status_field` | permitExpediting_FeesStatusField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_noc_status_field` | permitExpediting_NOCStatusField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_ntbo_status_field` | permitExpediting_NTBOStatusField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_permit_app_status_field` | permitExpediting_PermitAppStatusField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_private_provider_field` | permitExpediting_PrivateProviderField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_status_field` | permitExpediting_StatusField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_sub_form_field` | permitExpediting_SubFormField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_sub_permit_type_field` | permitExpediting_SubPermitTypeField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_subcontractor_info_field` | permitExpediting_SubcontractorInfoField_select_authenticated | SELECT | authenticated |
+| `permit_expediting_workability_field` | permitExpediting_WorkabilityField_select_authenticated | SELECT | authenticated |
+| `plan_review_result_field` | planReview_ResultField_select_authenticated | SELECT | authenticated |
+| `plan_reviews` | planReviewsDelete | DELETE | authenticated |
+| `plan_reviews` | planReviewsInsert | INSERT | authenticated |
+| `plan_reviews` | planReviewsSelect | SELECT | authenticated |
+| `plan_reviews` | planReviewsUpdate | UPDATE | authenticated |
+| `plan_reviews_status_field` | planReviews_StatusField_select_authenticated | SELECT | authenticated |
+| `plan_sets` | planSetsDelete | DELETE | authenticated |
+| `plan_sets` | planSetsInsert | INSERT | authenticated |
+| `plan_sets` | planSetsSelect | SELECT | authenticated |
+| `plan_sets` | planSetsUpdate | UPDATE | authenticated |
+| `plan_sets__files` | plansets_files_select_company_users | SELECT | authenticated |
+| `plan_sets__files` | zjunction_plansets_files_insert_authenticated | INSERT | authenticated |
+| `plan_sets__files` | zjunction_plansets_files_update_authenticated | UPDATE | authenticated |
+| `plan_sets_document_review_field` | planSets_DocumentReviewField_select_authenticated | SELECT | authenticated |
+| `plan_sets_file_types` | plan_sets_file_typesDelete | DELETE | authenticated |
+| `plan_sets_file_types` | plan_sets_file_typesInsert | INSERT | authenticated |
+| `plan_sets_file_types` | plan_sets_file_typesSelect | SELECT | authenticated |
+| `plan_sets_file_types` | plan_sets_file_typesUpdate | UPDATE | authenticated |
+| `plan_sets_type_field` | planSets_TypeField_select_authenticated | SELECT | authenticated |
+| `plan_sets_working_set_field` | planSets_WorkingSetField_select_authenticated | SELECT | authenticated |
+| `price_list` | priceListDelete | DELETE | authenticated |
+| `price_list` | priceListInsert | INSERT | authenticated |
+| `price_list` | priceListSelect | SELECT | authenticated |
+| `price_list` | priceListUpdate | UPDATE | authenticated |
+| `price_list_status_field` | priceList_StatusField_select_authenticated | SELECT | authenticated |
+| `professional_licenses` | professionalLicensesDelete | DELETE | authenticated |
+| `professional_licenses` | professionalLicensesInsert | INSERT | authenticated |
+| `professional_licenses` | professionalLicensesSelect | SELECT | authenticated |
+| `professional_licenses` | professionalLicensesUpdate | UPDATE | authenticated |
+| `professional_licenses__bcp_qualified_services` | pl_bqs_select_authenticated | SELECT | authenticated |
+| `professional_licenses__bcp_qualified_services` | zjunction_professionallicenses_bcpqualifiedservices_insert_auth | INSERT | authenticated |
+| `professional_licenses__bcp_qualified_services` | zjunction_professionallicenses_bcpqualifiedservices_update_auth | UPDATE | authenticated |
+| `professional_licenses_status_field` | professionalLicenses_StatusField_select_authenticated | SELECT | authenticated |
+| `professional_licenses_type_field` | professionalLicenses_TypeField_select_authenticated | SELECT | authenticated |
+| `project_media` | projects_files_select_company_users | SELECT | authenticated |
+| `project_media` | zjunction_projects_files_insert_authenticated | INSERT | authenticated |
+| `project_media` | zjunction_projects_files_update_authenticated | UPDATE | authenticated |
+| `project_media_upload_method_field` | projectMedia_UploadMethodField_select_authenticated | SELECT | authenticated |
+| `project_phases` | projectPhases_select_authenticated | SELECT | authenticated |
+| `project_phases_status_field` | project_phases_status_fieldDelete | DELETE | authenticated |
+| `project_phases_status_field` | project_phases_status_fieldInsert | INSERT | authenticated |
+| `project_phases_status_field` | project_phases_status_fieldSelect | SELECT | authenticated |
+| `project_phases_status_field` | project_phases_status_fieldUpdate | UPDATE | authenticated |
+| `project_types` | projectTypes_select_authenticated | SELECT | authenticated |
+| `projects` | projectsDelete | DELETE | authenticated |
+| `projects` | projectsInsert | INSERT | authenticated |
+| `projects` | projectsSelect | SELECT | authenticated |
+| `projects` | projectsUpdate | UPDATE | authenticated |
+| `projects__services` | projects_services_select_company_users | SELECT | authenticated |
+| `projects__services` | zjunction_projects_services_insert_authenticated | INSERT | authenticated |
+| `projects__services` | zjunction_projects_services_update_authenticated | UPDATE | authenticated |
+| `quotes` | quotesDelete | DELETE | authenticated |
+| `quotes` | quotesInsert | INSERT | authenticated |
+| `quotes` | quotesSelect | SELECT | authenticated |
+| `quotes` | quotesUpdate | UPDATE | authenticated |
+| `quotes_status_field` | quotes_StatusField_select_authenticated | SELECT | authenticated |
+| `rls_permissions` | rlspermissionsadminrw | ALL | authenticated |
+| `rls_permissions_audit` | rlspermissions_audit_delete_admin | DELETE | authenticated |
+| `rls_permissions_audit` | rlspermissions_audit_insert_admin | INSERT | authenticated |
+| `rls_permissions_audit` | rlspermissions_audit_select_admin | SELECT | authenticated |
+| `rls_permissions_audit` | rlspermissions_audit_update_admin | UPDATE | authenticated |
+| `roles` | roles_select_authenticated | SELECT | authenticated |
+| `services` | services_select_authenticated | SELECT | authenticated |
+| `services__deals` | zJunction_Services_DealsDelete | DELETE | authenticated |
+| `services__deals` | zJunction_Services_DealsInsert | INSERT | authenticated |
+| `services__deals` | zJunction_Services_DealsSelect | SELECT | authenticated |
+| `services__deals` | zJunction_Services_DealsUpdate | UPDATE | authenticated |
+| `services__deals` | zjunction_services_deals_insert_authenticated | INSERT | authenticated |
+| `services__deals` | zjunction_services_deals_update_authenticated | UPDATE | authenticated |
+| `services_type_field` | services_TypeField_select_authenticated | SELECT | authenticated |
+| `standard_inspection_types` | standardInspectionTypes_select_authenticated | SELECT | authenticated |
+| `standard_inspection_types__inspection_modes` | sit_im_select_authenticated | SELECT | authenticated |
+| `standard_inspection_types__inspection_modes` | zjunction_standardinspectiontypes_inspectionmodes_insert_authen | INSERT | authenticated |
+| `standard_inspection_types__inspection_modes` | zjunction_standardinspectiontypes_inspectionmodes_update_authen | UPDATE | authenticated |
+| `threads` | Users can create threads | INSERT | public |
+| `threads` | Users can read threads | SELECT | public |
+| `threads` | Users can update threads | UPDATE | public |
+| `trades` | trades_select_authenticated | SELECT | authenticated |
+| `user_profiles` | userprofilesdelete | DELETE | authenticated |
+| `user_profiles` | userprofilesinsert | INSERT | authenticated |
+| `user_profiles` | userprofilesselect | SELECT | authenticated |
+| `user_profiles` | userprofilesupdate | UPDATE | authenticated |
+| `user_profiles_status_field` | userProfiles_StatusField_select_authenticated | SELECT | authenticated |
 
 ---
 
@@ -2839,18 +2908,12 @@ This database contains **111 tables** across 3 schemas:
 #### _st_coveredby
 
 - **Type**: function
-- **Arguments**: geom1 geometry, geom2 geometry
+- **Arguments**: geog1 geography, geog2 geography
 - **Returns**: boolean
 
 #### _st_coveredby
 
 - **Type**: function
-- **Arguments**: geog1 geography, geog2 geography
-- **Returns**: boolean
-
-#### _st_covers
-
-- **Type**: function
 - **Arguments**: geom1 geometry, geom2 geometry
 - **Returns**: boolean
 
@@ -2858,6 +2921,12 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: function
 - **Arguments**: geog1 geography, geog2 geography
+- **Returns**: boolean
+
+#### _st_covers
+
+- **Type**: function
+- **Arguments**: geom1 geometry, geom2 geometry
 - **Returns**: boolean
 
 #### _st_crosses
@@ -2887,12 +2956,6 @@ This database contains **111 tables** across 3 schemas:
 #### _st_distanceuncached
 
 - **Type**: function
-- **Arguments**: geography, geography
-- **Returns**: double precision
-
-#### _st_distanceuncached
-
-- **Type**: function
 - **Arguments**: geography, geography, boolean
 - **Returns**: double precision
 
@@ -2902,11 +2965,11 @@ This database contains **111 tables** across 3 schemas:
 - **Arguments**: geography, geography, double precision, boolean
 - **Returns**: double precision
 
-#### _st_dwithin
+#### _st_distanceuncached
 
 - **Type**: function
-- **Arguments**: geom1 geometry, geom2 geometry, double precision
-- **Returns**: boolean
+- **Arguments**: geography, geography
+- **Returns**: double precision
 
 #### _st_dwithin
 
@@ -2914,16 +2977,22 @@ This database contains **111 tables** across 3 schemas:
 - **Arguments**: geog1 geography, geog2 geography, tolerance double precision, use_spheroid boolean DEFAULT true
 - **Returns**: boolean
 
-#### _st_dwithinuncached
+#### _st_dwithin
 
 - **Type**: function
-- **Arguments**: geography, geography, double precision, boolean
+- **Arguments**: geom1 geometry, geom2 geometry, double precision
 - **Returns**: boolean
 
 #### _st_dwithinuncached
 
 - **Type**: function
 - **Arguments**: geography, geography, double precision
+- **Returns**: boolean
+
+#### _st_dwithinuncached
+
+- **Type**: function
+- **Arguments**: geography, geography, double precision, boolean
 - **Returns**: boolean
 
 #### _st_equals
@@ -3019,13 +3088,13 @@ This database contains **111 tables** across 3 schemas:
 #### addgeometrycolumn
 
 - **Type**: function
-- **Arguments**: schema_name character varying, table_name character varying, column_name character varying, new_srid integer, new_type character varying, new_dim integer, use_typmod boolean DEFAULT true
+- **Arguments**: table_name character varying, column_name character varying, new_srid integer, new_type character varying, new_dim integer, use_typmod boolean DEFAULT true
 - **Returns**: text
 
 #### addgeometrycolumn
 
 - **Type**: function
-- **Arguments**: table_name character varying, column_name character varying, new_srid integer, new_type character varying, new_dim integer, use_typmod boolean DEFAULT true
+- **Arguments**: schema_name character varying, table_name character varying, column_name character varying, new_srid integer, new_type character varying, new_dim integer, use_typmod boolean DEFAULT true
 - **Returns**: text
 
 #### addgeometrycolumn
@@ -3043,13 +3112,13 @@ This database contains **111 tables** across 3 schemas:
 #### box
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: box3d
 - **Returns**: box
 
 #### box
 
 - **Type**: function
-- **Arguments**: box3d
+- **Arguments**: geometry
 - **Returns**: box
 
 #### box2d
@@ -3121,20 +3190,14 @@ This database contains **111 tables** across 3 schemas:
 #### bytea
 
 - **Type**: function
-- **Arguments**: geography
+- **Arguments**: geometry
 - **Returns**: bytea
 
 #### bytea
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: geography
 - **Returns**: bytea
-
-#### check_table_scoping
-
-- **Type**: function
-- **Arguments**: p_table_name text, p_record_id integer, p_user_id uuid DEFAULT auth.uid()
-- **Returns**: boolean
 
 #### check_table_scoping
 
@@ -3142,16 +3205,22 @@ This database contains **111 tables** across 3 schemas:
 - **Arguments**: p_table_name text, p_record_id uuid, p_user_id uuid DEFAULT NULL::uuid
 - **Returns**: boolean
 
-#### checkauth
+#### check_table_scoping
 
 - **Type**: function
-- **Arguments**: text, text
-- **Returns**: integer
+- **Arguments**: p_table_name text, p_record_id integer, p_user_id uuid DEFAULT auth.uid()
+- **Returns**: boolean
 
 #### checkauth
 
 - **Type**: function
 - **Arguments**: text, text, text
+- **Returns**: integer
+
+#### checkauth
+
+- **Type**: function
+- **Arguments**: text, text
 - **Returns**: integer
 
 #### checkauthtrigger
@@ -3169,6 +3238,12 @@ This database contains **111 tables** across 3 schemas:
 #### contains_2d
 
 - **Type**: function
+- **Arguments**: box2df, geometry
+- **Returns**: boolean
+
+#### contains_2d
+
+- **Type**: function
 - **Arguments**: geometry, box2df
 - **Returns**: boolean
 
@@ -3176,12 +3251,6 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: function
 - **Arguments**: box2df, box2df
-- **Returns**: boolean
-
-#### contains_2d
-
-- **Type**: function
-- **Arguments**: box2df, geometry
 - **Returns**: boolean
 
 #### create_standard_policies
@@ -3217,7 +3286,7 @@ This database contains **111 tables** across 3 schemas:
 #### dropgeometrytable
 
 - **Type**: function
-- **Arguments**: catalog_name character varying, schema_name character varying, table_name character varying
+- **Arguments**: table_name character varying
 - **Returns**: text
 
 #### dropgeometrytable
@@ -3229,7 +3298,7 @@ This database contains **111 tables** across 3 schemas:
 #### dropgeometrytable
 
 - **Type**: function
-- **Arguments**: table_name character varying
+- **Arguments**: catalog_name character varying, schema_name character varying, table_name character varying
 - **Returns**: text
 
 #### enablelongtransactions
@@ -3277,13 +3346,13 @@ This database contains **111 tables** across 3 schemas:
 #### geography
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: bytea
 - **Returns**: geography
 
 #### geography
 
 - **Type**: function
-- **Arguments**: bytea
+- **Arguments**: geometry
 - **Returns**: geography
 
 #### geography_analyze
@@ -3481,13 +3550,19 @@ This database contains **111 tables** across 3 schemas:
 #### geometry
 
 - **Type**: function
+- **Arguments**: polygon
+- **Returns**: geometry
+
+#### geometry
+
+- **Type**: function
 - **Arguments**: geography
 - **Returns**: geometry
 
 #### geometry
 
 - **Type**: function
-- **Arguments**: box2d
+- **Arguments**: bytea
 - **Returns**: geometry
 
 #### geometry
@@ -3505,31 +3580,25 @@ This database contains **111 tables** across 3 schemas:
 #### geometry
 
 - **Type**: function
-- **Arguments**: box3d
-- **Returns**: geometry
-
-#### geometry
-
-- **Type**: function
 - **Arguments**: path
 - **Returns**: geometry
 
 #### geometry
 
 - **Type**: function
-- **Arguments**: polygon
-- **Returns**: geometry
-
-#### geometry
-
-- **Type**: function
-- **Arguments**: bytea
-- **Returns**: geometry
-
-#### geometry
-
-- **Type**: function
 - **Arguments**: text
+- **Returns**: geometry
+
+#### geometry
+
+- **Type**: function
+- **Arguments**: box2d
+- **Returns**: geometry
+
+#### geometry
+
+- **Type**: function
+- **Arguments**: box3d
 - **Returns**: geometry
 
 #### geometry_above
@@ -4069,7 +4138,7 @@ This database contains **111 tables** across 3 schemas:
 #### is_contained_2d
 
 - **Type**: function
-- **Arguments**: box2df, box2df
+- **Arguments**: box2df, geometry
 - **Returns**: boolean
 
 #### is_contained_2d
@@ -4081,7 +4150,7 @@ This database contains **111 tables** across 3 schemas:
 #### is_contained_2d
 
 - **Type**: function
-- **Arguments**: box2df, geometry
+- **Arguments**: box2df, box2df
 - **Returns**: boolean
 
 #### json
@@ -4099,13 +4168,13 @@ This database contains **111 tables** across 3 schemas:
 #### lockrow
 
 - **Type**: function
-- **Arguments**: text, text, text, text, timestamp without time zone
+- **Arguments**: text, text, text, text
 - **Returns**: integer
 
 #### lockrow
 
 - **Type**: function
-- **Arguments**: text, text, text
+- **Arguments**: text, text, text, text, timestamp without time zone
 - **Returns**: integer
 
 #### lockrow
@@ -4117,19 +4186,13 @@ This database contains **111 tables** across 3 schemas:
 #### lockrow
 
 - **Type**: function
-- **Arguments**: text, text, text, text
+- **Arguments**: text, text, text
 - **Returns**: integer
 
 #### longtransactionsenabled
 
 - **Type**: function
 - **Arguments**: 
-- **Returns**: boolean
-
-#### overlaps_2d
-
-- **Type**: function
-- **Arguments**: box2df, geometry
 - **Returns**: boolean
 
 #### overlaps_2d
@@ -4142,6 +4205,12 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: function
 - **Arguments**: box2df, box2df
+- **Returns**: boolean
+
+#### overlaps_2d
+
+- **Type**: function
+- **Arguments**: box2df, geometry
 - **Returns**: boolean
 
 #### overlaps_geog
@@ -4165,7 +4234,7 @@ This database contains **111 tables** across 3 schemas:
 #### overlaps_nd
 
 - **Type**: function
-- **Arguments**: gidx, geometry
+- **Arguments**: gidx, gidx
 - **Returns**: boolean
 
 #### overlaps_nd
@@ -4177,7 +4246,7 @@ This database contains **111 tables** across 3 schemas:
 #### overlaps_nd
 
 - **Type**: function
-- **Arguments**: gidx, gidx
+- **Arguments**: gidx, geometry
 - **Returns**: boolean
 
 #### path
@@ -4201,13 +4270,13 @@ This database contains **111 tables** across 3 schemas:
 #### pgis_asflatgeobuf_transfn
 
 - **Type**: function
-- **Arguments**: internal, anyelement
+- **Arguments**: internal, anyelement, boolean
 - **Returns**: internal
 
 #### pgis_asflatgeobuf_transfn
 
 - **Type**: function
-- **Arguments**: internal, anyelement, boolean
+- **Arguments**: internal, anyelement
 - **Returns**: internal
 
 #### pgis_asgeobuf_finalfn
@@ -4219,13 +4288,13 @@ This database contains **111 tables** across 3 schemas:
 #### pgis_asgeobuf_transfn
 
 - **Type**: function
-- **Arguments**: internal, anyelement, text
+- **Arguments**: internal, anyelement
 - **Returns**: internal
 
 #### pgis_asgeobuf_transfn
 
 - **Type**: function
-- **Arguments**: internal, anyelement
+- **Arguments**: internal, anyelement, text
 - **Returns**: internal
 
 #### pgis_asmvt_combinefn
@@ -4255,18 +4324,6 @@ This database contains **111 tables** across 3 schemas:
 #### pgis_asmvt_transfn
 
 - **Type**: function
-- **Arguments**: internal, anyelement, text, integer, text
-- **Returns**: internal
-
-#### pgis_asmvt_transfn
-
-- **Type**: function
-- **Arguments**: internal, anyelement, text, integer
-- **Returns**: internal
-
-#### pgis_asmvt_transfn
-
-- **Type**: function
 - **Arguments**: internal, anyelement
 - **Returns**: internal
 
@@ -4280,6 +4337,18 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: function
 - **Arguments**: internal, anyelement, text, integer, text, text
+- **Returns**: internal
+
+#### pgis_asmvt_transfn
+
+- **Type**: function
+- **Arguments**: internal, anyelement, text, integer
+- **Returns**: internal
+
+#### pgis_asmvt_transfn
+
+- **Type**: function
+- **Arguments**: internal, anyelement, text, integer, text
 - **Returns**: internal
 
 #### pgis_geometry_accum_transfn
@@ -4381,14 +4450,14 @@ This database contains **111 tables** across 3 schemas:
 #### populate_geometry_columns
 
 - **Type**: function
-- **Arguments**: use_typmod boolean DEFAULT true
-- **Returns**: text
+- **Arguments**: tbl_oid oid, use_typmod boolean DEFAULT true
+- **Returns**: integer
 
 #### populate_geometry_columns
 
 - **Type**: function
-- **Arguments**: tbl_oid oid, use_typmod boolean DEFAULT true
-- **Returns**: integer
+- **Arguments**: use_typmod boolean DEFAULT true
+- **Returns**: text
 
 #### postgis_addbbox
 
@@ -4777,13 +4846,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_area
 
 - **Type**: function
-- **Arguments**: geog geography, use_spheroid boolean DEFAULT true
+- **Arguments**: geometry
 - **Returns**: double precision
 
 #### st_area
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: geog geography, use_spheroid boolean DEFAULT true
 - **Returns**: double precision
 
 #### st_area2d
@@ -4801,12 +4870,6 @@ This database contains **111 tables** across 3 schemas:
 #### st_asbinary
 
 - **Type**: function
-- **Arguments**: geography, text
-- **Returns**: bytea
-
-#### st_asbinary
-
-- **Type**: function
 - **Arguments**: geometry, text
 - **Returns**: bytea
 
@@ -4814,6 +4877,12 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: function
 - **Arguments**: geometry
+- **Returns**: bytea
+
+#### st_asbinary
+
+- **Type**: function
+- **Arguments**: geography, text
 - **Returns**: bytea
 
 #### st_asencodedpolyline
@@ -4837,19 +4906,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_asewkt
 
 - **Type**: function
-- **Arguments**: geometry
-- **Returns**: text
-
-#### st_asewkt
-
-- **Type**: function
 - **Arguments**: geometry, integer
 - **Returns**: text
 
 #### st_asewkt
 
 - **Type**: function
-- **Arguments**: geography
+- **Arguments**: text
 - **Returns**: text
 
 #### st_asewkt
@@ -4861,8 +4924,20 @@ This database contains **111 tables** across 3 schemas:
 #### st_asewkt
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: geography
 - **Returns**: text
+
+#### st_asewkt
+
+- **Type**: function
+- **Arguments**: geometry
+- **Returns**: text
+
+#### st_asflatgeobuf
+
+- **Type**: aggregate
+- **Arguments**: anyelement, boolean, text
+- **Returns**: bytea
 
 #### st_asflatgeobuf
 
@@ -4874,12 +4949,6 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: aggregate
 - **Arguments**: anyelement
-- **Returns**: bytea
-
-#### st_asflatgeobuf
-
-- **Type**: aggregate
-- **Arguments**: anyelement, boolean, text
 - **Returns**: bytea
 
 #### st_asgeobuf
@@ -4897,7 +4966,7 @@ This database contains **111 tables** across 3 schemas:
 #### st_asgeojson
 
 - **Type**: function
-- **Arguments**: geom geometry, maxdecimaldigits integer DEFAULT 9, options integer DEFAULT 8
+- **Arguments**: text
 - **Returns**: text
 
 #### st_asgeojson
@@ -4909,31 +4978,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_asgeojson
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: geom geometry, maxdecimaldigits integer DEFAULT 9, options integer DEFAULT 8
 - **Returns**: text
 
 #### st_asgeojson
 
 - **Type**: function
 - **Arguments**: r record, geom_column text DEFAULT ''::text, maxdecimaldigits integer DEFAULT 9, pretty_bool boolean DEFAULT false
-- **Returns**: text
-
-#### st_asgml
-
-- **Type**: function
-- **Arguments**: geom geometry, maxdecimaldigits integer DEFAULT 15, options integer DEFAULT 0
-- **Returns**: text
-
-#### st_asgml
-
-- **Type**: function
-- **Arguments**: text
-- **Returns**: text
-
-#### st_asgml
-
-- **Type**: function
-- **Arguments**: version integer, geog geography, maxdecimaldigits integer DEFAULT 15, options integer DEFAULT 0, nprefix text DEFAULT 'gml'::text, id text DEFAULT ''::text
 - **Returns**: text
 
 #### st_asgml
@@ -4948,16 +4999,34 @@ This database contains **111 tables** across 3 schemas:
 - **Arguments**: version integer, geom geometry, maxdecimaldigits integer DEFAULT 15, options integer DEFAULT 0, nprefix text DEFAULT NULL::text, id text DEFAULT NULL::text
 - **Returns**: text
 
-#### st_ashexewkb
+#### st_asgml
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: geom geometry, maxdecimaldigits integer DEFAULT 15, options integer DEFAULT 0
+- **Returns**: text
+
+#### st_asgml
+
+- **Type**: function
+- **Arguments**: version integer, geog geography, maxdecimaldigits integer DEFAULT 15, options integer DEFAULT 0, nprefix text DEFAULT 'gml'::text, id text DEFAULT ''::text
+- **Returns**: text
+
+#### st_asgml
+
+- **Type**: function
+- **Arguments**: text
 - **Returns**: text
 
 #### st_ashexewkb
 
 - **Type**: function
 - **Arguments**: geometry, text
+- **Returns**: text
+
+#### st_ashexewkb
+
+- **Type**: function
+- **Arguments**: geometry
 - **Returns**: text
 
 #### st_askml
@@ -4999,25 +5068,25 @@ This database contains **111 tables** across 3 schemas:
 #### st_asmvt
 
 - **Type**: aggregate
-- **Arguments**: anyelement
-- **Returns**: bytea
-
-#### st_asmvt
-
-- **Type**: aggregate
-- **Arguments**: anyelement, text, integer, text, text
-- **Returns**: bytea
-
-#### st_asmvt
-
-- **Type**: aggregate
 - **Arguments**: anyelement, text, integer
 - **Returns**: bytea
 
 #### st_asmvt
 
 - **Type**: aggregate
+- **Arguments**: anyelement
+- **Returns**: bytea
+
+#### st_asmvt
+
+- **Type**: aggregate
 - **Arguments**: anyelement, text, integer, text
+- **Returns**: bytea
+
+#### st_asmvt
+
+- **Type**: aggregate
+- **Arguments**: anyelement, text, integer, text, text
 - **Returns**: bytea
 
 #### st_asmvtgeom
@@ -5035,19 +5104,19 @@ This database contains **111 tables** across 3 schemas:
 #### st_assvg
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: geog geography, rel integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15
 - **Returns**: text
 
 #### st_assvg
 
 - **Type**: function
-- **Arguments**: geog geography, rel integer DEFAULT 0, maxdecimaldigits integer DEFAULT 15
+- **Arguments**: text
 - **Returns**: text
 
 #### st_astext
 
 - **Type**: function
-- **Arguments**: geography, integer
+- **Arguments**: geometry
 - **Returns**: text
 
 #### st_astext
@@ -5065,25 +5134,25 @@ This database contains **111 tables** across 3 schemas:
 #### st_astext
 
 - **Type**: function
-- **Arguments**: geometry, integer
+- **Arguments**: geography, integer
 - **Returns**: text
 
 #### st_astext
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: geometry, integer
 - **Returns**: text
 
 #### st_astwkb
 
 - **Type**: function
-- **Arguments**: geom geometry, prec integer DEFAULT NULL::integer, prec_z integer DEFAULT NULL::integer, prec_m integer DEFAULT NULL::integer, with_sizes boolean DEFAULT NULL::boolean, with_boxes boolean DEFAULT NULL::boolean
+- **Arguments**: geom geometry[], ids bigint[], prec integer DEFAULT NULL::integer, prec_z integer DEFAULT NULL::integer, prec_m integer DEFAULT NULL::integer, with_sizes boolean DEFAULT NULL::boolean, with_boxes boolean DEFAULT NULL::boolean
 - **Returns**: bytea
 
 #### st_astwkb
 
 - **Type**: function
-- **Arguments**: geom geometry[], ids bigint[], prec integer DEFAULT NULL::integer, prec_z integer DEFAULT NULL::integer, prec_m integer DEFAULT NULL::integer, with_sizes boolean DEFAULT NULL::boolean, with_boxes boolean DEFAULT NULL::boolean
+- **Arguments**: geom geometry, prec integer DEFAULT NULL::integer, prec_z integer DEFAULT NULL::integer, prec_m integer DEFAULT NULL::integer, with_sizes boolean DEFAULT NULL::boolean, with_boxes boolean DEFAULT NULL::boolean
 - **Returns**: bytea
 
 #### st_asx3d
@@ -5191,14 +5260,14 @@ This database contains **111 tables** across 3 schemas:
 #### st_centroid
 
 - **Type**: function
-- **Arguments**: text
-- **Returns**: geometry
+- **Arguments**: geography, use_spheroid boolean DEFAULT true
+- **Returns**: geography
 
 #### st_centroid
 
 - **Type**: function
-- **Arguments**: geography, use_spheroid boolean DEFAULT true
-- **Returns**: geography
+- **Arguments**: text
+- **Returns**: geometry
 
 #### st_centroid
 
@@ -5244,14 +5313,14 @@ This database contains **111 tables** across 3 schemas:
 
 #### st_clusterintersecting
 
-- **Type**: function
-- **Arguments**: geometry[]
+- **Type**: aggregate
+- **Arguments**: geometry
 - **Returns**: geometry[]
 
 #### st_clusterintersecting
 
-- **Type**: aggregate
-- **Arguments**: geometry
+- **Type**: function
+- **Arguments**: geometry[]
 - **Returns**: geometry[]
 
 #### st_clusterkmeans
@@ -5274,14 +5343,14 @@ This database contains **111 tables** across 3 schemas:
 
 #### st_collect
 
-- **Type**: aggregate
-- **Arguments**: geometry
+- **Type**: function
+- **Arguments**: geom1 geometry, geom2 geometry
 - **Returns**: geometry
 
 #### st_collect
 
-- **Type**: function
-- **Arguments**: geom1 geometry, geom2 geometry
+- **Type**: aggregate
+- **Arguments**: geometry
 - **Returns**: geometry
 
 #### st_collect
@@ -5311,6 +5380,12 @@ This database contains **111 tables** across 3 schemas:
 #### st_combinebbox
 
 - **Type**: function
+- **Arguments**: box2d, geometry
+- **Returns**: box2d
+
+#### st_combinebbox
+
+- **Type**: function
 - **Arguments**: box3d, geometry
 - **Returns**: box3d
 
@@ -5319,12 +5394,6 @@ This database contains **111 tables** across 3 schemas:
 - **Type**: function
 - **Arguments**: box3d, box3d
 - **Returns**: box3d
-
-#### st_combinebbox
-
-- **Type**: function
-- **Arguments**: box2d, geometry
-- **Returns**: box2d
 
 #### st_concavehull
 
@@ -5359,13 +5428,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_coveredby
 
 - **Type**: function
-- **Arguments**: text, text
+- **Arguments**: geog1 geography, geog2 geography
 - **Returns**: boolean
 
 #### st_coveredby
 
 - **Type**: function
-- **Arguments**: geog1 geography, geog2 geography
+- **Arguments**: text, text
 - **Returns**: boolean
 
 #### st_coveredby
@@ -5377,7 +5446,7 @@ This database contains **111 tables** across 3 schemas:
 #### st_covers
 
 - **Type**: function
-- **Arguments**: geog1 geography, geog2 geography
+- **Arguments**: text, text
 - **Returns**: boolean
 
 #### st_covers
@@ -5389,7 +5458,7 @@ This database contains **111 tables** across 3 schemas:
 #### st_covers
 
 - **Type**: function
-- **Arguments**: text, text
+- **Arguments**: geog1 geography, geog2 geography
 - **Returns**: boolean
 
 #### st_cpawithin
@@ -5443,13 +5512,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_distance
 
 - **Type**: function
-- **Arguments**: geom1 geometry, geom2 geometry
+- **Arguments**: geog1 geography, geog2 geography, use_spheroid boolean DEFAULT true
 - **Returns**: double precision
 
 #### st_distance
 
 - **Type**: function
-- **Arguments**: geog1 geography, geog2 geography, use_spheroid boolean DEFAULT true
+- **Arguments**: geom1 geometry, geom2 geometry
 - **Returns**: double precision
 
 #### st_distance
@@ -5479,13 +5548,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_distancespheroid
 
 - **Type**: function
-- **Arguments**: geom1 geometry, geom2 geometry
+- **Arguments**: geom1 geometry, geom2 geometry, spheroid
 - **Returns**: double precision
 
 #### st_distancespheroid
 
 - **Type**: function
-- **Arguments**: geom1 geometry, geom2 geometry, spheroid
+- **Arguments**: geom1 geometry, geom2 geometry
 - **Returns**: double precision
 
 #### st_dump
@@ -5515,12 +5584,6 @@ This database contains **111 tables** across 3 schemas:
 #### st_dwithin
 
 - **Type**: function
-- **Arguments**: text, text, double precision
-- **Returns**: boolean
-
-#### st_dwithin
-
-- **Type**: function
 - **Arguments**: geog1 geography, geog2 geography, tolerance double precision, use_spheroid boolean DEFAULT true
 - **Returns**: boolean
 
@@ -5528,6 +5591,12 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: function
 - **Arguments**: geom1 geometry, geom2 geometry, double precision
+- **Returns**: boolean
+
+#### st_dwithin
+
+- **Type**: function
+- **Arguments**: text, text, double precision
 - **Returns**: boolean
 
 #### st_endpoint
@@ -5551,6 +5620,12 @@ This database contains **111 tables** across 3 schemas:
 #### st_estimatedextent
 
 - **Type**: function
+- **Arguments**: text, text, text, boolean
+- **Returns**: box2d
+
+#### st_estimatedextent
+
+- **Type**: function
 - **Arguments**: text, text, text
 - **Returns**: box2d
 
@@ -5560,11 +5635,11 @@ This database contains **111 tables** across 3 schemas:
 - **Arguments**: text, text
 - **Returns**: box2d
 
-#### st_estimatedextent
+#### st_expand
 
 - **Type**: function
-- **Arguments**: text, text, text, boolean
-- **Returns**: box2d
+- **Arguments**: geom geometry, dx double precision, dy double precision, dz double precision DEFAULT 0, dm double precision DEFAULT 0
+- **Returns**: geometry
 
 #### st_expand
 
@@ -5581,14 +5656,8 @@ This database contains **111 tables** across 3 schemas:
 #### st_expand
 
 - **Type**: function
-- **Arguments**: box box3d, dx double precision, dy double precision, dz double precision DEFAULT 0
+- **Arguments**: box3d, double precision
 - **Returns**: box3d
-
-#### st_expand
-
-- **Type**: function
-- **Arguments**: geom geometry, dx double precision, dy double precision, dz double precision DEFAULT 0, dm double precision DEFAULT 0
-- **Returns**: geometry
 
 #### st_expand
 
@@ -5599,7 +5668,7 @@ This database contains **111 tables** across 3 schemas:
 #### st_expand
 
 - **Type**: function
-- **Arguments**: box3d, double precision
+- **Arguments**: box box3d, dx double precision, dy double precision, dz double precision DEFAULT 0
 - **Returns**: box3d
 
 #### st_extent
@@ -5785,13 +5854,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_geomcollfromwkb
 
 - **Type**: function
-- **Arguments**: bytea
+- **Arguments**: bytea, integer
 - **Returns**: geometry
 
 #### st_geomcollfromwkb
 
 - **Type**: function
-- **Arguments**: bytea, integer
+- **Arguments**: bytea
 - **Returns**: geometry
 
 #### st_geometricmedian
@@ -5803,13 +5872,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_geometryfromtext
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_geometryfromtext
 
 - **Type**: function
-- **Arguments**: text, integer
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_geometryn
@@ -5845,6 +5914,12 @@ This database contains **111 tables** across 3 schemas:
 #### st_geomfromgeojson
 
 - **Type**: function
+- **Arguments**: text
+- **Returns**: geometry
+
+#### st_geomfromgeojson
+
+- **Type**: function
 - **Arguments**: json
 - **Returns**: geometry
 
@@ -5854,22 +5929,16 @@ This database contains **111 tables** across 3 schemas:
 - **Arguments**: jsonb
 - **Returns**: geometry
 
-#### st_geomfromgeojson
-
-- **Type**: function
-- **Arguments**: text
-- **Returns**: geometry
-
-#### st_geomfromgml
-
-- **Type**: function
-- **Arguments**: text
-- **Returns**: geometry
-
 #### st_geomfromgml
 
 - **Type**: function
 - **Arguments**: text, integer
+- **Returns**: geometry
+
+#### st_geomfromgml
+
+- **Type**: function
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_geomfromkml
@@ -5887,13 +5956,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_geomfromtext
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_geomfromtext
 
 - **Type**: function
-- **Arguments**: text, integer
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_geomfromtwkb
@@ -5917,13 +5986,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_gmltosql
 
 - **Type**: function
-- **Arguments**: text, integer
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_gmltosql
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_hasarc
@@ -5989,6 +6058,12 @@ This database contains **111 tables** across 3 schemas:
 #### st_intersects
 
 - **Type**: function
+- **Arguments**: text, text
+- **Returns**: boolean
+
+#### st_intersects
+
+- **Type**: function
 - **Arguments**: geom1 geometry, geom2 geometry
 - **Returns**: boolean
 
@@ -5996,12 +6071,6 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: function
 - **Arguments**: geog1 geography, geog2 geography
-- **Returns**: boolean
-
-#### st_intersects
-
-- **Type**: function
-- **Arguments**: text, text
 - **Returns**: boolean
 
 #### st_isclosed
@@ -6085,13 +6154,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_length
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: geog geography, use_spheroid boolean DEFAULT true
 - **Returns**: double precision
 
 #### st_length
 
 - **Type**: function
-- **Arguments**: geog geography, use_spheroid boolean DEFAULT true
+- **Arguments**: geometry
 - **Returns**: double precision
 
 #### st_length
@@ -6145,25 +6214,25 @@ This database contains **111 tables** across 3 schemas:
 #### st_linefromtext
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_linefromtext
 
 - **Type**: function
-- **Arguments**: text, integer
-- **Returns**: geometry
-
-#### st_linefromwkb
-
-- **Type**: function
-- **Arguments**: bytea, integer
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_linefromwkb
 
 - **Type**: function
 - **Arguments**: bytea
+- **Returns**: geometry
+
+#### st_linefromwkb
+
+- **Type**: function
+- **Arguments**: bytea, integer
 - **Returns**: geometry
 
 #### st_lineinterpolatepoint
@@ -6187,25 +6256,25 @@ This database contains **111 tables** across 3 schemas:
 #### st_linemerge
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: geometry, boolean
 - **Returns**: geometry
 
 #### st_linemerge
 
 - **Type**: function
-- **Arguments**: geometry, boolean
-- **Returns**: geometry
-
-#### st_linestringfromwkb
-
-- **Type**: function
-- **Arguments**: bytea
+- **Arguments**: geometry
 - **Returns**: geometry
 
 #### st_linestringfromwkb
 
 - **Type**: function
 - **Arguments**: bytea, integer
+- **Returns**: geometry
+
+#### st_linestringfromwkb
+
+- **Type**: function
+- **Arguments**: bytea
 - **Returns**: geometry
 
 #### st_linesubstring
@@ -6283,13 +6352,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_makepoint
 
 - **Type**: function
-- **Arguments**: double precision, double precision, double precision, double precision
+- **Arguments**: double precision, double precision, double precision
 - **Returns**: geometry
 
 #### st_makepoint
 
 - **Type**: function
-- **Arguments**: double precision, double precision, double precision
+- **Arguments**: double precision, double precision, double precision, double precision
 - **Returns**: geometry
 
 #### st_makepoint
@@ -6319,13 +6388,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_makevalid
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: geom geometry, params text
 - **Returns**: geometry
 
 #### st_makevalid
 
 - **Type**: function
-- **Arguments**: geom geometry, params text
+- **Arguments**: geometry
 - **Returns**: geometry
 
 #### st_maxdistance
@@ -6433,25 +6502,25 @@ This database contains **111 tables** across 3 schemas:
 #### st_mpolyfromtext
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_mpolyfromtext
 
 - **Type**: function
-- **Arguments**: text, integer
-- **Returns**: geometry
-
-#### st_mpolyfromwkb
-
-- **Type**: function
-- **Arguments**: bytea, integer
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_mpolyfromwkb
 
 - **Type**: function
 - **Arguments**: bytea
+- **Returns**: geometry
+
+#### st_mpolyfromwkb
+
+- **Type**: function
+- **Arguments**: bytea, integer
 - **Returns**: geometry
 
 #### st_multi
@@ -6469,13 +6538,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_multilinestringfromtext
 
 - **Type**: function
-- **Arguments**: text, integer
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_multilinestringfromtext
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_multipointfromtext
@@ -6511,13 +6580,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_multipolygonfromtext
 
 - **Type**: function
-- **Arguments**: text, integer
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_multipolygonfromtext
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_ndims
@@ -6715,13 +6784,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_polyfromtext
 
 - **Type**: function
-- **Arguments**: text, integer
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_polyfromtext
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_polyfromwkb
@@ -6745,19 +6814,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_polygonfromtext
 
 - **Type**: function
-- **Arguments**: text
+- **Arguments**: text, integer
 - **Returns**: geometry
 
 #### st_polygonfromtext
 
 - **Type**: function
-- **Arguments**: text, integer
-- **Returns**: geometry
-
-#### st_polygonfromwkb
-
-- **Type**: function
-- **Arguments**: bytea
+- **Arguments**: text
 - **Returns**: geometry
 
 #### st_polygonfromwkb
@@ -6766,16 +6829,22 @@ This database contains **111 tables** across 3 schemas:
 - **Arguments**: bytea, integer
 - **Returns**: geometry
 
-#### st_polygonize
+#### st_polygonfromwkb
 
 - **Type**: function
-- **Arguments**: geometry[]
+- **Arguments**: bytea
 - **Returns**: geometry
 
 #### st_polygonize
 
 - **Type**: aggregate
 - **Arguments**: geometry
+- **Returns**: geometry
+
+#### st_polygonize
+
+- **Type**: function
+- **Arguments**: geometry[]
 - **Returns**: geometry
 
 #### st_project
@@ -6841,7 +6910,7 @@ This database contains **111 tables** across 3 schemas:
 #### st_rotate
 
 - **Type**: function
-- **Arguments**: geometry, double precision
+- **Arguments**: geometry, double precision, geometry
 - **Returns**: geometry
 
 #### st_rotate
@@ -6853,7 +6922,7 @@ This database contains **111 tables** across 3 schemas:
 #### st_rotate
 
 - **Type**: function
-- **Arguments**: geometry, double precision, geometry
+- **Arguments**: geometry, double precision
 - **Returns**: geometry
 
 #### st_rotatex
@@ -6877,6 +6946,12 @@ This database contains **111 tables** across 3 schemas:
 #### st_scale
 
 - **Type**: function
+- **Arguments**: geometry, geometry, origin geometry
+- **Returns**: geometry
+
+#### st_scale
+
+- **Type**: function
 - **Arguments**: geometry, double precision, double precision, double precision
 - **Returns**: geometry
 
@@ -6884,12 +6959,6 @@ This database contains **111 tables** across 3 schemas:
 
 - **Type**: function
 - **Arguments**: geometry, geometry
-- **Returns**: geometry
-
-#### st_scale
-
-- **Type**: function
-- **Arguments**: geometry, geometry, origin geometry
 - **Returns**: geometry
 
 #### st_scale
@@ -6931,14 +7000,14 @@ This database contains **111 tables** across 3 schemas:
 #### st_setsrid
 
 - **Type**: function
-- **Arguments**: geom geometry, srid integer
-- **Returns**: geometry
+- **Arguments**: geog geography, srid integer
+- **Returns**: geography
 
 #### st_setsrid
 
 - **Type**: function
-- **Arguments**: geog geography, srid integer
-- **Returns**: geography
+- **Arguments**: geom geometry, srid integer
+- **Returns**: geometry
 
 #### st_sharedpaths
 
@@ -6997,13 +7066,7 @@ This database contains **111 tables** across 3 schemas:
 #### st_snaptogrid
 
 - **Type**: function
-- **Arguments**: geom1 geometry, geom2 geometry, double precision, double precision, double precision, double precision
-- **Returns**: geometry
-
-#### st_snaptogrid
-
-- **Type**: function
-- **Arguments**: geometry, double precision
+- **Arguments**: geometry, double precision, double precision, double precision, double precision
 - **Returns**: geometry
 
 #### st_snaptogrid
@@ -7015,7 +7078,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_snaptogrid
 
 - **Type**: function
-- **Arguments**: geometry, double precision, double precision, double precision, double precision
+- **Arguments**: geometry, double precision
+- **Returns**: geometry
+
+#### st_snaptogrid
+
+- **Type**: function
+- **Arguments**: geom1 geometry, geom2 geometry, double precision, double precision, double precision, double precision
 - **Returns**: geometry
 
 #### st_split
@@ -7063,13 +7132,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_summary
 
 - **Type**: function
-- **Arguments**: geography
+- **Arguments**: geometry
 - **Returns**: text
 
 #### st_summary
 
 - **Type**: function
-- **Arguments**: geometry
+- **Arguments**: geography
 - **Returns**: text
 
 #### st_swapordinates
@@ -7117,25 +7186,25 @@ This database contains **111 tables** across 3 schemas:
 #### st_transform
 
 - **Type**: function
-- **Arguments**: geom geometry, from_proj text, to_proj text
+- **Arguments**: geom geometry, from_proj text, to_srid integer
 - **Returns**: geometry
 
 #### st_transform
 
 - **Type**: function
-- **Arguments**: geom geometry, from_proj text, to_srid integer
-- **Returns**: geometry
-
-#### st_translate
-
-- **Type**: function
-- **Arguments**: geometry, double precision, double precision
+- **Arguments**: geom geometry, from_proj text, to_proj text
 - **Returns**: geometry
 
 #### st_translate
 
 - **Type**: function
 - **Arguments**: geometry, double precision, double precision, double precision
+- **Returns**: geometry
+
+#### st_translate
+
+- **Type**: function
+- **Arguments**: geometry, double precision, double precision
 - **Returns**: geometry
 
 #### st_transscale
@@ -7177,13 +7246,13 @@ This database contains **111 tables** across 3 schemas:
 #### st_union
 
 - **Type**: aggregate
-- **Arguments**: geometry
+- **Arguments**: geometry, gridsize double precision
 - **Returns**: geometry
 
 #### st_union
 
 - **Type**: aggregate
-- **Arguments**: geometry, gridsize double precision
+- **Arguments**: geometry
 - **Returns**: geometry
 
 #### st_voronoilines
@@ -7282,6 +7351,18 @@ This database contains **111 tables** across 3 schemas:
 - **Arguments**: box3d
 - **Returns**: double precision
 
+#### testlab_create_run
+
+- **Type**: function
+- **Arguments**: p_scenario_id uuid, p_run_by uuid
+- **Returns**: uuid
+
+#### testlab_log_record
+
+- **Type**: function
+- **Arguments**: p_run_id uuid, p_scenario_id uuid, p_table_name text, p_record_id uuid, p_created_by uuid, p_table_id text DEFAULT NULL::text
+- **Returns**: void
+
 #### text
 
 - **Type**: function
@@ -7297,7 +7378,7 @@ This database contains **111 tables** across 3 schemas:
 #### updategeometrysrid
 
 - **Type**: function
-- **Arguments**: character varying, character varying, character varying, integer
+- **Arguments**: character varying, character varying, integer
 - **Returns**: text
 
 #### updategeometrysrid
@@ -7309,7 +7390,7 @@ This database contains **111 tables** across 3 schemas:
 #### updategeometrysrid
 
 - **Type**: function
-- **Arguments**: character varying, character varying, integer
+- **Arguments**: character varying, character varying, character varying, integer
 - **Returns**: text
 
 #### upsert_user_profile
@@ -7321,13 +7402,13 @@ This database contains **111 tables** across 3 schemas:
 #### upsert_user_profile_by_email
 
 - **Type**: function
-- **Arguments**: p_email text, p_role_code text, p_app_code text
+- **Arguments**: p_email text, p_role_code text, p_app_code text, p_first_name text, p_last_name text, p_phone text
 - **Returns**: void
 
 #### upsert_user_profile_by_email
 
 - **Type**: function
-- **Arguments**: p_email text, p_role_code text, p_app_code text, p_first_name text, p_last_name text, p_phone text
+- **Arguments**: p_email text, p_role_code text, p_app_code text
 - **Returns**: void
 
 #### user_can_access_table
@@ -7459,6 +7540,7 @@ This database contains **111 tables** across 3 schemas:
 | `plan_sets__files` | `trg_plan_set_files_updated_at` | UPDATE | BEFORE |
 | `plan_sets__files` | `trg_plan_sets__files__set_updated_at` | UPDATE | BEFORE |
 | `plan_sets_document_review_field` | `trg_plan_sets_document_review_field__set_updated_at` | UPDATE | BEFORE |
+| `plan_sets_file_types` | `trg_plan_sets_file_types__set_updated_at` | UPDATE | BEFORE |
 | `plan_sets_type_field` | `trg_plan_sets_type_field__set_updated_at` | UPDATE | BEFORE |
 | `plan_sets_working_set_field` | `trg_plan_sets_working_set_field__set_updated_at` | UPDATE | BEFORE |
 | `price_list` | `trg_price_list__set_updated_at` | UPDATE | BEFORE |
@@ -7480,8 +7562,8 @@ This database contains **111 tables** across 3 schemas:
 | `projects__services` | `trg_projects__services__set_updated_at` | UPDATE | BEFORE |
 | `quotes` | `trg_quotes__set_updated_at` | UPDATE | BEFORE |
 | `quotes_status_field` | `trg_quotes_status_field__set_updated_at` | UPDATE | BEFORE |
-| `rls_permissions` | `trg_rls_permissions__audit` | UPDATE | AFTER |
 | `rls_permissions` | `trg_rls_permissions__audit` | DELETE | AFTER |
+| `rls_permissions` | `trg_rls_permissions__audit` | UPDATE | AFTER |
 | `rls_permissions` | `trg_rls_permissions__audit` | INSERT | AFTER |
 | `roles` | `trg_roles__set_updated_at` | UPDATE | BEFORE |
 | `services` | `trg_services__set_updated_at` | UPDATE | BEFORE |
@@ -7493,17 +7575,16 @@ This database contains **111 tables** across 3 schemas:
 | `user_profiles` | `trg_ensure_contact_for_user_profile` | INSERT | BEFORE |
 | `user_profiles` | `trg_user_profiles__set_updated_at` | UPDATE | BEFORE |
 | `user_profiles_status_field` | `trg_user_profiles_status_field__set_updated_at` | UPDATE | BEFORE |
-| `z_junction_plan_sets_files_file_type_field` | `trg_z_junction_plan_sets_files_file_type_field__set_updated_at` | UPDATE | BEFORE |
 
 ---
 
 ## Summary Statistics
 
-- **Total Tables**: 111
-- **Public Schema Tables**: 111
+- **Total Tables**: 115
+- **Public Schema Tables**: 115
 - **Auth Schema Tables**: 0
 - **Storage Schema Tables**: 0
-- **Custom Functions**: 770
+- **Custom Functions**: 772
 - **Triggers**: 126
 - **Extensions Installed**: 6
 
@@ -7512,13 +7593,14 @@ This database contains **111 tables** across 3 schemas:
 ## Notes
 
 1. This schema uses Row Level Security (RLS) extensively for data access control.
-2. Many tables use UUID primary keys generated with `gen_random_uuid()`.
+2. Many tables use UUID primary keys generated with `uuid_v7()` or `gen_random_uuid()`.
 3. Timestamps use `timestamp with time zone` (timestamptz) for timezone-aware storage.
-4. The schema includes comprehensive audit trails via `rlspermissions_audit` table.
-5. Junction tables use the `zJunction_` prefix for many-to-many relationships.
-6. Reference/lookup tables often use the `_Field` suffix.
-7. This schema reflects the standardized naming conventions after the migration on 2025-11-12.
+4. The schema includes comprehensive audit trails via `rls_permissions_audit` table.
+5. Junction tables use snake_case naming (e.g., `companies__contacts`).
+6. Reference/lookup tables often use the `_field` suffix.
+7. This schema reflects the standardized naming conventions after the migration on 2025-11-13.
 8. Standardized fields include `created_at`, `created_by`, `updated_at`, `updated_by` across relevant tables.
+9. Soft deletes are implemented using `deleted_at` timestamp fields.
 
 ---
 
