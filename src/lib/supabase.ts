@@ -38,3 +38,14 @@ export async function callEdgeFunction(functionName: string, body: any) {
   return data;
 }
 
+// Auth helper functions
+export async function getCurrentUser() {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
+
+export async function getCurrentSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+}
+

@@ -3,6 +3,7 @@ import { Menu, X } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Logo from './Logo';
 import ThemeToggle from '../ui/ThemeToggle';
+import { useAuth } from '../../context/AuthContext';
 
 import { useLocation } from 'react-router-dom';
 
@@ -22,8 +23,28 @@ function getTitleFromPath(pathname: string): string {
 
 export default function Layout({ children }: LayoutProps) {
   const location = useLocation();
+  const { user } = useAuth();
   const title = getTitleFromPath(location.pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Get user initials or email for header
+  const getUserDisplay = () => {
+    if (!user) return 'U';
+    
+    if (user.user_metadata?.full_name) {
+      const names = user.user_metadata.full_name.split(' ');
+      if (names.length >= 2) {
+        return `${names[0][0]}${names[1][0]}`.toUpperCase();
+      }
+      return names[0][0].toUpperCase();
+    }
+    
+    if (user.email) {
+      return user.email[0].toUpperCase();
+    }
+    
+    return 'U';
+  };
 
   return (
     <div className="flex h-screen bg-fcc-black">
@@ -67,7 +88,7 @@ export default function Layout({ children }: LayoutProps) {
             <ThemeToggle />
             <div className="hidden md:flex items-center space-x-2">
               <div className="w-8 h-8 bg-fcc-cyan rounded-full flex items-center justify-center text-fcc-white font-semibold text-sm">
-                JS
+                {getUserDisplay()}
               </div>
             </div>
           </div>

@@ -1,11 +1,15 @@
-import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, List, Trash2, TestTube } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, List, Trash2, TestTube, LogOut } from 'lucide-react';
 import Logo from './Logo';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -13,6 +17,51 @@ export default function Sidebar() {
     { path: '/runs', icon: List, label: 'History' },
     { path: '/purge', icon: Trash2, label: 'Purge Runs' },
   ];
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await signOut();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    } finally {
+      setSigningOut(false);
+    }
+  };
+
+  // Get user initials or email
+  const getUserDisplay = () => {
+    if (!user) return 'U';
+    
+    if (user.user_metadata?.full_name) {
+      const names = user.user_metadata.full_name.split(' ');
+      if (names.length >= 2) {
+        return `${names[0][0]}${names[1][0]}`.toUpperCase();
+      }
+      return names[0][0].toUpperCase();
+    }
+    
+    if (user.email) {
+      return user.email[0].toUpperCase();
+    }
+    
+    return 'U';
+  };
+
+  const getUserName = () => {
+    if (!user) return 'User';
+    
+    if (user.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    
+    if (user.email) {
+      return user.email;
+    }
+    
+    return 'User';
+  };
 
   return (
     <div
@@ -53,10 +102,33 @@ export default function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-fcc-divider">
-        <div className="w-8 h-8 bg-fcc-cyan rounded-full flex items-center justify-center text-fcc-white font-semibold text-sm">
-          JS
+      <div className="p-4 border-t border-fcc-divider space-y-2">
+        {/* User Profile */}
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-fcc-cyan rounded-full flex items-center justify-center text-fcc-white font-semibold text-sm flex-shrink-0">
+            {getUserDisplay()}
+          </div>
+          {isHovered && (
+            <span className="text-fcc-white text-sm whitespace-nowrap truncate">
+              {getUserName()}
+            </span>
+          )}
         </div>
+        
+        {/* Sign Out Button */}
+        {isHovered && (
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="w-full flex items-center space-x-3 py-2 px-4 rounded-lg text-fcc-white hover:bg-fcc-divider hover:text-fcc-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Sign Out"
+          >
+            <LogOut className="w-5 h-5 flex-shrink-0" />
+            <span className="whitespace-nowrap">
+              {signingOut ? 'Signing Out...' : 'Sign Out'}
+            </span>
+          </button>
+        )}
       </div>
     </div>
   );
