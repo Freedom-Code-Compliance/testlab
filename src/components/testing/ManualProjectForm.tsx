@@ -494,35 +494,20 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         run_id: newRunId,
         project_data: {
           ...formData,
-          phase_id: '2', // Intake phase
-          // Don't send service_ids here - we'll create junction records separately
-          // contact_id is included in formData and should be mapped to submitted_by_id by the edge function
+          // phase_id is set by the backend, don't send it
+          // contact_id is included in formData and will be mapped to submitted_by_id by the edge function
         },
+        service_ids: formData.service_ids, // Top-level array
         files: {}, // No files on initial creation
         mode: 'manual',
       });
 
-      // Create records in projects__services junction table
-      if (response.project_id && formData.service_ids.length > 0) {
-        const junctionRecords = formData.service_ids.map(serviceId => ({
-          project_id: response.project_id,
-          service_id: serviceId,
-        }));
-
-        const { error: junctionError } = await supabase
-          .from('projects__services')
-          .insert(junctionRecords);
-
-        if (junctionError) {
-          console.error('Error creating project services:', junctionError);
-          // Don't fail the whole operation, just log the error
-        }
-      }
-
       setResults(response);
       setProjectCreated(true);
-      if (response.project_id) {
-        setCreatedProjectId(response.project_id);
+      // Read project_id from either data.project_id or top-level project_id
+      const projectId = response.data?.project_id ?? response.project_id;
+      if (projectId) {
+        setCreatedProjectId(projectId);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to execute scenario');
