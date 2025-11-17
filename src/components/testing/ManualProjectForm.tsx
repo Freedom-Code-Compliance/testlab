@@ -203,21 +203,26 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    // Only add listener if suggestions are showing
+    if (showSuggestions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSuggestions]);
 
   // Handle address selection
   function handleAddressSelect(placeId: string, description?: string) {
+    // Close suggestions immediately and clear them
+    setShowSuggestions(false);
+    setSuggestions([]);
+    setAddressSelected(true);
+    
     if (!placesService) {
       // If placesService isn't ready, wait a bit and try again
       setTimeout(() => handleAddressSelect(placeId, description), 100);
       return;
     }
 
-    // Close suggestions immediately
-    setShowSuggestions(false);
-    
     // Update search field immediately with the selected description
     if (description) {
       setAddressSearch(description);
@@ -272,11 +277,8 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         }));
 
         setAddressSearch(place.formatted_address || description || addressLine1);
-        setAddressSelected(true);
       } else {
         console.error('Error fetching place details:', status);
-        // Even if details fail, mark as selected so user can manually enter
-        setAddressSelected(true);
       }
     });
   }
@@ -617,6 +619,14 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
                     e.preventDefault();
                     e.stopPropagation();
                     handleAddressSelect(suggestion.place_id, suggestion.description);
+                    // Blur the input to remove focus
+                    if (addressInputRef.current) {
+                      addressInputRef.current.blur();
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    // Prevent input from getting focus when clicking button
+                    e.preventDefault();
                   }}
                   className="w-full text-left px-4 py-2 text-fcc-white hover:bg-fcc-divider transition-colors"
                 >
