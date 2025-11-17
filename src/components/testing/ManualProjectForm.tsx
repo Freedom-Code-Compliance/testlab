@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase, createTestRun, callEdgeFunction } from '../../lib/supabase';
 import { 
   BuildingDepartment, 
@@ -20,7 +20,8 @@ interface ManualProjectFormProps {
   scenarioId: string;
 }
 
-const DEFAULT_COMPANY_ID = '79a05b0d-0f3b-404e-9fa3-ddbd13b37ad3';
+const DEFAULT_COMPANY_NAME = 'Josh Test Project Company 1';
+const DEFAULT_CONTACT_NAME = 'John Client';
 
 export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps) {
   const [loading, setLoading] = useState(false);
@@ -38,63 +39,315 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
     occupancy_id: '',
     construction_type_id: '',
     address_line1: '',
+    address_line2: '',
     city: '',
     state: 'FL',
     zipcode: '',
-    company_id: DEFAULT_COMPANY_ID,
+    company_id: '',
     contact_id: '',
   });
+
+  // Google Places state
+  const [addressSearch, setAddressSearch] = useState('');
+  const [autocompleteService, setAutocompleteService] = useState<google.maps.places.AutocompleteService | null>(null);
+  const [placesService, setPlacesService] = useState<google.maps.places.PlacesService | null>(null);
+  const [suggestions, setSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [addressSelected, setAddressSelected] = useState(false);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
 
   // Options
   const [buildingDepartments, setBuildingDepartments] = useState<BuildingDepartment[]>([]);
   const [projectTypes, setProjectTypes] = useState<ProjectType[]>([]);
-  const [occupancies, setOccupancies] = useState<Occupancy[]>([]);
-  const [constructionTypes, setConstructionTypes] = useState<ConstructionType[]>([]);
+  const [selectedConstructionType, setSelectedConstructionType] = useState<ConstructionType | null>(null);
+  const [selectedOccupancy, setSelectedOccupancy] = useState<Occupancy | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
 
   useEffect(() => {
     fetchOptions();
+    initializeGooglePlaces();
+    getUserLocation();
   }, []);
 
+  // Initialize Google Places API when script loads
+  useEffect(() => {
+    const checkGoogle = setInterval(() => {
+      if (window.google && window.google.maps && window.google.maps.places) {
+        const service = new google.maps.places.AutocompleteService();
+        setAutocompleteService(service);
+        
+        // Create a dummy div for PlacesService (it needs a div element)
+        const dummyDiv = document.createElement('div');
+        const places = new google.maps.places.PlacesService(dummyDiv);
+        setPlacesService(places);
+        clearInterval(checkGoogle);
+      }
+    }, 100);
+
+    return () => clearInterval(checkGoogle);
+  }, []);
+
+  // Get user's location for proximity-based suggestions
+  function getUserLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          console.warn('Could not get user location:', error);
+          // Default to Florida center if location unavailable
+          setUserLocation({ lat: 27.7663, lng: -82.6404 });
+        }
+      );
+    } else {
+      // Default to Florida center if geolocation not available
+      setUserLocation({ lat: 27.7663, lng: -82.6404 });
+    }
+  }
+
+  function initializeGooglePlaces() {
+    // Load Google Places API script if not already loaded
+    if (!window.google || !window.google.maps || !window.google.maps.places) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCYPEXUyBOcHqWh0xU2Dna-zcYJzebqQ6k&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        if (window.google && window.google.maps && window.google.maps.places) {
+          const service = new google.maps.places.AutocompleteService();
+          setAutocompleteService(service);
+          
+          const dummyDiv = document.createElement('div');
+          const places = new google.maps.places.PlacesService(dummyDiv);
+          setPlacesService(places);
+        }
+      };
+      document.head.appendChild(script);
+    }
+  }
+
+  // Handle address search input - only fetch if user is actively typing (not just selected)
+  useEffect(() => {
+    if (!addressSearch.trim() || !autocompleteService || !userLocation) {
+      // Don't clear suggestions if address is selected (user might want to see them again)
+      if (!addressSelected) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+      return;
+    }
+
+    // Only auto-fetch suggestions if address hasn't been selected yet
+    // This prevents auto-fetching while user is viewing selected address
+    if (addressSelected) {
+      return;
+    }
+
+    const request: google.maps.places.AutocompletionRequest = {
+      input: addressSearch,
+      location: new google.maps.LatLng(userLocation.lat, userLocation.lng),
+      radius: 50000, // 50km radius
+    };
+
+    autocompleteService.getPlacePredictions(request, (predictions, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+        setSuggestions(predictions);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    });
+  }, [addressSearch, autocompleteService, userLocation, addressSelected]);
+
+  // Function to fetch suggestions manually (when user focuses field)
+  function fetchAddressSuggestions() {
+    if (!addressSearch.trim() || !autocompleteService || !userLocation) {
+      return;
+    }
+
+    const request: google.maps.places.AutocompletionRequest = {
+      input: addressSearch,
+      location: new google.maps.LatLng(userLocation.lat, userLocation.lng),
+      radius: 50000, // 50km radius
+    };
+
+    autocompleteService.getPlacePredictions(request, (predictions, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+        setSuggestions(predictions);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    });
+  }
+
+  // Handle click outside suggestions
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        addressInputRef.current &&
+        !addressInputRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+
+    // Only add listener if suggestions are showing
+    if (showSuggestions) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showSuggestions]);
+
+  // Handle address selection
+  function handleAddressSelect(placeId: string, description?: string) {
+    // Close suggestions immediately and clear them
+    setShowSuggestions(false);
+    setSuggestions([]);
+    setAddressSelected(true);
+    
+    if (!placesService) {
+      // If placesService isn't ready, wait a bit and try again
+      setTimeout(() => handleAddressSelect(placeId, description), 100);
+      return;
+    }
+
+    // Update search field immediately with the selected description
+    if (description) {
+      setAddressSearch(description);
+    }
+
+    const request: google.maps.places.PlaceDetailsRequest = {
+      placeId,
+      fields: ['address_components', 'formatted_address'],
+    };
+
+    placesService.getDetails(request, (place, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+        const components = place.address_components || [];
+        
+        let addressLine1 = '';
+        let addressLine2 = '';
+        let city = '';
+        let state = '';
+        let zipcode = '';
+
+        components.forEach((component) => {
+          const types = component.types;
+
+          if (types.includes('street_number')) {
+            addressLine1 = component.long_name;
+          }
+          if (types.includes('route')) {
+            addressLine1 = addressLine1 ? `${addressLine1} ${component.long_name}` : component.long_name;
+          }
+          if (types.includes('subpremise')) {
+            addressLine2 = component.long_name;
+          }
+          if (types.includes('locality')) {
+            city = component.long_name;
+          }
+          if (types.includes('administrative_area_level_1')) {
+            state = component.short_name;
+          }
+          if (types.includes('postal_code')) {
+            zipcode = component.long_name;
+          }
+        });
+
+        // Update all fields at once
+        setFormData(prev => ({
+          ...prev,
+          address_line1: addressLine1,
+          address_line2: addressLine2,
+          city: city,
+          state: state || prev.state,
+          zipcode: zipcode,
+        }));
+
+        setAddressSearch(place.formatted_address || description || addressLine1);
+      } else {
+        console.error('Error fetching place details:', status);
+      }
+    });
+  }
+
+  // Fetch contacts when company changes
   useEffect(() => {
     if (formData.company_id) {
-      fetchContacts(formData.company_id);
+      fetchContacts(formData.company_id).then((contactList) => {
+        // After contacts are loaded, set default contact if this is the default company
+        const defaultCompany = companies.find(c => c.name === DEFAULT_COMPANY_NAME);
+        if (defaultCompany && formData.company_id === defaultCompany.id && contactList) {
+          // Find John Client in the contacts
+          const defaultContact = contactList.find((c: Contact) => 
+            c.name === DEFAULT_CONTACT_NAME || 
+            (c.first_name === 'John' && c.last_name === 'Client')
+          );
+          if (defaultContact && !formData.contact_id) {
+            setFormData(prev => ({ ...prev, contact_id: defaultContact.id }));
+          }
+        }
+      });
     } else {
       setContacts([]);
       setFormData(prev => ({ ...prev, contact_id: '' }));
     }
-  }, [formData.company_id]);
+  }, [formData.company_id, companies]);
+
+  // Fetch construction type and occupancy when project type changes
+  useEffect(() => {
+    if (formData.project_type_id) {
+      fetchProjectTypeDetails(formData.project_type_id);
+    } else {
+      setSelectedConstructionType(null);
+      setSelectedOccupancy(null);
+      setFormData(prev => ({ ...prev, construction_type_id: '', occupancy_id: '' }));
+    }
+  }, [formData.project_type_id]);
 
   async function fetchOptions() {
     try {
-      const [bdRes, ptRes, occRes, ctRes, compRes, fileTypesRes] = await Promise.all([
+      const [bdRes, ptRes, compRes, fileTypesRes] = await Promise.all([
         supabase.from('building_departments').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('project_types').select('id, name').is('deleted_at', null).order('name'),
-        supabase.from('occupancies').select('id, name').is('deleted_at', null).order('name'),
-        supabase.from('construction_types').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('companies').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('plan_sets_file_types').select('id, name, code').eq('active', true).is('deleted_at', null).order('name'),
       ]);
 
       if (bdRes.data) setBuildingDepartments(bdRes.data);
       if (ptRes.data) setProjectTypes(ptRes.data);
-      if (occRes.data) setOccupancies(occRes.data);
-      if (ctRes.data) setConstructionTypes(ctRes.data);
       if (compRes.data) {
-        // Include default company if it exists, otherwise just use all companies
         const allCompanies = compRes.data;
         setCompanies(allCompanies);
-        // Set default if it exists in the list
-        if (!allCompanies.find(c => c.id === DEFAULT_COMPANY_ID)) {
-          // Try to fetch default company separately
-          const { data: defaultComp } = await supabase
-            .from('companies')
-            .select('id, name')
-            .eq('id', DEFAULT_COMPANY_ID)
-            .single();
-          if (defaultComp) {
-            setCompanies([defaultComp, ...allCompanies]);
+        
+        // Find and set default company
+        const defaultCompany = allCompanies.find(c => 
+          c.name === DEFAULT_COMPANY_NAME
+        );
+        if (defaultCompany) {
+          setFormData(prev => ({ ...prev, company_id: defaultCompany.id }));
+          // Fetch contacts for default company and set default contact
+          const contactList = await fetchContacts(defaultCompany.id);
+          if (contactList) {
+            const defaultContact = contactList.find((c: Contact) => 
+              c.name === DEFAULT_CONTACT_NAME || 
+              (c.first_name === 'John' && c.last_name === 'Client')
+            );
+            if (defaultContact) {
+              setFormData(prev => ({ ...prev, contact_id: defaultContact.id }));
+            }
           }
         }
       }
@@ -109,21 +362,84 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
     }
   }
 
-  async function fetchContacts(companyId: string) {
+  async function fetchProjectTypeDetails(projectTypeId: string) {
     try {
-      const { data } = await supabase
-        .from('companies__contacts')
-        .select('contacts(id, name)')
-        .eq('company_id', companyId);
+      // Fetch project type with its construction type and occupancy
+      const { data: projectType, error: ptError } = await supabase
+        .from('project_types')
+        .select('id, name, construction_type_id, construction_types(id, name, occupancy_id, occupancies(id, name))')
+        .eq('id', projectTypeId)
+        .is('deleted_at', null)
+        .single();
 
-      if (data) {
-        const contactList = data
-          .map((item: any) => item.contacts)
-          .filter(Boolean) as Contact[];
-        setContacts(contactList);
+      if (ptError) throw ptError;
+
+      if (projectType && projectType.construction_types) {
+        const constructionType = projectType.construction_types as any;
+        setSelectedConstructionType({
+          id: constructionType.id,
+          name: constructionType.name,
+        } as ConstructionType);
+
+        // Set construction_type_id in form
+        setFormData(prev => ({ ...prev, construction_type_id: constructionType.id }));
+
+        if (constructionType.occupancies) {
+          const occupancy = constructionType.occupancies as any;
+          setSelectedOccupancy({
+            id: occupancy.id,
+            name: occupancy.name,
+          } as Occupancy);
+
+          // Set occupancy_id in form
+          setFormData(prev => ({ ...prev, occupancy_id: occupancy.id }));
+        } else {
+          setSelectedOccupancy(null);
+          setFormData(prev => ({ ...prev, occupancy_id: '' }));
+        }
+      } else {
+        setSelectedConstructionType(null);
+        setSelectedOccupancy(null);
+        setFormData(prev => ({ ...prev, construction_type_id: '', occupancy_id: '' }));
       }
     } catch (err) {
+      console.error('Error fetching project type details:', err);
+      setSelectedConstructionType(null);
+      setSelectedOccupancy(null);
+      setFormData(prev => ({ ...prev, construction_type_id: '', occupancy_id: '' }));
+    }
+  }
+
+  async function fetchContacts(companyId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('companies__contacts')
+        .select('contact_id, contacts(id, first_name, last_name)')
+        .eq('company_id', companyId)
+        .is('deleted_at', null);
+
+      if (error) throw error;
+      if (data) {
+        const contactList = data
+          .map((item: any) => {
+            const contact = item.contacts;
+            if (contact) {
+              return {
+                ...contact,
+                name: `${contact.first_name || ''} ${contact.last_name || ''}`.trim(),
+              };
+            }
+            return null;
+          })
+          .filter(Boolean) as Contact[];
+        setContacts(contactList);
+        return contactList;
+      }
+      return [];
+    } catch (err) {
       console.error('Error fetching contacts:', err);
+      setContacts([]);
+      return [];
     }
   }
 
@@ -162,11 +478,13 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       }
 
       // Call edge function
+      // Note: contact_id from form should be mapped to submitted_by_id in the edge function
       const response = await callEdgeFunction('create_test_project', {
         run_id: newRunId,
         project_data: {
           ...formData,
           phase_id: '2', // Intake phase
+          // contact_id is included in formData and should be mapped to submitted_by_id by the edge function
         },
         files: filePaths,
         mode: 'manual',
@@ -183,6 +501,7 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* 1. Project Name */}
         <StyledInput
           label="Project Name *"
           value={formData.name}
@@ -190,6 +509,32 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
           required
         />
 
+        {/* 2. Company */}
+        <StyledSelect
+          label="Company *"
+          value={formData.company_id}
+          onChange={(e) => setFormData(prev => ({ ...prev, company_id: e.target.value, contact_id: '' }))}
+          options={[
+            { value: '', label: 'Select...' },
+            ...companies.map(comp => ({ value: comp.id, label: comp.name }))
+          ]}
+          required
+        />
+
+        {/* 3. Submission Contact - conditionally visible */}
+        {formData.company_id && (
+          <StyledSelect
+            label="Submission Contact"
+            value={formData.contact_id}
+            onChange={(e) => setFormData(prev => ({ ...prev, contact_id: e.target.value }))}
+            options={[
+              { value: '', label: 'Select...' },
+              ...contacts.map(cont => ({ value: cont.id, label: cont.name || `${cont.first_name || ''} ${cont.last_name || ''}`.trim() }))
+            ]}
+          />
+        )}
+
+        {/* 4. Building Department */}
         <StyledSelect
           label="Building Department *"
           value={formData.building_department_id}
@@ -201,6 +546,7 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
           required
         />
 
+        {/* 5. Project Type - user selection */}
         <SearchableSelect
           label="Project Type *"
           value={formData.project_type_id}
@@ -212,78 +558,131 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
           required
         />
 
-        <StyledSelect
-          label="Occupancy *"
-          value={formData.occupancy_id}
-          onChange={(e) => setFormData(prev => ({ ...prev, occupancy_id: e.target.value }))}
-          options={[
-            { value: '', label: 'Select...' },
-            ...occupancies.map(occ => ({ value: occ.id, label: occ.name }))
-          ]}
-          required
-        />
+        {/* 6. Construction Type - read-only, populated from project type */}
+        {selectedConstructionType && (
+          <div>
+            <label className="block text-sm font-medium text-fcc-white mb-2">
+              Construction Type
+            </label>
+            <div className="w-full px-4 py-2 bg-fcc-black border border-fcc-divider rounded-lg text-fcc-white/70">
+              {selectedConstructionType.name}
+            </div>
+          </div>
+        )}
 
-        <SearchableSelect
-          label="Construction Type *"
-          value={formData.construction_type_id}
-          onChange={(value) => setFormData(prev => ({ ...prev, construction_type_id: value }))}
-          options={[
-            { value: '', label: 'Select...' },
-            ...constructionTypes.map(ct => ({ value: ct.id, label: ct.name }))
-          ]}
-          required
-        />
-
-        <StyledSelect
-          label="Company"
-          value={formData.company_id}
-          onChange={(e) => setFormData(prev => ({ ...prev, company_id: e.target.value, contact_id: '' }))}
-          options={companies.map(comp => ({ value: comp.id, label: comp.name }))}
-        />
+        {/* 7. Occupancy - read-only, populated from construction type */}
+        {selectedOccupancy && (
+          <div>
+            <label className="block text-sm font-medium text-fcc-white mb-2">
+              Occupancy
+            </label>
+            <div className="w-full px-4 py-2 bg-fcc-black border border-fcc-divider rounded-lg text-fcc-white/70">
+              {selectedOccupancy.name}
+            </div>
+          </div>
+        )}
       </div>
 
-      {formData.company_id && (
-        <StyledSelect
-          label="Contact"
-          value={formData.contact_id}
-          onChange={(e) => setFormData(prev => ({ ...prev, contact_id: e.target.value }))}
-          options={[
-            { value: '', label: 'Select...' },
-            ...contacts.map(cont => ({ value: cont.id, label: cont.name }))
-          ]}
-        />
-      )}
-
       <div className="space-y-4">
-        <StyledInput
-          label="Address Line 1 *"
-          value={formData.address_line1}
-          onChange={(e) => setFormData(prev => ({ ...prev, address_line1: e.target.value }))}
-          required
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StyledInput
-            label="City *"
-            value={formData.city}
-            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-            required
+        {/* Address Search with Google Places Autocomplete */}
+        <div className="relative" ref={suggestionsRef}>
+          <label className="block text-sm font-medium text-fcc-white mb-2">
+            Search Address *
+          </label>
+          <input
+            ref={addressInputRef}
+            type="text"
+            value={addressSearch}
+            onChange={(e) => {
+              setAddressSearch(e.target.value);
+              // If user starts typing again after selecting, allow new search
+              if (addressSelected) {
+                setAddressSelected(false);
+              }
+            }}
+            onFocus={() => {
+              // When user focuses the field, fetch and show suggestions if there's text
+              if (addressSearch.trim()) {
+                fetchAddressSuggestions();
+              }
+            }}
+            placeholder="Start typing an address..."
+            className="w-full bg-fcc-black border border-fcc-divider rounded-lg px-4 py-2 text-fcc-white placeholder-fcc-white/50 focus:outline-none focus:ring-2 focus:ring-fcc-cyan focus:border-transparent"
           />
-
-          <StyledInput
-            label="State *"
-            value={formData.state}
-            onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-            required
-          />
-
-          <StyledInput
-            label="Zipcode *"
-            value={formData.zipcode}
-            onChange={(e) => setFormData(prev => ({ ...prev, zipcode: e.target.value }))}
-            required
-          />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-fcc-dark border border-fcc-divider rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion.place_id}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAddressSelect(suggestion.place_id, suggestion.description);
+                    // Blur the input to remove focus
+                    if (addressInputRef.current) {
+                      addressInputRef.current.blur();
+                    }
+                  }}
+                  onMouseDown={(e) => {
+                    // Prevent input from getting focus when clicking button
+                    e.preventDefault();
+                  }}
+                  className="w-full text-left px-4 py-2 text-fcc-white hover:bg-fcc-divider transition-colors"
+                >
+                  <div className="font-medium">{suggestion.structured_formatting.main_text}</div>
+                  <div className="text-sm text-fcc-white/70">{suggestion.structured_formatting.secondary_text}</div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Address fields - only show after address is selected */}
+        {addressSelected && (
+          <>
+            {/* Address Line 1 - auto-filled from Places */}
+            <StyledInput
+              label="Address Line 1 *"
+              value={formData.address_line1}
+              onChange={(e) => {
+                setFormData(prev => ({ ...prev, address_line1: e.target.value }));
+                setAddressSearch(e.target.value);
+              }}
+              required
+            />
+
+            {/* Address Line 2 - auto-filled from Places */}
+            <StyledInput
+              label="Address Line 2"
+              value={formData.address_line2}
+              onChange={(e) => setFormData(prev => ({ ...prev, address_line2: e.target.value }))}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <StyledInput
+                label="City *"
+                value={formData.city}
+                onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                required
+              />
+
+              <StyledInput
+                label="State *"
+                value={formData.state}
+                onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                required
+              />
+
+              <StyledInput
+                label="Zipcode *"
+                value={formData.zipcode}
+                onChange={(e) => setFormData(prev => ({ ...prev, zipcode: e.target.value }))}
+                required
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="space-y-4">
