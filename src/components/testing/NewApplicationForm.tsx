@@ -98,3 +98,5 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
   );
 }
 
+
+

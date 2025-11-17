@@ -24,3 +24,5 @@ export default function StyledInput({ label, error, className = '', ...props }: 
   );
 }
 
+
+
