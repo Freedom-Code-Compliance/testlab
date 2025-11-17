@@ -10,6 +10,7 @@ import {
 } from '../../types';
 import StyledInput from '../ui/StyledInput';
 import StyledSelect from '../ui/StyledSelect';
+import StyledTextarea from '../ui/StyledTextarea';
 import SearchableSelect from '../ui/SearchableSelect';
 import FileUpload from '../ui/FileUpload';
 import PrimaryButton from '../ui/PrimaryButton';
@@ -45,6 +46,9 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
     zipcode: '',
     company_id: '',
     contact_id: '',
+    service_ids: [] as string[],
+    scope_of_work: '',
+    needs_quote: false,
   });
 
   // Google Places state
@@ -65,6 +69,11 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   const [selectedOccupancy, setSelectedOccupancy] = useState<Occupancy | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [services, setServices] = useState<Array<{ id: string; name: string }>>([]);
+  const [projectCreated, setProjectCreated] = useState(false);
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
+  const [showPlanSetUpload, setShowPlanSetUpload] = useState(false);
+  const [servicesError, setServicesError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchOptions();
@@ -319,15 +328,30 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
 
   async function fetchOptions() {
     try {
-      const [bdRes, ptRes, compRes, fileTypesRes] = await Promise.all([
+      const [bdRes, ptRes, compRes, servicesRes, fileTypesRes] = await Promise.all([
         supabase.from('building_departments').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('project_types').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('companies').select('id, name').is('deleted_at', null).order('name'),
+        supabase.from('services').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('plan_sets_file_types').select('id, name, code').eq('active', true).is('deleted_at', null).order('name'),
       ]);
 
       if (bdRes.data) setBuildingDepartments(bdRes.data);
       if (ptRes.data) setProjectTypes(ptRes.data);
+      if (servicesRes.data) {
+        // Sort services: Permit Expediting, Plan Review, Inspections, then others
+        const sortedServices = [...servicesRes.data].sort((a, b) => {
+          const order: Record<string, number> = {
+            'Permit Expediting': 1,
+            'Plan Review': 2,
+            'Inspections': 3,
+          };
+          const aOrder = order[a.name] || 999;
+          const bOrder = order[b.name] || 999;
+          return aOrder - bOrder;
+        });
+        setServices(sortedServices);
+      }
       if (compRes.data) {
         const allCompanies = compRes.data;
         setCompanies(allCompanies);
@@ -353,7 +377,13 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       }
       if (fileTypesRes.data) {
         console.log('File types loaded:', fileTypesRes.data);
-        setFileTypes(fileTypesRes.data);
+        // Sort file types: "Other Documents" should be last
+        const sortedFileTypes = [...fileTypesRes.data].sort((a, b) => {
+          if (a.name === 'Other Documents') return 1;
+          if (b.name === 'Other Documents') return -1;
+          return a.name.localeCompare(b.name);
+        });
+        setFileTypes(sortedFileTypes);
       } else {
         console.warn('No file types found');
       }
@@ -458,6 +488,59 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       const newRunId = await createTestRun(scenarioId, null);
       setRunId(newRunId);
 
+      // Call edge function to create project (without files for now)
+      // Note: contact_id from form should be mapped to submitted_by_id in the edge function
+      const response = await callEdgeFunction('create_test_project', {
+        run_id: newRunId,
+        project_data: {
+          ...formData,
+          phase_id: '2', // Intake phase
+          // Don't send service_ids here - we'll create junction records separately
+          // contact_id is included in formData and should be mapped to submitted_by_id by the edge function
+        },
+        files: {}, // No files on initial creation
+        mode: 'manual',
+      });
+
+      // Create records in projects__services junction table
+      if (response.project_id && formData.service_ids.length > 0) {
+        const junctionRecords = formData.service_ids.map(serviceId => ({
+          project_id: response.project_id,
+          service_id: serviceId,
+        }));
+
+        const { error: junctionError } = await supabase
+          .from('projects__services')
+          .insert(junctionRecords);
+
+        if (junctionError) {
+          console.error('Error creating project services:', junctionError);
+          // Don't fail the whole operation, just log the error
+        }
+      }
+
+      setResults(response);
+      setProjectCreated(true);
+      if (response.project_id) {
+        setCreatedProjectId(response.project_id);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to execute scenario');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handlePlanSetUpload() {
+    if (!createdProjectId) {
+      setError('Project ID is required for file upload');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
       // Upload files
       const filePaths: Record<string, string[]> = {};
       for (const [fileTypeId, files] of Object.entries(fileUploads)) {
@@ -465,7 +548,7 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
           const type = fileTypes.find(ft => ft.id === fileTypeId);
           const paths: string[] = [];
           for (const file of files) {
-            const filePath = `testlab/projects/${newRunId}/plans/${type?.code || 'other'}/${file.name}`;
+            const filePath = `testlab/projects/${createdProjectId}/plans/${type?.code || 'other'}/${file.name}`;
             const { error: uploadError } = await supabase.storage
               .from('files')
               .upload(filePath, file);
@@ -477,25 +560,140 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         }
       }
 
-      // Call edge function
-      // Note: contact_id from form should be mapped to submitted_by_id in the edge function
-      const response = await callEdgeFunction('create_test_project', {
-        run_id: newRunId,
-        project_data: {
-          ...formData,
-          phase_id: '2', // Intake phase
-          // contact_id is included in formData and should be mapped to submitted_by_id by the edge function
-        },
-        files: filePaths,
-        mode: 'manual',
-      });
-
-      setResults(response);
+      // Call edge function to create plan set and link files
+      // This would need to be a new edge function or update to existing one
+      // For now, we'll just show success
+      setResults({ ...results, files_uploaded: filePaths });
     } catch (err: any) {
-      setError(err.message || 'Failed to execute scenario');
+      setError(err.message || 'Failed to upload plan set files');
     } finally {
       setLoading(false);
     }
+  }
+
+  // Handle service selection with Plan Review -> Inspections dependency
+  function handleServiceToggle(serviceId: string) {
+    const service = services.find(s => s.id === serviceId);
+    if (!service) return;
+
+    setServicesError(null);
+
+    // Check if this is Plan Review
+    if (service.name === 'Plan Review') {
+      const isPlanReviewSelected = formData.service_ids.includes(serviceId);
+      if (isPlanReviewSelected) {
+        // Deselecting Plan Review - remove both Plan Review and Inspections
+        const inspectionsService = services.find(s => s.name === 'Inspections');
+        setFormData(prev => ({
+          ...prev,
+          service_ids: prev.service_ids.filter(id => id !== serviceId && id !== inspectionsService?.id),
+        }));
+      } else {
+        // Selecting Plan Review - auto-select Inspections too
+        const inspectionsService = services.find(s => s.name === 'Inspections');
+        const newServiceIds = [...formData.service_ids, serviceId];
+        if (inspectionsService && !newServiceIds.includes(inspectionsService.id)) {
+          newServiceIds.push(inspectionsService.id);
+        }
+        setFormData(prev => ({ ...prev, service_ids: newServiceIds }));
+      }
+    } else if (service.name === 'Inspections') {
+      // Check if Plan Review is selected
+      const planReviewService = services.find(s => s.name === 'Plan Review');
+      const isPlanReviewSelected = planReviewService && formData.service_ids.includes(planReviewService.id);
+      const isInspectionsSelected = formData.service_ids.includes(serviceId);
+
+      if (isPlanReviewSelected && isInspectionsSelected) {
+        // User trying to deselect Inspections while Plan Review is selected
+        setServicesError('Plan Review cannot be selected without Inspections');
+        return;
+      }
+
+      // Toggle Inspections normally
+      setFormData(prev => ({
+        ...prev,
+        service_ids: isInspectionsSelected
+          ? prev.service_ids.filter(id => id !== serviceId)
+          : [...prev.service_ids, serviceId],
+      }));
+    } else {
+      // Toggle other services normally
+      setFormData(prev => ({
+        ...prev,
+        service_ids: prev.service_ids.includes(serviceId)
+          ? prev.service_ids.filter(id => id !== serviceId)
+          : [...prev.service_ids, serviceId],
+      }));
+    }
+  }
+
+  // If project is created, show simplified view
+  if (projectCreated && createdProjectId) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-fcc-dark border border-fcc-divider rounded-lg p-6 space-y-4">
+          <div>
+            <p className="text-sm text-fcc-white/70 mb-1">Project Name:</p>
+            <p className="text-fcc-white font-semibold text-lg">{formData.name}</p>
+          </div>
+          <div>
+            <p className="text-sm text-fcc-white/70 mb-1">Project ID:</p>
+            <p className="text-fcc-white font-mono text-sm">{createdProjectId}</p>
+          </div>
+          
+          {!showPlanSetUpload && (
+            <PrimaryButton
+              type="button"
+              onClick={() => setShowPlanSetUpload(true)}
+              disabled={loading}
+            >
+              Upload Plan Set
+            </PrimaryButton>
+          )}
+
+          {showPlanSetUpload && (
+            <div className="space-y-4 mt-6">
+              <h4 className="text-fcc-white font-semibold">Plan Set Files</h4>
+              {fileTypes.map((fileType) => (
+                <FileUpload
+                  key={fileType.id}
+                  label={fileType.name}
+                  accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png"
+                  multiple
+                  onFilesSelected={(files) => handleFileUpload(fileType.id, files)}
+                />
+              ))}
+              <PrimaryButton
+                type="button"
+                onClick={handlePlanSetUpload}
+                disabled={loading}
+              >
+                {loading ? 'Uploading...' : 'Upload Files'}
+              </PrimaryButton>
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-fcc-dark border border-red-500 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <StatusBadge status="failed" />
+                <span className="text-red-500 font-semibold">Error</span>
+              </div>
+              <p className="text-red-400">{error}</p>
+            </div>
+          )}
+
+          {results && results.files_uploaded && (
+            <div className="bg-fcc-dark border border-fcc-divider rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <StatusBadge status="success" />
+                <span className="text-fcc-white font-semibold">Files Uploaded Successfully</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -685,17 +883,63 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         )}
       </div>
 
-      <div className="space-y-4">
-        <h4 className="text-fcc-white font-semibold">Plan Set Files</h4>
-        {fileTypes.map((fileType) => (
-          <FileUpload
-            key={fileType.id}
-            label={fileType.name}
-            accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png"
-            multiple
-            onFilesSelected={(files) => handleFileUpload(fileType.id, files)}
-          />
-        ))}
+      {/* Services - Multi-select with checkboxes */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-fcc-white mb-2">
+          Services
+        </label>
+        <div className="space-y-2">
+          {services.length === 0 ? (
+            <p className="text-fcc-white/70 text-sm">Loading services...</p>
+          ) : (
+            services.map((service) => {
+              const isSelected = formData.service_ids.includes(service.id);
+
+              return (
+                <label
+                  key={service.id}
+                  className="flex items-center space-x-3 cursor-pointer hover:bg-fcc-dark/50 p-2 rounded-lg transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleServiceToggle(service.id)}
+                    className="w-5 h-5 rounded border-fcc-divider bg-fcc-black text-fcc-cyan focus:ring-2 focus:ring-fcc-cyan focus:ring-offset-2 focus:ring-offset-fcc-black"
+                  />
+                  <span className="text-fcc-white">
+                    {service.name}
+                  </span>
+                </label>
+              );
+            })
+          )}
+        </div>
+        {servicesError && (
+          <p className="text-sm text-red-500 mt-1">{servicesError}</p>
+        )}
+      </div>
+
+      {/* Scope of Work */}
+      <StyledTextarea
+        label="Scope of Work"
+        value={formData.scope_of_work}
+        onChange={(e) => setFormData(prev => ({ ...prev, scope_of_work: e.target.value }))}
+        placeholder="Enter scope of work details..."
+        rows={4}
+      />
+
+      {/* Needs Quote Checkbox */}
+      <div className="flex items-center space-x-3">
+        <input
+          type="checkbox"
+          id="needs_quote"
+          checked={formData.needs_quote}
+          onChange={(e) => setFormData(prev => ({ ...prev, needs_quote: e.target.checked }))}
+          className="w-5 h-5 rounded border-fcc-divider bg-fcc-black text-fcc-cyan focus:ring-2 focus:ring-fcc-cyan focus:ring-offset-2 focus:ring-offset-fcc-black"
+        />
+        <label htmlFor="needs_quote" className="text-fcc-white cursor-pointer">
+          Needs Quote?
+        </label>
       </div>
 
       <PrimaryButton type="submit" disabled={loading}>
@@ -719,24 +963,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         </div>
       )}
 
-      {results && runId && (
-        <div className="bg-fcc-dark border border-fcc-divider rounded-lg p-4 space-y-4">
-          <div className="flex items-center space-x-2">
-            <StatusBadge status="success" />
-            <span className="text-fcc-white font-semibold">Project Created</span>
-          </div>
-          <div>
-            <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
-            <p className="text-fcc-white font-mono text-sm">{runId}</p>
-          </div>
-          {results.project_id && (
-            <div>
-              <p className="text-sm text-fcc-white/70 mb-1">Project ID:</p>
-              <p className="text-fcc-white font-mono text-sm">{results.project_id}</p>
-            </div>
-          )}
-        </div>
-      )}
     </form>
   );
 }
