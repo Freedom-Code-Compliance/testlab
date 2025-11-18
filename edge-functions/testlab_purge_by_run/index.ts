@@ -20,6 +20,7 @@ const DELETE_PRIORITY: Record<string, number> = {
   companies__contacts: 10,
   companies__professional_licenses: 10,
   projects__services: 10,
+  companies__project_types: 10,  // NEW - must be deleted before companies
   // Other child tables
   plan_sets__files: 20,
   plan_sets: 25,

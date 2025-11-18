@@ -65,7 +65,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
     
     // Multi-select arrays
     buildingDepartments: [] as string[],
-    workTypes: [] as string[],
+    project_type_ids: [] as string[],
     industryRole: [] as string[],
     techTools: [] as string[],
     services: [] as string[],
@@ -83,7 +83,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
   // Reference table options
   const [buildingDepartments, setBuildingDepartments] = useState<Array<{ id: string; name: string }>>([]);
   const [services, setServices] = useState<Array<{ id: string; name: string }>>([]);
-  const [workTypes, setWorkTypes] = useState<Array<{ id: string; name: string }>>([]);
+  const [projectTypes, setProjectTypes] = useState<Array<{ id: string; name: string }>>([]);
   const [industryRoles, setIndustryRoles] = useState<Array<{ id: string; name: string }>>([]);
   const [techTools, setTechTools] = useState<Array<{ id: string; name: string }>>([]);
   const [annualRevenueOptions, setAnnualRevenueOptions] = useState<Array<{ id: string; name: string }>>([]);
@@ -164,7 +164,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
       const [
         bdRes,
         servicesRes,
-        workTypesRes,
+        projectTypesRes,
         industryRolesRes,
         techToolsRes,
         annualRevenueRes,
@@ -175,7 +175,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
       ] = await Promise.all([
         supabase.from('building_departments').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('services').select('id, name').is('deleted_at', null).order('name'),
-        supabase.from('companies_work_types_field').select('id, name').eq('active', true).order('name'),
+        supabase.from('project_types').select('id, name').order('name'),
         supabase.from('companies_industry_role_field').select('id, name').eq('active', true).order('name'),
         supabase.from('companies_tech_tools_field').select('id, name').eq('active', true).order('name'),
         supabase.from('companies_annual_revenue_field').select('id, name').eq('active', true).order('name'),
@@ -187,7 +187,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
 
       if (bdRes.data) setBuildingDepartments(bdRes.data);
       if (servicesRes.data) setServices(servicesRes.data);
-      if (workTypesRes.data) setWorkTypes(workTypesRes.data);
+      if (projectTypesRes.data) setProjectTypes(projectTypesRes.data);
       if (industryRolesRes.data) setIndustryRoles(industryRolesRes.data);
       if (techToolsRes.data) setTechTools(techToolsRes.data);
       if (annualRevenueRes.data) setAnnualRevenueOptions(annualRevenueRes.data);
@@ -220,6 +220,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
       interestDescription: 'TEST. We are very interested in hiring a private provider after we have heard so many good things about the process.',
       techDescription: 'TEST. We use a variety of software and custom built no code software to run our business.',
       buildingDepartments: ['767c97b5-b636-4155-ba26-d067028e166a'], // Lee County
+      project_type_ids: ['019a9304-6154-7d97-f9a3-731fb9f0d5db'], // Single Family Aluminum Construction
       industryRole: ['019a79b4-87ab-728c-8182-0f0f1b6f347a'], // Contractor
       techTools: ['019a79b8-4bdd-70ab-8fd6-e6dc8681b105'],
       services: [
@@ -608,7 +609,7 @@ Return ONLY the JSON, no explanation.`;
       interestId: '',
       interestDescription: '',
       buildingDepartments: [],
-      workTypes: [],
+      project_type_ids: [],
       industryRole: [],
       techTools: [],
       services: [],
@@ -648,7 +649,7 @@ Return ONLY the JSON, no explanation.`;
     }, 100);
   }
 
-  function handleMultiSelectToggle(field: 'buildingDepartments' | 'workTypes' | 'industryRole' | 'techTools' | 'services', id: string) {
+  function handleMultiSelectToggle(field: 'buildingDepartments' | 'project_type_ids' | 'industryRole' | 'techTools' | 'services', id: string) {
     setFormData(prev => {
       const current = prev[field] as string[];
       const updated = current.includes(id)
@@ -796,7 +797,7 @@ Return ONLY the JSON, no explanation.`;
           interestId: formData.interestId || null,
           interestDescription: formData.interestDescription || null,
           buildingDepartments: formData.buildingDepartments.length > 0 ? formData.buildingDepartments : undefined,
-          workTypes: formData.workTypes.length > 0 ? formData.workTypes : undefined,
+          project_type_ids: formData.project_type_ids.length > 0 ? formData.project_type_ids : undefined,
           industryRole: formData.industryRole.length > 0 ? formData.industryRole : undefined,
           techTools: formData.techTools.length > 0 ? formData.techTools : undefined,
           services: formData.services.length > 0 ? formData.services : [],
@@ -1199,27 +1200,15 @@ Return ONLY the JSON, no explanation.`;
             placeholder="Select building departments..."
           />
 
-          {/* Work Types */}
-          <div className="space-y-2">
-            <label className="block text-sm text-fcc-white/70 mb-2">Work Types</label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {workTypes.map((type) => (
-                <label
-                  key={type.id}
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-fcc-black/50 p-2 rounded-lg transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.workTypes.includes(type.id)}
-                    onChange={() => handleMultiSelectToggle('workTypes', type.id)}
-                    disabled={formDisabled}
-                    className="w-5 h-5 rounded border-fcc-divider bg-fcc-black text-fcc-cyan focus:ring-2 focus:ring-fcc-cyan"
-                  />
-                  <span className="text-fcc-white">{type.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          {/* Project Types */}
+          <SearchableMultiSelect
+            label="Project Types"
+            values={formData.project_type_ids}
+            onChange={(values) => setFormData(prev => ({ ...prev, project_type_ids: values }))}
+            options={projectTypes.map(type => ({ value: type.id, label: type.name }))}
+            disabled={formDisabled}
+            placeholder="Select project types..."
+          />
 
           {/* Industry Roles */}
           <div className="space-y-2">

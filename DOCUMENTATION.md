@@ -98,9 +98,18 @@ For questions or issues:
 
 ---
 
-**Last Updated**: 2025-01-14  
+**Last Updated**: 2025-01-17  
 **Version**: 1.0.0  
 **Status**: Production Ready
+
+## Recent Updates
+
+### 2025-01-17 - Project Type Refactor
+- Replaced work types with project types across the application
+- Updated `NewApplicationForm` to use multi-select Project Types dropdown
+- Updated `apply_form_submitted` edge function to handle `project_type_ids`
+- Updated purge function to include `companies__project_types` in deletion priority
+- See [CHANGELOG.md](./CHANGELOG.md) for full details
 
 
 
