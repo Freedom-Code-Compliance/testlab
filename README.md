@@ -135,9 +135,11 @@ npm install
 
 Create a `.env` file:
 ```
-VITE_SUPABASE_URL=https://wljgdyxeixbjruezrptj.supabase.co
+VITE_SUPABASE_URL=your_supabase_url_here
 VITE_SUPABASE_ANON_KEY=your_anon_key_here
 VITE_MONDAY_API_KEY=your_monday_api_key_here
+VITE_OPENAI_API_KEY=your_openai_api_key_here
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key_here
 ```
 
 **Note**: The Monday.com API key is also stored as a Supabase secret (`MONDAY_API_KEY`) for use in edge functions. Set it via:
@@ -281,6 +283,8 @@ The application follows the FCC Design System documented in `DESIGN_SYSTEM.md`:
 
 - `VITE_SUPABASE_URL`: Supabase project URL
 - `VITE_SUPABASE_ANON_KEY`: Supabase anonymous key
+- `VITE_GOOGLE_MAPS_API_KEY`: Google Maps API key (for address autocomplete)
+- `VITE_OPENAI_API_KEY`: OpenAI API key (for AI form filling)
 
 ### Optional
 

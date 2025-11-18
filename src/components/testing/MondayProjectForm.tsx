@@ -9,9 +9,7 @@ interface MondayProjectFormProps {
   scenarioId: string;
 }
 
-// Completed Projects 2 board - need to get the actual board ID
-// For now using the original, but this should be updated with the correct board ID
-const COMPLETED_PROJECTS_2_BOARD = '18369402312'; // TODO: Update with actual Completed Projects 2 board ID
+const COMPLETED_PROJECTS_2_BOARD = '18369402312';
 const PLAN_SETS_BOARD = '5307810845';
 
 interface MondayItem {

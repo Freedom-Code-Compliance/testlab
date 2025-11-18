@@ -110,7 +110,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
           });
         },
         (error) => {
-          console.warn('Could not get user location:', error);
           // Default to Florida center if location unavailable
           setUserLocation({ lat: 27.7663, lng: -82.6404 });
         }
@@ -124,8 +123,12 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   function initializeGooglePlaces() {
     // Load Google Places API script if not already loaded
     if (!window.google || !window.google.maps || !window.google.maps.places) {
+      const googleMapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      if (!googleMapsKey) {
+        throw new Error('VITE_GOOGLE_MAPS_API_KEY is required');
+      }
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCYPEXUyBOcHqWh0xU2Dna-zcYJzebqQ6k&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${googleMapsKey}&libraries=places`;
       script.async = true;
       script.defer = true;
       script.onload = () => {
@@ -376,7 +379,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         }
       }
       if (fileTypesRes.data) {
-        console.log('File types loaded:', fileTypesRes.data);
         // Sort file types: "Other Documents" should be last
         const sortedFileTypes = [...fileTypesRes.data].sort((a, b) => {
           if (a.name === 'Other Documents') return 1;
@@ -384,8 +386,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
           return a.name.localeCompare(b.name);
         });
         setFileTypes(sortedFileTypes);
-      } else {
-        console.warn('No file types found');
       }
     } catch (err) {
       console.error('Error fetching options:', err);
