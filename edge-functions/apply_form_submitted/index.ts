@@ -189,13 +189,36 @@ serve(async (req: Request) => {
       primaryContactEmail: contactData?.primaryContact?.email,
       additionalContactsCount: contactData?.additionalContacts?.length || 0,
       testRunId: testRunId || null,
-      scenarioId: scenarioId || null
+      scenarioId: scenarioId || null,
+      runBy: runBy || null
+    });
+    
+    // Validate testRunId and scenarioId for Test Lab logging
+    console.log(`[${requestId}] [TEST_LAB] Validating test run parameters:`, {
+      testRunId: testRunId || 'MISSING',
+      scenarioId: scenarioId || 'MISSING',
+      runBy: runBy || 'MISSING',
+      willLogRecords: !!(testRunId && scenarioId)
     });
     
     // Helper: log a test record if this call came from Test Lab
     const logTestRecord = async (tableName: string, recordId: string) => {
-      if (!testRunId || !scenarioId) return;
-      const { error } = await supabase.rpc("testlab_log_record", {
+      console.log(`[${requestId}] [TEST_LAB] logTestRecord called:`, {
+        tableName,
+        recordId,
+        testRunId: testRunId || 'MISSING',
+        scenarioId: scenarioId || 'MISSING'
+      });
+      
+      if (!testRunId || !scenarioId) {
+        console.warn(`[${requestId}] [TEST_LAB] logTestRecord SKIPPED - missing testRunId or scenarioId:`, {
+          hasTestRunId: !!testRunId,
+          hasScenarioId: !!scenarioId
+        });
+        return;
+      }
+      
+      console.log(`[${requestId}] [TEST_LAB] Calling testlab_log_record RPC:`, {
         p_run_id: testRunId,
         p_scenario_id: scenarioId,
         p_table_name: tableName,
@@ -203,13 +226,32 @@ serve(async (req: Request) => {
         p_created_by: runBy ?? null,
         p_table_id: null
       });
+      
+      const { data, error } = await supabase.rpc("testlab_log_record", {
+        p_run_id: testRunId,
+        p_scenario_id: scenarioId,
+        p_table_name: tableName,
+        p_record_id: recordId,
+        p_created_by: runBy ?? null,
+        p_table_id: null
+      });
+      
       if (error) {
-        console.error("Error logging test record", {
+        console.error(`[${requestId}] [TEST_LAB] Error logging test record:`, {
           tableName,
           recordId,
-          error
+          error: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
         });
         // Do not throw – logging failure should not break the main flow
+      } else {
+        console.log(`[${requestId}] [TEST_LAB] Successfully logged test record:`, {
+          tableName,
+          recordId,
+          data
+        });
       }
     };
     
@@ -503,6 +545,11 @@ serve(async (req: Request) => {
       companyId: company.id,
       companyName: company.name
     });
+    console.log(`[${requestId}] [STEP 1] About to log test record for company:`, {
+      testRunId: testRunId || 'MISSING',
+      scenarioId: scenarioId || 'MISSING',
+      companyId: company.id
+    });
     await logTestRecord("companies", company.id);
     
     // 2. Create building departments junction records (conditional)
@@ -558,6 +605,16 @@ serve(async (req: Request) => {
           ids: junctionDepts.map((j: any) => j.id)
         });
         console.log(`[${requestId}] [STEP 2] Created ${junctionDepts.length} building department junction(s)`);
+        
+        // Log test records for each building department junction
+        console.log(`[${requestId}] [STEP 2] About to log test records for building department junctions:`, {
+          testRunId: testRunId || 'MISSING',
+          scenarioId: scenarioId || 'MISSING',
+          junctionCount: junctionDepts.length
+        });
+        for (const junction of junctionDepts) {
+          await logTestRecord("companies__building_departments", junction.id);
+        }
       }
     } else {
       console.log(`[${requestId}] [STEP 2] No building departments to link`);
@@ -614,10 +671,13 @@ serve(async (req: Request) => {
         console.log(`[${requestId}] [STEP 3] Created ${junctionProjectTypes.length} project type junction(s)`);
         
         // Log test records for each junction row
-        if (testRunId && scenarioId) {
-          for (const junction of junctionProjectTypes) {
-            await logTestRecord("companies__project_types", junction.id);
-          }
+        console.log(`[${requestId}] [STEP 3] About to log test records for project type junctions:`, {
+          testRunId: testRunId || 'MISSING',
+          scenarioId: scenarioId || 'MISSING',
+          junctionCount: junctionProjectTypes.length
+        });
+        for (const junction of junctionProjectTypes) {
+          await logTestRecord("companies__project_types", junction.id);
         }
       }
     } else {
@@ -662,6 +722,17 @@ serve(async (req: Request) => {
           table: "companies__industry_roles",
           ids: junctionRoles.map((j: any) => j.id)
         });
+        console.log(`[${requestId}] [STEP 4] Created ${junctionRoles.length} industry role junction(s)`);
+        
+        // Log test records for each industry role junction
+        console.log(`[${requestId}] [STEP 4] About to log test records for industry role junctions:`, {
+          testRunId: testRunId || 'MISSING',
+          scenarioId: scenarioId || 'MISSING',
+          junctionCount: junctionRoles.length
+        });
+        for (const junction of junctionRoles) {
+          await logTestRecord("companies__industry_roles", junction.id);
+        }
       }
     }
     
@@ -703,6 +774,17 @@ serve(async (req: Request) => {
           table: "companies__tech_tools",
           ids: junctionTechTools.map((j: any) => j.id)
         });
+        console.log(`[${requestId}] [STEP 5] Created ${junctionTechTools.length} tech tool junction(s)`);
+        
+        // Log test records for each tech tool junction
+        console.log(`[${requestId}] [STEP 5] About to log test records for tech tool junctions:`, {
+          testRunId: testRunId || 'MISSING',
+          scenarioId: scenarioId || 'MISSING',
+          junctionCount: junctionTechTools.length
+        });
+        for (const junction of junctionTechTools) {
+          await logTestRecord("companies__tech_tools", junction.id);
+        }
       }
     }
     
@@ -728,6 +810,11 @@ serve(async (req: Request) => {
       
       licenseId = license.id;
       rollbackTracker.licenses.push(license.id);
+      console.log(`[${requestId}] [STEP 6] About to log test record for professional license:`, {
+        testRunId: testRunId || 'MISSING',
+        scenarioId: scenarioId || 'MISSING',
+        licenseId: license.id
+      });
       await logTestRecord("professional_licenses", license.id);
       
       const { data: licenseJunction, error: junctionError } = await supabase
@@ -752,6 +839,15 @@ serve(async (req: Request) => {
           table: "companies__professional_licenses",
           ids: licenseJunction.map((j: any) => j.id)
         });
+        console.log(`[${requestId}] [STEP 6] Created professional license junction`);
+        
+        // Log test record for professional license junction
+        console.log(`[${requestId}] [STEP 6] About to log test record for professional license junction:`, {
+          testRunId: testRunId || 'MISSING',
+          scenarioId: scenarioId || 'MISSING',
+          junctionId: licenseJunction[0].id
+        });
+        await logTestRecord("companies__professional_licenses", licenseJunction[0].id);
       }
     }
     
@@ -812,6 +908,11 @@ serve(async (req: Request) => {
       });
     }
     
+    console.log(`[${requestId}] [STEP 7] About to log test record for primary contact:`, {
+      testRunId: testRunId || 'MISSING',
+      scenarioId: scenarioId || 'MISSING',
+      contactId: primaryContactData.id
+    });
     await logTestRecord("contacts", primaryContactData.id);
     
     // Link primary contact to company (check if already linked)
@@ -845,6 +946,15 @@ serve(async (req: Request) => {
           table: "companies__contacts",
           ids: primaryContactJunction.map((j: any) => j.id)
         });
+        console.log(`[${requestId}] [STEP 7] Created primary contact junction`);
+        
+        // Log test record for primary contact junction
+        console.log(`[${requestId}] [STEP 7] About to log test record for primary contact junction:`, {
+          testRunId: testRunId || 'MISSING',
+          scenarioId: scenarioId || 'MISSING',
+          junctionId: primaryContactJunction[0].id
+        });
+        await logTestRecord("companies__contacts", primaryContactJunction[0].id);
       }
     }
     
@@ -927,6 +1037,11 @@ serve(async (req: Request) => {
       console.log(`[${requestId}] [STEP 8] Total additional contact IDs: ${additionalContactIds.length}`);
       
       // Log each additional contact as a test record
+      console.log(`[${requestId}] [STEP 8] About to log test records for additional contacts:`, {
+        testRunId: testRunId || 'MISSING',
+        scenarioId: scenarioId || 'MISSING',
+        contactCount: additionalContactIds.length
+      });
       for (const contactId of additionalContactIds) {
         await logTestRecord("contacts", contactId);
       }
@@ -975,6 +1090,16 @@ serve(async (req: Request) => {
               ids: additionalContactsJunction.map((j: any) => j.id)
             });
             console.log(`[${requestId}] [STEP 8] Created ${additionalContactsJunction.length} additional contact junction(s)`);
+            
+            // Log test records for each additional contact junction
+            console.log(`[${requestId}] [STEP 8] About to log test records for additional contact junctions:`, {
+              testRunId: testRunId || 'MISSING',
+              scenarioId: scenarioId || 'MISSING',
+              junctionCount: additionalContactsJunction.length
+            });
+            for (const junction of additionalContactsJunction) {
+              await logTestRecord("companies__contacts", junction.id);
+            }
           }
         }
       }
@@ -1015,6 +1140,11 @@ serve(async (req: Request) => {
       dealId: deal.id,
       title: deal.title,
       companyId: deal.company_id
+    });
+    console.log(`[${requestId}] [STEP 9] About to log test record for deal:`, {
+      testRunId: testRunId || 'MISSING',
+      scenarioId: scenarioId || 'MISSING',
+      dealId: deal.id
     });
     await logTestRecord("deals", deal.id);
     
@@ -1069,6 +1199,16 @@ serve(async (req: Request) => {
           ids: dealContactsJunction.map((j: any) => j.id)
         });
         console.log(`[${requestId}] [STEP 10] Created ${dealContactsJunction.length} deal contact junction(s)`);
+        
+        // Log test records for each deal contact junction
+        console.log(`[${requestId}] [STEP 10] About to log test records for deal contact junctions:`, {
+          testRunId: testRunId || 'MISSING',
+          scenarioId: scenarioId || 'MISSING',
+          junctionCount: dealContactsJunction.length
+        });
+        for (const junction of dealContactsJunction) {
+          await logTestRecord("deals__other_contacts", junction.id);
+        }
       }
     } else {
       console.log(`[${requestId}] [STEP 10] No additional contacts to link to deal`);
@@ -1126,6 +1266,16 @@ serve(async (req: Request) => {
           ids: servicesJunction.map((j: any) => j.id)
         });
         console.log(`[${requestId}] [STEP 11] Created ${servicesJunction.length} service deal junction(s)`);
+        
+        // Log test records for each service deal junction
+        console.log(`[${requestId}] [STEP 11] About to log test records for service deal junctions:`, {
+          testRunId: testRunId || 'MISSING',
+          scenarioId: scenarioId || 'MISSING',
+          junctionCount: servicesJunction.length
+        });
+        for (const junction of servicesJunction) {
+          await logTestRecord("services__deals", junction.id);
+        }
       }
     } else {
       console.log(`[${requestId}] [STEP 11] No services to link to deal`);

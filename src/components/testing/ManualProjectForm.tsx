@@ -11,6 +11,7 @@ import {
 import StyledInput from '../ui/StyledInput';
 import StyledTextarea from '../ui/StyledTextarea';
 import SearchableSelect from '../ui/SearchableSelect';
+import SearchableMultiSelect from '../ui/SearchableMultiSelect';
 import FileUpload from '../ui/FileUpload';
 import PrimaryButton from '../ui/PrimaryButton';
 import LoadingSpinner from '../ui/LoadingSpinner';
@@ -558,59 +559,49 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   }
 
   // Handle service selection with Plan Review -> Inspections dependency
-  function handleServiceToggle(serviceId: string) {
-    const service = services.find(s => s.id === serviceId);
-    if (!service) return;
-
+  function handleServicesChange(newServiceIds: string[]) {
     setServicesError(null);
 
-    // Check if this is Plan Review
-    if (service.name === 'Plan Review') {
-      const isPlanReviewSelected = formData.service_ids.includes(serviceId);
-      if (isPlanReviewSelected) {
-        // Deselecting Plan Review - remove both Plan Review and Inspections
-        const inspectionsService = services.find(s => s.name === 'Inspections');
-        setFormData(prev => ({
-          ...prev,
-          service_ids: prev.service_ids.filter(id => id !== serviceId && id !== inspectionsService?.id),
-        }));
-      } else {
-        // Selecting Plan Review - auto-select Inspections too
-        const inspectionsService = services.find(s => s.name === 'Inspections');
-        const newServiceIds = [...formData.service_ids, serviceId];
-        if (inspectionsService && !newServiceIds.includes(inspectionsService.id)) {
-          newServiceIds.push(inspectionsService.id);
-        }
-        setFormData(prev => ({ ...prev, service_ids: newServiceIds }));
-      }
-    } else if (service.name === 'Inspections') {
-      // Check if Plan Review is selected
-      const planReviewService = services.find(s => s.name === 'Plan Review');
-      const isPlanReviewSelected = planReviewService && formData.service_ids.includes(planReviewService.id);
-      const isInspectionsSelected = formData.service_ids.includes(serviceId);
-
-      if (isPlanReviewSelected && isInspectionsSelected) {
-        // User trying to deselect Inspections while Plan Review is selected
-        setServicesError('Plan Review cannot be selected without Inspections');
-        return;
-      }
-
-      // Toggle Inspections normally
-      setFormData(prev => ({
-        ...prev,
-        service_ids: isInspectionsSelected
-          ? prev.service_ids.filter(id => id !== serviceId)
-          : [...prev.service_ids, serviceId],
-      }));
-    } else {
-      // Toggle other services normally
-      setFormData(prev => ({
-        ...prev,
-        service_ids: prev.service_ids.includes(serviceId)
-          ? prev.service_ids.filter(id => id !== serviceId)
-          : [...prev.service_ids, serviceId],
-      }));
+    const planReviewService = services.find(s => s.name === 'Plan Review');
+    const inspectionsService = services.find(s => s.name === 'Inspections');
+    
+    if (!planReviewService || !inspectionsService) {
+      // If services aren't loaded, just update normally
+      setFormData(prev => ({ ...prev, service_ids: newServiceIds }));
+      return;
     }
+
+    const planReviewId = planReviewService.id;
+    const inspectionsId = inspectionsService.id;
+    
+    const wasPlanReviewSelected = formData.service_ids.includes(planReviewId);
+    const isPlanReviewSelected = newServiceIds.includes(planReviewId);
+    const wasInspectionsSelected = formData.service_ids.includes(inspectionsId);
+    const isInspectionsSelected = newServiceIds.includes(inspectionsId);
+
+    // Check if user is trying to deselect Inspections while Plan Review is selected
+    if (isPlanReviewSelected && wasInspectionsSelected && !isInspectionsSelected) {
+      // Show error and prevent the change by restoring previous state
+      setServicesError('Plan Review cannot be selected without Inspections');
+      // Restore Inspections to the selection
+      const restoredServiceIds = [...newServiceIds, inspectionsId];
+      setFormData(prev => ({ ...prev, service_ids: restoredServiceIds }));
+      return;
+    }
+
+    // If Plan Review is being added, ensure Inspections is also included
+    if (isPlanReviewSelected && !wasPlanReviewSelected) {
+      if (!newServiceIds.includes(inspectionsId)) {
+        newServiceIds = [...newServiceIds, inspectionsId];
+      }
+    }
+
+    // If Plan Review is being removed, also remove Inspections
+    if (!isPlanReviewSelected && wasPlanReviewSelected) {
+      newServiceIds = newServiceIds.filter(id => id !== inspectionsId);
+    }
+
+    setFormData(prev => ({ ...prev, service_ids: newServiceIds }));
   }
 
   function handleClearAndRunAgain() {
@@ -832,41 +823,24 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         )}
       </div>
 
-      {/* Services - Multi-select with checkboxes */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-fcc-white mb-2">
-          Services
-        </label>
+      {/* Services - Multi-select */}
+      {services.length === 0 ? (
         <div className="space-y-2">
-          {services.length === 0 ? (
-            <p className="text-fcc-white/70 text-sm">Loading services...</p>
-          ) : (
-            services.map((service) => {
-              const isSelected = formData.service_ids.includes(service.id);
-
-              return (
-                <label
-                  key={service.id}
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-fcc-dark/50 p-2 rounded-lg transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleServiceToggle(service.id)}
-                    className="w-5 h-5 rounded border-fcc-divider bg-fcc-black text-fcc-cyan focus:ring-2 focus:ring-fcc-cyan focus:ring-offset-2 focus:ring-offset-fcc-black"
-                  />
-                  <span className="text-fcc-white">
-                    {service.name}
-                  </span>
-                </label>
-              );
-            })
-          )}
+          <label className="block text-sm font-medium text-fcc-white mb-2">
+            Services
+          </label>
+          <p className="text-fcc-white/70 text-sm">Loading services...</p>
         </div>
-        {servicesError && (
-          <p className="text-sm text-red-500 mt-1">{servicesError}</p>
-        )}
-      </div>
+      ) : (
+        <SearchableMultiSelect
+          label="Services"
+          values={formData.service_ids}
+          onChange={handleServicesChange}
+          options={services.map(service => ({ value: service.id, label: service.name }))}
+          error={servicesError || undefined}
+          placeholder="Select services..."
+        />
+      )}
 
       {/* Scope of Work */}
       <StyledTextarea

@@ -62,6 +62,11 @@ export default function SearchableMultiSelect({
         <label className="block text-sm text-fcc-white/70 mb-2">{label}</label>
       )}
       
+      {/* Error message - displayed between label and selected items for visibility */}
+      {error && (
+        <p className="mb-2 text-sm text-red-500">{error}</p>
+      )}
+      
       {/* Selected items display */}
       {selectedOptions.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
@@ -138,10 +143,6 @@ export default function SearchableMultiSelect({
             )}
           </div>
         </div>
-      )}
-
-      {error && (
-        <p className="mt-1 text-sm text-red-500">{error}</p>
       )}
     </div>
   );
