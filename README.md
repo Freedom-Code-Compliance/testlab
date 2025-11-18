@@ -21,8 +21,11 @@ FCC Test Lab eliminates manual test data creation and ensures reproducible, isol
    - Expandable scenario list with three scenario types:
    
    **a. New Application**
-   - Simple one-click execution
+   - Comprehensive form with company and contact fields
+   - Multi-select Project Types dropdown (replaces work types)
+   - AI-powered form filling with OpenAI integration
    - Creates company, contact, and deal via `apply_form_submitted` edge function
+   - Links company to project types via `companies__project_types` junction table
    - Displays run results with record counts
    
    **b. Create New Project - Manual**
@@ -163,6 +166,8 @@ The following edge functions are deployed and active:
 
 1. **apply_form_submitted**
    - Creates new company, contact, and deal
+   - Handles `project_type_ids` array to create `companies__project_types` junction records
+   - Logs all created records (including junction rows) to `test_records` for test tracking
    - Used by New Application scenario
 
 2. **create_test_project**
@@ -192,6 +197,8 @@ The following edge functions are deployed and active:
 - **test_runs**: Test run executions
 - **test_records**: Logged records created during test runs
 - **activity_log**: Activity tracking (run created, completed, failed, purged)
+- **companies__project_types**: Junction table linking companies to project types (many-to-many)
+- **project_types**: Project type definitions (replaces work types)
 
 ### Default Test Fixtures
 

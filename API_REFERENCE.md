@@ -41,7 +41,55 @@ Creates a new application (company, contact, deal).
 **Request Body:**
 ```json
 {
-  "run_id": "uuid"
+  "testRunId": "uuid",
+  "scenarioId": "uuid",
+  "runBy": "uuid",
+  "companyData": {
+    "name": "string",
+    "address": "string",
+    "hasWebsite": boolean,
+    "website": "string",
+    "isLicensed": boolean,
+    "licenseNumber": "string",
+    "monthlyPermittedProjects": "string",
+    "annualRevenue": "uuid",
+    "techSavvy": "uuid",
+    "techDescription": "string",
+    "employeeQuantity": "string",
+    "officeStaff": boolean,
+    "officeStaffQuantity": "string",
+    "fieldStaff": boolean,
+    "fieldStaffQuantity": "string",
+    "referralSourceId": "uuid",
+    "previousPrivateProvider": boolean,
+    "previousPPName": "string",
+    "organizationId": "uuid",
+    "interestId": "uuid",
+    "interestDescription": "string",
+    "buildingDepartments": ["uuid"],
+    "project_type_ids": ["uuid"],
+    "industryRole": ["uuid"],
+    "techTools": ["uuid"],
+    "services": ["uuid"]
+  },
+  "contactData": {
+    "primaryContact": {
+      "firstName": "string",
+      "lastName": "string",
+      "email": "string",
+      "phone": "string",
+      "phoneExtension": "string"
+    },
+    "additionalContacts": [
+      {
+        "firstName": "string",
+        "lastName": "string",
+        "email": "string",
+        "phone": "string",
+        "phoneExtension": "string"
+      }
+    ]
+  }
 }
 ```
 
@@ -49,18 +97,26 @@ Creates a new application (company, contact, deal).
 ```json
 {
   "success": true,
-  "counts": {
-    "companies": 1,
-    "contacts": 1,
-    "deals": 1
-  },
-  "records": {
-    "companies": [{"id": "uuid"}],
-    "contacts": [{"id": "uuid"}],
-    "deals": [{"id": "uuid"}]
+  "message": "Application submitted successfully",
+  "data": {
+    "companyId": "uuid",
+    "primaryContactId": "uuid",
+    "dealId": "uuid",
+    "additionalContactIds": ["uuid"],
+    "licenseId": "uuid",
+    "testRunId": "uuid",
+    "scenarioId": "uuid"
   }
 }
 ```
+
+**Notes:**
+- `project_type_ids` is an array of UUIDs referencing the `project_types` table
+- Creates junction records in `companies__project_types` table
+- All junction records are logged in `test_records` for test tracking
+```
+<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
+read_file
 
 ### create_test_project
 Creates a test project (manual or from Monday.com).
@@ -129,8 +185,9 @@ Purges all test records for specified runs.
 **Request Body:**
 ```json
 {
-  "run_id": "uuid",
-  "purge_reason": "string"
+  "runIds": ["uuid"],
+  "reason": "string",
+  "actorId": "uuid"
 }
 ```
 
@@ -138,9 +195,24 @@ Purges all test records for specified runs.
 ```json
 {
   "success": true,
-  "purged_count": 42
+  "message": "Test data purged successfully.",
+  "data": {
+    "deletedCounts": {
+      "companies__project_types": 2,
+      "companies": 1,
+      "contacts": 1,
+      "deals": 1
+    },
+    "totalDeleted": 5
+  }
 }
 ```
+
+**Notes:**
+- Deletes records in proper order respecting foreign key relationships
+- Junction tables (including `companies__project_types`) are deleted before parent tables
+- Updates `test_runs` with purge metadata (`purged_at`, `purged_by`, `purge_reason`)
+- Logs purge activity to `activity_log` table
 
 ### monday_fetch_projects
 Fetches projects from Monday.com Completed Projects 2 board.
