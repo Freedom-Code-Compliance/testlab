@@ -2,6 +2,16 @@
 
 All notable changes to FCC Test Lab will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+- **Project Type Refactor**: Replaced work types with project types across the application
+  - Updated `NewApplicationForm` to use `project_type_ids` (multi-select) instead of `workTypes`
+  - Updated `apply_form_submitted` edge function to handle `project_type_ids` and create `companies__project_types` junction records
+  - Updated `testlab_purge_by_run` to include `companies__project_types` in deletion priority
+  - Removed all references to `companies__work_types` and `companies_work_types_field` tables
+  - Default project type set to "Single Family Aluminum Construction" (UUID: `019a9304-6154-7d97-f9a3-731fb9f0d5db`)
+
 ## [1.0.0] - 2025-01-14
 
 ### Added

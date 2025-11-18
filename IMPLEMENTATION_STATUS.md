@@ -1,6 +1,6 @@
 # FCC Test Lab - Implementation Status
 
-**Last Updated**: 2025-01-14
+**Last Updated**: 2025-01-17
 
 ## Implementation Progress
 
@@ -47,14 +47,17 @@
 - [x] Companies and contacts (with filtering)
 - [x] Plan set file types
 - [x] Test scenarios, runs, and records
+- [x] Project types integration (replaces work types)
+- [x] `companies__project_types` junction table support
 
 #### Features
 - [x] Dashboard analytics with filters
 - [x] Searchable dropdowns (Project Type, Construction Type)
+- [x] Multi-select Project Types in New Application form
 - [x] Monday.com project search and selection
 - [x] File uploads for plan sets
 - [x] Run history with status tracking
-- [x] Purge operations with preview
+- [x] Purge operations with preview (includes `companies__project_types`)
 - [x] Sidebar hover expansion
 - [x] Theme switching
 
