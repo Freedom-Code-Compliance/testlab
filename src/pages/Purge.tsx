@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase, callEdgeFunction } from '../lib/supabase';
+import { supabase, callEdgeFunction, getCurrentUser } from '../lib/supabase';
 import { TestRun } from '../types';
 import { formatDate, groupBy } from '../lib/utils';
 import PrimaryButton from '../components/ui/PrimaryButton';
@@ -109,14 +109,21 @@ export default function Purge() {
       setError(null);
       setSuccess(null);
 
+      // Get current user for actorId
+      const user = await getCurrentUser();
+      if (!user || !user.id) {
+        setError('You must be logged in to purge runs');
+        return;
+      }
+
       const runIds = Array.from(selectedRuns);
       
-      for (const runId of runIds) {
-        await callEdgeFunction('testlab_purge_by_run', {
-          run_id: runId,
-          purge_reason: purgeReason,
-        });
-      }
+      // Batch all runs into a single call
+      await callEdgeFunction('testlab_purge_by_run', {
+        runIds: runIds,
+        reason: purgeReason,
+        actorId: user.id,
+      });
 
       setSuccess(`Successfully purged ${runIds.length} run(s)`);
       setSelectedRuns(new Set());

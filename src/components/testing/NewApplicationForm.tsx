@@ -3,9 +3,11 @@ import { createTestRun, callEdgeFunction, getCurrentUser, supabase } from '../..
 import StyledInput from '../ui/StyledInput';
 import StyledSelect from '../ui/StyledSelect';
 import StyledTextarea from '../ui/StyledTextarea';
+import SearchableMultiSelect from '../ui/SearchableMultiSelect';
 import PrimaryButton from '../ui/PrimaryButton';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import StatusBadge from '../ui/StatusBadge';
+import chatgptLogo from '/chatgpt logo transparent.png';
 
 interface NewApplicationFormProps {
   scenarioId: string;
@@ -27,6 +29,8 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formDisabled, setFormDisabled] = useState(false);
+  const [formCollapsed, setFormCollapsed] = useState(false);
+  const [aiMessage, setAiMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Form state - Company fields
   const [formData, setFormData] = useState({
@@ -191,9 +195,43 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
       if (referralSourcesRes.data) setReferralSources(referralSourcesRes.data);
       if (organizationsRes.data) setOrganizations(organizationsRes.data);
       if (interestsRes.data) setInterests(interestsRes.data);
+
+      // Set default values after fetching reference tables
+      setDefaultValues();
     } catch (err) {
       console.error('Error fetching reference tables:', err);
     }
+  }
+
+  function setDefaultValues() {
+    setFormData(prev => ({
+      ...prev,
+      monthlyPermittedProjects: '2',
+      annualRevenue: '019a79b4-48fc-7a82-d3cd-6475dc17966f',
+      techSavvy: '019a79b8-155b-72bd-7d30-b14a24e63f37',
+      employeeQuantity: '4',
+      officeStaff: true,
+      officeStaffQuantity: '2',
+      fieldStaff: true,
+      fieldStaffQuantity: '2',
+      referralSourceId: '019a79b7-f3c6-7a82-cc1f-de247e6b516b',
+      organizationId: '019a79b7-3c19-74ba-4830-fd9573666226',
+      interestId: '019a79b5-3b34-7a85-18f1-bd9c8eeb3f40',
+      interestDescription: 'TEST. We are very interested in hiring a private provider after we have heard so many good things about the process.',
+      techDescription: 'TEST. We use a variety of software and custom built no code software to run our business.',
+      buildingDepartments: ['767c97b5-b636-4155-ba26-d067028e166a'], // Lee County
+      industryRole: ['019a79b4-87ab-728c-8182-0f0f1b6f347a'], // Contractor
+      techTools: ['019a79b8-4bdd-70ab-8fd6-e6dc8681b105'],
+      services: [
+        '019a79c0-029a-7fad-1c68-aa026b5536dd',
+        '019a79c0-0299-7db7-c3b4-36ffb2d15cc2',
+        '019a79c0-0298-7681-ac4c-923fef5ded40'
+      ], // All three services
+      hasWebsite: false,
+      isLicensed: false,
+      primaryContact_firstName: '',
+      primaryContact_lastName: '',
+    }));
   }
 
   function getUserLocation() {
@@ -386,6 +424,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
     setFormDisabled(true);
     setError(null);
     setSuccessMessage(null);
+    setAiMessage(null);
 
     try {
       const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
@@ -393,7 +432,35 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
         throw new Error('OpenAI API key not configured');
       }
 
+      // Generate random letter and industry focus for variety
+      const randomLetter = String.fromCharCode(97 + Math.floor(Math.random() * 26)); // a-z
+      const industries = [
+        'residential',
+        'commercial',
+        'industrial',
+        'infrastructure',
+        'renovation',
+        'custom homes',
+        'general contracting',
+        'roofing',
+        'electrical',
+        'plumbing',
+        'HVAC',
+        'landscaping',
+        'concrete',
+        'framing'
+      ];
+      const randomIndustry = industries[Math.floor(Math.random() * industries.length)];
+
       const prompt = `Generate a realistic U.S. construction company and primary contact.
+
+IMPORTANT CONSTRAINTS:
+- Company name MUST start with the letter "${randomLetter.toUpperCase()}"
+- Contact first name MUST start with the letter "${randomLetter.toUpperCase()}"
+- Contact last name MUST start with the letter "${randomLetter.toUpperCase()}"
+- Company should focus on ${randomIndustry} construction
+- AVOID common/repetitive words like: Sunshine, Golden, Premier, Elite, Superior, Apex, Summit, Best, Top, First, Prime
+- Use diverse, realistic naming patterns
 
 Return strictly JSON with the following fields:
 
@@ -434,7 +501,7 @@ Return ONLY the JSON, no explanation.`;
           'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini', // Using gpt-4o-mini as gpt-5-nano may not be available
+          model: 'gpt-4o-mini',
           messages: [
             {
               role: 'user',
@@ -487,8 +554,8 @@ Return ONLY the JSON, no explanation.`;
         primaryContact_phone: aiData.contact?.phone || prev.primaryContact_phone,
       }));
 
-      setSuccessMessage('AI data loaded successfully.');
-      setTimeout(() => setSuccessMessage(null), 5000);
+      setAiMessage({ type: 'success', message: 'AI data loaded successfully.' });
+      setTimeout(() => setAiMessage(null), 5000);
     } catch (err: any) {
       console.error('Error with AI fill:', err);
       
@@ -503,8 +570,8 @@ Return ONLY the JSON, no explanation.`;
         primaryContact_phone: '5551231234',
       }));
 
-      setError('Failed to retrieve AI-generated data. Using default test values.');
-      setTimeout(() => setError(null), 5000);
+      setAiMessage({ type: 'error', message: 'Failed to retrieve AI-generated data. Using default test values.' });
+      setTimeout(() => setAiMessage(null), 5000);
     } finally {
       setAiLoading(false);
       setFormDisabled(false);
@@ -512,6 +579,75 @@ Return ONLY the JSON, no explanation.`;
   }
 
   // Multi-select handlers
+  function handleClearAndRunAgain() {
+    // Reset form state
+    setFormData({
+      company_name: '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      state: 'FL',
+      zipcode: '',
+      hasWebsite: false,
+      website: '',
+      isLicensed: false,
+      licenseNumber: '',
+      monthlyPermittedProjects: '',
+      annualRevenue: '',
+      techSavvy: '',
+      techDescription: '',
+      employeeQuantity: '',
+      officeStaff: false,
+      officeStaffQuantity: '',
+      fieldStaff: false,
+      fieldStaffQuantity: '',
+      referralSourceId: '',
+      previousPrivateProvider: false,
+      previousPPName: '',
+      organizationId: '',
+      interestId: '',
+      interestDescription: '',
+      buildingDepartments: [],
+      workTypes: [],
+      industryRole: [],
+      techTools: [],
+      services: [],
+      primaryContact_firstName: '',
+      primaryContact_lastName: '',
+      primaryContact_email: '',
+      primaryContact_phone: '',
+      primaryContact_phoneExtension: '',
+    });
+    setAdditionalContacts([]);
+    setError(null);
+    setResults(null);
+    setSuccessMessage(null);
+    setFormCollapsed(false);
+    setAddressSearch('');
+    setAddressSelected(false);
+
+    // Re-initialize with defaults
+    if (runId) {
+      const shortRunId = runId.slice(0, 8);
+      setFormData(prev => ({
+        ...prev,
+        company_name: `TestLab Company ${shortRunId}`,
+        address_line1: '123 Main Street',
+        address_line2: '',
+        city: 'Orlando',
+        state: 'FL',
+        zipcode: '32801',
+        primaryContact_email: `test+newapp+${runId}@example.test`,
+        primaryContact_phone: '5551231234',
+      }));
+    }
+
+    // Set default values after a short delay to ensure reference tables are loaded
+    setTimeout(() => {
+      setDefaultValues();
+    }, 100);
+  }
+
   function handleMultiSelectToggle(field: 'buildingDepartments' | 'workTypes' | 'industryRole' | 'techTools' | 'services', id: string) {
     setFormData(prev => {
       const current = prev[field] as string[];
@@ -689,6 +825,7 @@ Return ONLY the JSON, no explanation.`;
       if (funcError) throw funcError;
       setResults(data);
       setSuccessMessage('Application submitted successfully!');
+      setFormCollapsed(true);
     } catch (err: any) {
       console.error('Error executing scenario:', err);
       setError(err.message || 'Failed to execute scenario');
@@ -706,34 +843,50 @@ Return ONLY the JSON, no explanation.`;
             This scenario creates a new company, contact, and deal using the apply_form_submitted edge function.
           </p>
         </div>
-        <PrimaryButton
-          type="button"
-          onClick={handleAIFill}
-          disabled={aiLoading || formDisabled}
-          className="flex items-center space-x-2"
-        >
-          {aiLoading ? (
-            <>
-              <LoadingSpinner />
-              <span>AI is generating...</span>
-            </>
-          ) : (
-            <span>Fill with AI</span>
+        <div className="flex flex-col items-end">
+          <PrimaryButton
+            type="button"
+            onClick={handleAIFill}
+            disabled={aiLoading || formDisabled}
+            className="flex items-center space-x-2"
+          >
+            {aiLoading ? (
+              <>
+                <LoadingSpinner />
+                <span>AI is generating...</span>
+              </>
+            ) : (
+              <>
+                <img src={chatgptLogo} alt="ChatGPT" className="w-5 h-5" />
+                <span>Fill with AI</span>
+              </>
+            )}
+          </PrimaryButton>
+          
+          {/* AI Fill Messages */}
+          {aiMessage && (
+            <div className={`mt-2 bg-fcc-dark border rounded-lg p-3 ${
+              aiMessage.type === 'success' 
+                ? 'border-green-500' 
+                : 'border-red-500'
+            }`}>
+              <div className="flex items-center space-x-2">
+                <StatusBadge status={aiMessage.type === 'success' ? 'success' : 'failed'} />
+                <span className={`text-sm ${
+                  aiMessage.type === 'success' 
+                    ? 'text-green-400' 
+                    : 'text-red-400'
+                }`}>
+                  {aiMessage.message}
+                </span>
+              </div>
+            </div>
           )}
-        </PrimaryButton>
+        </div>
       </div>
 
-      {/* Success message */}
-      {successMessage && (
-        <div className="bg-fcc-dark border border-green-500 rounded-lg p-4">
-          <div className="flex items-center space-x-2">
-            <StatusBadge status="success" />
-            <span className="text-green-400">{successMessage}</span>
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {!formCollapsed && (
+        <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information Section */}
         <div className="bg-fcc-dark rounded-lg p-6 space-y-4">
           <h3 className="text-lg font-semibold text-fcc-white mb-4">Company Information</h3>
@@ -1037,26 +1190,14 @@ Return ONLY the JSON, no explanation.`;
           <h3 className="text-lg font-semibold text-fcc-white mb-4">Company Associations</h3>
 
           {/* Building Departments */}
-          <div className="space-y-2">
-            <label className="block text-sm text-fcc-white/70 mb-2">Building Departments</label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {buildingDepartments.map((dept) => (
-                <label
-                  key={dept.id}
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-fcc-black/50 p-2 rounded-lg transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.buildingDepartments.includes(dept.id)}
-                    onChange={() => handleMultiSelectToggle('buildingDepartments', dept.id)}
-                    disabled={formDisabled}
-                    className="w-5 h-5 rounded border-fcc-divider bg-fcc-black text-fcc-cyan focus:ring-2 focus:ring-fcc-cyan"
-                  />
-                  <span className="text-fcc-white">{dept.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          <SearchableMultiSelect
+            label="Building Departments"
+            values={formData.buildingDepartments}
+            onChange={(values) => setFormData(prev => ({ ...prev, buildingDepartments: values }))}
+            options={buildingDepartments.map(dept => ({ value: dept.id, label: dept.name }))}
+            disabled={formDisabled}
+            placeholder="Select building departments..."
+          />
 
           {/* Work Types */}
           <div className="space-y-2">
@@ -1282,37 +1423,30 @@ Return ONLY the JSON, no explanation.`;
           </div>
         )}
 
-        {results && runId && (
-          <div className="bg-fcc-dark border border-fcc-divider rounded-lg p-4 space-y-4">
-            <div className="flex items-center space-x-2">
-              <StatusBadge status="success" />
-              <span className="text-fcc-white font-semibold">Scenario Completed</span>
-            </div>
-
-            <div>
-              <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
-              <p className="text-fcc-white font-mono text-sm">{runId}</p>
-            </div>
-
-            {results.data && (
-              <div>
-                <p className="text-sm text-fcc-white/70 mb-2">Records Created:</p>
-                <div className="space-y-2">
-                  {results.data.companyId && (
-                    <p className="text-fcc-white">Company ID: <span className="font-mono text-sm">{results.data.companyId}</span></p>
-                  )}
-                  {results.data.primaryContactId && (
-                    <p className="text-fcc-white">Primary Contact ID: <span className="font-mono text-sm">{results.data.primaryContactId}</span></p>
-                  )}
-                  {results.data.dealId && (
-                    <p className="text-fcc-white">Deal ID: <span className="font-mono text-sm">{results.data.dealId}</span></p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </form>
+      )}
+
+      {formCollapsed && results && runId && (
+        <div className="bg-fcc-dark border border-green-500 rounded-lg p-6 space-y-4">
+          <div className="flex items-center space-x-2">
+            <StatusBadge status="success" />
+            <span className="text-fcc-white font-semibold text-lg">Scenario Completed</span>
+          </div>
+
+          <div>
+            <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
+            <p className="text-fcc-white font-mono text-sm">{runId}</p>
+          </div>
+
+          <PrimaryButton
+            type="button"
+            onClick={handleClearAndRunAgain}
+            className="w-full"
+          >
+            Clear and Run Again
+          </PrimaryButton>
+        </div>
+      )}
     </div>
   );
 }

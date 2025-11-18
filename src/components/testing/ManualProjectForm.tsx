@@ -9,7 +9,6 @@ import {
   Contact
 } from '../../types';
 import StyledInput from '../ui/StyledInput';
-import StyledSelect from '../ui/StyledSelect';
 import StyledTextarea from '../ui/StyledTextarea';
 import SearchableSelect from '../ui/SearchableSelect';
 import FileUpload from '../ui/FileUpload';
@@ -74,6 +73,7 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
   const [showPlanSetUpload, setShowPlanSetUpload] = useState(false);
   const [servicesError, setServicesError] = useState<string | null>(null);
+  const [formCollapsed, setFormCollapsed] = useState(false);
 
   useEffect(() => {
     fetchOptions();
@@ -504,6 +504,7 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
 
       setResults(response);
       setProjectCreated(true);
+      setFormCollapsed(true);
       // Read project_id from either data.project_id or top-level project_id
       const projectId = response.data?.project_id ?? response.project_id;
       if (projectId) {
@@ -612,77 +613,40 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
     }
   }
 
-  // If project is created, show simplified view
-  if (projectCreated && createdProjectId) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-fcc-dark border border-fcc-divider rounded-lg p-6 space-y-4">
-          <div>
-            <p className="text-sm text-fcc-white/70 mb-1">Project Name:</p>
-            <p className="text-fcc-white font-semibold text-lg">{formData.name}</p>
-          </div>
-          <div>
-            <p className="text-sm text-fcc-white/70 mb-1">Project ID:</p>
-            <p className="text-fcc-white font-mono text-sm">{createdProjectId}</p>
-          </div>
-          
-          {!showPlanSetUpload && (
-            <PrimaryButton
-              type="button"
-              onClick={() => setShowPlanSetUpload(true)}
-              disabled={loading}
-            >
-              Upload Plan Set
-            </PrimaryButton>
-          )}
-
-          {showPlanSetUpload && (
-            <div className="space-y-4 mt-6">
-              <h4 className="text-fcc-white font-semibold">Plan Set Files</h4>
-              {fileTypes.map((fileType) => (
-                <FileUpload
-                  key={fileType.id}
-                  label={fileType.name}
-                  accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png"
-                  multiple
-                  onFilesSelected={(files) => handleFileUpload(fileType.id, files)}
-                />
-              ))}
-              <PrimaryButton
-                type="button"
-                onClick={handlePlanSetUpload}
-                disabled={loading}
-              >
-                {loading ? 'Uploading...' : 'Upload Files'}
-              </PrimaryButton>
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-fcc-dark border border-red-500 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <StatusBadge status="failed" />
-                <span className="text-red-500 font-semibold">Error</span>
-              </div>
-              <p className="text-red-400">{error}</p>
-            </div>
-          )}
-
-          {results && results.files_uploaded && (
-            <div className="bg-fcc-dark border border-fcc-divider rounded-lg p-4">
-              <div className="flex items-center space-x-2">
-                <StatusBadge status="success" />
-                <span className="text-fcc-white font-semibold">Files Uploaded Successfully</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
+  function handleClearAndRunAgain() {
+    // Reset form state
+    setFormData({
+      name: '',
+      building_department_id: '',
+      project_type_id: '',
+      occupancy_id: '',
+      construction_type_id: '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      state: 'FL',
+      zipcode: '',
+      company_id: '',
+      contact_id: '',
+      service_ids: [],
+      scope_of_work: '',
+      needs_quote: false,
+    });
+    setFileUploads({});
+    setError(null);
+    setResults(null);
+    setProjectCreated(false);
+    setCreatedProjectId(null);
+    setShowPlanSetUpload(false);
+    setFormCollapsed(false);
+    setAddressSearch('');
+    setAddressSelected(false);
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
+      {!formCollapsed && (
+        <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Project Name */}
         <StyledInput
@@ -693,10 +657,10 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         />
 
         {/* 2. Company */}
-        <StyledSelect
+        <SearchableSelect
           label="Company *"
           value={formData.company_id}
-          onChange={(e) => setFormData(prev => ({ ...prev, company_id: e.target.value, contact_id: '' }))}
+          onChange={(value) => setFormData(prev => ({ ...prev, company_id: value, contact_id: '' }))}
           options={[
             { value: '', label: 'Select...' },
             ...companies.map(comp => ({ value: comp.id, label: comp.name }))
@@ -706,10 +670,10 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
 
         {/* 3. Submission Contact - conditionally visible */}
         {formData.company_id && (
-          <StyledSelect
+          <SearchableSelect
             label="Submission Contact"
             value={formData.contact_id}
-            onChange={(e) => setFormData(prev => ({ ...prev, contact_id: e.target.value }))}
+            onChange={(value) => setFormData(prev => ({ ...prev, contact_id: value }))}
             options={[
               { value: '', label: 'Select...' },
               ...contacts.map(cont => ({ value: cont.id, label: cont.name || `${cont.first_name || ''} ${cont.last_name || ''}`.trim() }))
@@ -718,10 +682,10 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         )}
 
         {/* 4. Building Department */}
-        <StyledSelect
+        <SearchableSelect
           label="Building Department *"
           value={formData.building_department_id}
-          onChange={(e) => setFormData(prev => ({ ...prev, building_department_id: e.target.value }))}
+          onChange={(value) => setFormData(prev => ({ ...prev, building_department_id: value }))}
           options={[
             { value: '', label: 'Select...' },
             ...buildingDepartments.map(bd => ({ value: bd.id, label: bd.name }))
@@ -948,7 +912,31 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         </div>
       )}
 
-    </form>
+      </form>
+      )}
+
+      {formCollapsed && results && runId && (
+        <div className="bg-fcc-dark border border-green-500 rounded-lg p-6 space-y-4">
+          <div className="flex items-center space-x-2">
+            <StatusBadge status="success" />
+            <span className="text-fcc-white font-semibold text-lg">Scenario Completed</span>
+          </div>
+
+          <div>
+            <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
+            <p className="text-fcc-white font-mono text-sm">{runId}</p>
+          </div>
+
+          <PrimaryButton
+            type="button"
+            onClick={handleClearAndRunAgain}
+            className="w-full"
+          >
+            Clear and Run Again
+          </PrimaryButton>
+        </div>
+      )}
+    </div>
   );
 }
 
