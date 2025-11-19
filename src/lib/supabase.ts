@@ -55,6 +55,8 @@ export async function callInitUpload(payload: {
   filename: string;
   mime_type: string;
   size_bytes: number;
+  run_id?: string; // Optional: for TestLab logging
+  scenario_id?: string; // Optional: for TestLab logging
   plan_set?: {
     project_id: string;
     plan_set_id: string;

@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import NewApplicationForm from '../components/testing/NewApplicationForm';
 import ManualProjectForm from '../components/testing/ManualProjectForm';
 import MondayProjectForm from '../components/testing/MondayProjectForm';
+import ExistingProjectPlanSetForm from '../components/testing/ExistingProjectPlanSetForm';
 
 export default function Testing() {
   const [scenarios, setScenarios] = useState<TestScenario[]>([]);
@@ -67,11 +68,13 @@ export default function Testing() {
           const scenarioName = scenario.name.toLowerCase();
           
           // Determine scenario type
-          let scenarioType: 'new-application' | 'manual' | 'monday' = 'manual';
+          let scenarioType: 'new-application' | 'manual' | 'monday' | 'existing-project-plan-set' = 'manual';
           if (scenarioName.includes('new application') || scenarioName.includes('apply form')) {
             scenarioType = 'new-application';
           } else if (scenarioName.includes('monday')) {
             scenarioType = 'monday';
+          } else if (scenarioName.includes('upload plan set') || scenario.id === '46bdc783-8209-4f5d-b4ae-ff0a4a81cc3d') {
+            scenarioType = 'existing-project-plan-set';
           }
 
           return (
@@ -107,6 +110,9 @@ export default function Testing() {
                   )}
                   {scenarioType === 'monday' && (
                     <MondayProjectForm scenarioId={scenario.id} />
+                  )}
+                  {scenarioType === 'existing-project-plan-set' && (
+                    <ExistingProjectPlanSetForm scenarioId={scenario.id} />
                   )}
                 </div>
               )}
