@@ -49,3 +49,50 @@ export async function getCurrentSession() {
   return session;
 }
 
+// Edge function helpers - use supabase.functions.invoke() which handles auth automatically
+export async function callInitUpload(payload: {
+  kind: 'PLAN_SET_FILE' | 'PROJECT_FILE' | 'INSPECTION_FILE';
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  plan_set?: {
+    project_id: string;
+    plan_set_id: string;
+    file_type_code: string;
+  };
+  project_file?: any;
+  inspection_file?: any;
+}) {
+  const { data, error } = await supabase.functions.invoke('init_upload', {
+    body: payload,
+  });
+
+  if (error) {
+    throw new Error(error.message || 'init_upload failed');
+  }
+
+  // Handle response that might have error in data
+  if (data && data.error) {
+    throw new Error(data.error);
+  }
+
+  return data;
+}
+
+export async function callCompleteUpload(fileId: string) {
+  const { data, error } = await supabase.functions.invoke('complete_upload', {
+    body: { file_id: fileId },
+  });
+
+  if (error) {
+    throw new Error(error.message || 'complete_upload failed');
+  }
+
+  // Handle response that might have error in data
+  if (data && data.error) {
+    throw new Error(data.error);
+  }
+
+  return data;
+}
+

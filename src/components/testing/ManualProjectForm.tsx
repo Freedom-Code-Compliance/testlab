@@ -16,6 +16,7 @@ import FileUpload from '../ui/FileUpload';
 import PrimaryButton from '../ui/PrimaryButton';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import StatusBadge from '../ui/StatusBadge';
+import PlanSetPanel from './PlanSetPanel';
 
 interface ManualProjectFormProps {
   scenarioId: string;
@@ -890,25 +891,35 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       )}
 
       {formCollapsed && results && runId && (
-        <div className="bg-fcc-dark border border-green-500 rounded-lg p-6 space-y-4">
-          <div className="flex items-center space-x-2">
-            <StatusBadge status="success" />
-            <span className="text-fcc-white font-semibold text-lg">Scenario Completed</span>
+        <>
+          <div className="bg-fcc-dark border border-green-500 rounded-lg p-6 space-y-4">
+            <div className="flex items-center space-x-2">
+              <StatusBadge status="success" />
+              <span className="text-fcc-white font-semibold text-lg">Scenario Completed</span>
+            </div>
+
+            <div>
+              <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
+              <p className="text-fcc-white font-mono text-sm">{runId}</p>
+            </div>
+
+            <PrimaryButton
+              type="button"
+              onClick={handleClearAndRunAgain}
+              className="w-full"
+            >
+              Clear and Run Again
+            </PrimaryButton>
           </div>
 
-          <div>
-            <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
-            <p className="text-fcc-white font-mono text-sm">{runId}</p>
-          </div>
-
-          <PrimaryButton
-            type="button"
-            onClick={handleClearAndRunAgain}
-            className="w-full"
-          >
-            Clear and Run Again
-          </PrimaryButton>
-        </div>
+          {createdProjectId && (
+            <PlanSetPanel
+              projectId={createdProjectId}
+              runId={runId}
+              scenarioId={scenarioId}
+            />
+          )}
+        </>
       )}
     </div>
   );
