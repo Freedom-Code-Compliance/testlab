@@ -33,9 +33,20 @@ export default function SearchableMultiSelect({
       }
     }
 
+    function handleEscapeKey(event: KeyboardEvent) {
+      if (event.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+        setSearchQuery('');
+      }
+    }
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen]);
 
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -60,6 +71,11 @@ export default function SearchableMultiSelect({
     <div className="relative" ref={dropdownRef}>
       {label && (
         <label className="block text-sm text-fcc-white/70 mb-2">{label}</label>
+      )}
+      
+      {/* Error message - displayed between label and selected items for visibility */}
+      {error && (
+        <p className="mb-2 text-sm text-red-500">{error}</p>
       )}
       
       {/* Selected items display */}
@@ -138,10 +154,6 @@ export default function SearchableMultiSelect({
             )}
           </div>
         </div>
-      )}
-
-      {error && (
-        <p className="mt-1 text-sm text-red-500">{error}</p>
       )}
     </div>
   );
