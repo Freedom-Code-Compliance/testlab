@@ -135,12 +135,12 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
           </ul>
         </nav>
         <div className="p-4 border-t border-fcc-divider">
-          <button
+          <div
             onClick={() => {
               navigate('/profile');
               onNavigate?.();
             }}
-            className={`w-full flex items-center py-2 rounded-lg transition-colors relative ${
+            className={`w-full flex items-center py-2 rounded-lg transition-colors relative cursor-pointer ${
               location.pathname === '/profile'
                 ? 'bg-fcc-cyan text-fcc-white'
                 : 'text-fcc-white hover:bg-fcc-divider hover:text-fcc-cyan'
@@ -150,6 +150,15 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                 : 'gap-3 px-3'
             }`}
             title={!isExpanded ? 'Profile' : undefined}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate('/profile');
+                onNavigate?.();
+              }
+            }}
           >
             <div className="w-8 h-8 bg-fcc-cyan rounded-full flex items-center justify-center text-fcc-white font-semibold flex-shrink-0 transition-all duration-300 ease-in-out">
               {getUserDisplay()}
@@ -182,7 +191,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
                 <LogOut className="w-4 h-4 group-hover:scale-110 transition-transform" />
               </button>
             )}
-          </button>
+          </div>
         </div>
       </div>
     </aside>

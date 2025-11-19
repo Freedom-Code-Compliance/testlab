@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase, callInitUpload, callCompleteUpload } from '../../lib/supabase';
+import { supabase, callInitUpload, callConfirmUpload } from '../../lib/supabase';
 import { Upload, X, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface PlanSetFileCardProps {
@@ -79,35 +79,35 @@ export default function PlanSetFileCard({
     // Upload each file
     for (const newFile of newFiles) {
       const file = newFile.file!;
+      let fileId: string | null = null;
 
       try {
-        // 1. Call init_upload
+        // 1. Call init-upload
         const initResponse = await callInitUpload({
           kind: 'PLAN_SET_FILE',
           filename: file.name,
-          mime_type: file.type || 'application/octet-stream',
-          size_bytes: file.size,
-          plan_set: {
-            project_id: projectId,
-            plan_set_id: planSetId,
-            file_type_code: fileType.code,
-          },
+          plan_set_id: planSetId,
+          file_type_code: fileType.code,
+          project_id: projectId,
         });
 
-        if (!initResponse.success || !initResponse.file) {
-          throw new Error(initResponse.error || 'init_upload failed');
+        if (initResponse?.error) {
+          throw new Error(initResponse.error || 'init-upload failed');
         }
 
-        const { file: fileData, upload } = initResponse;
-        const fileId = fileData.id;
-        const bucket = upload.bucket;
-        const objectKey = upload.object_key;
-        const token = upload.signed_upload_token;
+        if (!initResponse?.file_id) {
+          throw new Error('init-upload did not return file_id');
+        }
+
+        fileId = initResponse.file_id;
+        const bucket = initResponse.bucket;
+        const objectKey = initResponse.object_key;
+        const token = initResponse.signed_upload_token;
 
         // Update with fileId
         setUploadedFiles((prev) => {
           return prev.map((f) =>
-            f.id === newFile.id ? { ...f, fileId } : f
+            f.id === newFile.id ? { ...f, fileId: fileId! } : f
           );
         });
 
@@ -118,6 +118,7 @@ export default function PlanSetFileCard({
           );
         });
 
+        // 2. Upload file directly to storage using signed URL
         const storageBucket = supabase.storage.from(bucket) as any;
         if (typeof storageBucket.uploadToSignedUrl !== 'function') {
           throw new Error('Signed uploads are not supported in the current supabase-js version.');
@@ -128,14 +129,26 @@ export default function PlanSetFileCard({
         });
 
         if (uploadError) {
+          // Call confirm-upload with success: false
+          if (fileId) {
+            try {
+              await callConfirmUpload(fileId, false, uploadError.message || 'File upload failed');
+            } catch (confirmError) {
+              console.error('Failed to confirm upload failure:', confirmError);
+            }
+          }
           throw new Error(uploadError.message || 'File upload failed');
         }
 
-        // 3. Call complete_upload
-        const completeResponse = await callCompleteUpload(fileId);
+        // 3. Call confirm-upload with success: true
+        if (!fileId) {
+          throw new Error('File ID is missing');
+        }
 
-        if (!completeResponse.success) {
-          throw new Error(completeResponse.error || 'complete_upload failed');
+        const confirmResponse = await callConfirmUpload(fileId, true);
+
+        if (confirmResponse.error) {
+          throw new Error(confirmResponse.error || 'confirm-upload failed');
         }
 
         // Update status to uploaded
@@ -151,6 +164,23 @@ export default function PlanSetFileCard({
         onFileUploaded();
       } catch (err: any) {
         console.error('PlanSetFileCard upload failed:', err);
+        console.error('Error details:', {
+          message: err.message,
+          error: err.error,
+          status: err.status,
+          statusCode: err.statusCode,
+          response: err.response,
+        });
+        
+        // If we have a fileId but upload failed, try to confirm the failure
+        if (fileId) {
+          try {
+            await callConfirmUpload(fileId, false, err.message || 'Upload failed');
+          } catch (confirmError) {
+            console.error('Failed to confirm upload failure:', confirmError);
+          }
+        }
+
         setUploadedFiles((prev) => {
           return prev.map((f) =>
             f.id === newFile.id
