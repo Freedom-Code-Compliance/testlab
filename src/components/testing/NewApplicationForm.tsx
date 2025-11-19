@@ -27,10 +27,10 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
   const [runId, setRunId] = useState<string | null>(null);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [formDisabled, setFormDisabled] = useState(false);
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [aiMessage, setAiMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [servicesError, setServicesError] = useState<string | null>(null);
 
   // Form state - Company fields
   const [formData, setFormData] = useState({
@@ -103,29 +103,21 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
   const addressInputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // Initialize: Create test run and fetch reference tables
+  // Initialize: Fetch reference tables and set defaults
   useEffect(() => {
     async function initialize() {
       try {
-        // Get current user
-        const user = await getCurrentUser();
-        const runBy = user?.id || null;
-
-        // Create test run early
-        const newRunId = await createTestRun(scenarioId, runBy);
-        setRunId(newRunId);
-
-        // Auto-populate with defaults
-        const shortRunId = newRunId.slice(0, 8);
+        // Auto-populate with defaults (using timestamp instead of runId)
+        const timestamp = Date.now().toString().slice(-8);
         setFormData(prev => ({
           ...prev,
-          company_name: `TestLab Company ${shortRunId}`,
+          company_name: `TestLab Company ${timestamp}`,
           address_line1: '123 Main Street',
           address_line2: '',
           city: 'Orlando',
           state: 'FL',
           zipcode: '32801',
-          primaryContact_email: `test+newapp+${newRunId}@example.test`,
+          primaryContact_email: `test+newapp+${timestamp}@example.test`,
           primaryContact_phone: '5551231234',
         }));
 
@@ -297,7 +289,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
       radius: 50000,
     };
 
-    autocompleteService.getPlacePredictions(request, (predictions, status) => {
+    autocompleteService.getPlacePredictions(request, (predictions: google.maps.places.AutocompletePrediction[] | null, status: google.maps.places.PlacesServiceStatus) => {
       if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
         setSuggestions(predictions);
         setShowSuggestions(true);
@@ -337,7 +329,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
       radius: 50000,
     };
 
-    autocompleteService.getPlacePredictions(request, (predictions, status) => {
+    autocompleteService.getPlacePredictions(request, (predictions: google.maps.places.AutocompletePrediction[] | null, status: google.maps.places.PlacesServiceStatus) => {
       if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
         setSuggestions(predictions);
         setShowSuggestions(true);
@@ -367,7 +359,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
       fields: ['address_components', 'formatted_address'],
     };
 
-    placesService.getDetails(request, (place, status) => {
+    placesService.getDetails(request, (place: google.maps.places.PlaceResult | null, status: google.maps.places.PlacesServiceStatus) => {
       if (status === google.maps.places.PlacesServiceStatus.OK && place) {
         const components = place.address_components || [];
         
@@ -377,7 +369,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
         let state = '';
         let zipcode = '';
 
-        components.forEach((component) => {
+        components.forEach((component: google.maps.GeocoderAddressComponent) => {
           const types = component.types;
 
           if (types.includes('street_number')) {
@@ -416,15 +408,9 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
 
   // AI Fill function
   async function handleAIFill() {
-    if (!runId) {
-      setError('Test run not initialized. Please refresh the page.');
-      return;
-    }
-
     setAiLoading(true);
     setFormDisabled(true);
     setError(null);
-    setSuccessMessage(null);
     setAiMessage(null);
 
     try {
@@ -452,6 +438,9 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
         'framing'
       ];
       const randomIndustry = industries[Math.floor(Math.random() * industries.length)];
+
+      // Generate entropy for phone number uniqueness (digits 4-6)
+      const entropy = Math.floor(100 + Math.random() * 900); // 100–999
 
       const prompt = `Generate a realistic U.S. construction company and primary contact.
 
@@ -490,6 +479,18 @@ Rules:
 - Create realistic but fake data.
 - State must always be FL
 - Phone must be a 10-digit U.S. phone number with no formatting.
+- The phone number MUST include the sequence "${entropy}" as digits 4–6 of the number.
+- Phone number structure:
+    - Area code (digits 1–3): Choose a valid U.S. area code between 201–989
+    - Middle digits (digits 4–6): MUST be exactly "${entropy}"
+    - Last 4 digits (digits 7–10): Random number between 0000–9999
+- CRITICAL: Avoid common or repeating patterns in the phone number:
+    - DO NOT use sequential numbers like 1234, 2345, 3456, 5678, 6789, etc.
+    - DO NOT use repeating digits like 1111, 2222, 3333, 0000, etc.
+    - DO NOT use common test patterns like 1234, 0000, 1111, 9999, etc.
+    - DO NOT use simple patterns like 1000, 2000, 3000, etc.
+    - Use truly random, non-sequential, non-repeating combinations for the last 4 digits
+    - Ensure the last 4 digits appear realistic and varied (e.g., 3847, 5921, 7163, not 1234 or 1111)
 - Email must be valid.
 - License info can be random or null.
 
@@ -560,14 +561,14 @@ Return ONLY the JSON, no explanation.`;
     } catch (err: any) {
       console.error('Error with AI fill:', err);
       
-      // Fallback to defaults
-      const shortRunId = runId.slice(0, 8);
+      // Fallback to defaults (using timestamp instead of runId)
+      const timestamp = Date.now().toString().slice(-8);
       setFormData(prev => ({
         ...prev,
-        company_name: `TestLab Company ${shortRunId}`,
+        company_name: `TestLab Company ${timestamp}`,
         primaryContact_firstName: 'Test',
         primaryContact_lastName: 'Client',
-        primaryContact_email: `test+newapp+${runId}@example.test`,
+        primaryContact_email: `test+newapp+${timestamp}@example.test`,
         primaryContact_phone: '5551231234',
       }));
 
@@ -622,26 +623,25 @@ Return ONLY the JSON, no explanation.`;
     setAdditionalContacts([]);
     setError(null);
     setResults(null);
-    setSuccessMessage(null);
+    setServicesError(null);
     setFormCollapsed(false);
     setAddressSearch('');
     setAddressSelected(false);
+    setRunId(null); // Reset runId so a new one will be created on next submit
 
-    // Re-initialize with defaults
-    if (runId) {
-      const shortRunId = runId.slice(0, 8);
-      setFormData(prev => ({
-        ...prev,
-        company_name: `TestLab Company ${shortRunId}`,
-        address_line1: '123 Main Street',
-        address_line2: '',
-        city: 'Orlando',
-        state: 'FL',
-        zipcode: '32801',
-        primaryContact_email: `test+newapp+${runId}@example.test`,
-        primaryContact_phone: '5551231234',
-      }));
-    }
+    // Re-initialize with defaults (using timestamp instead of runId)
+    const timestamp = Date.now().toString().slice(-8);
+    setFormData(prev => ({
+      ...prev,
+      company_name: `TestLab Company ${timestamp}`,
+      address_line1: '123 Main Street',
+      address_line2: '',
+      city: 'Orlando',
+      state: 'FL',
+      zipcode: '32801',
+      primaryContact_email: `test+newapp+${timestamp}@example.test`,
+      primaryContact_phone: '5551231234',
+    }));
 
     // Set default values after a short delay to ensure reference tables are loaded
     setTimeout(() => {
@@ -649,14 +649,50 @@ Return ONLY the JSON, no explanation.`;
     }, 100);
   }
 
-  function handleMultiSelectToggle(field: 'buildingDepartments' | 'project_type_ids' | 'industryRole' | 'techTools' | 'services', id: string) {
-    setFormData(prev => {
-      const current = prev[field] as string[];
-      const updated = current.includes(id)
-        ? current.filter(item => item !== id)
-        : [...current, id];
-      return { ...prev, [field]: updated };
-    });
+  // Handle service selection with Plan Review -> Inspections dependency
+  function handleServicesChange(newServiceIds: string[]) {
+    setServicesError(null);
+
+    const planReviewService = services.find(s => s.name === 'Plan Review');
+    const inspectionsService = services.find(s => s.name === 'Inspections');
+    
+    if (!planReviewService || !inspectionsService) {
+      // If services aren't loaded, just update normally
+      setFormData(prev => ({ ...prev, services: newServiceIds }));
+      return;
+    }
+
+    const planReviewId = planReviewService.id;
+    const inspectionsId = inspectionsService.id;
+    
+    const wasPlanReviewSelected = formData.services.includes(planReviewId);
+    const isPlanReviewSelected = newServiceIds.includes(planReviewId);
+    const wasInspectionsSelected = formData.services.includes(inspectionsId);
+    const isInspectionsSelected = newServiceIds.includes(inspectionsId);
+
+    // Check if user is trying to deselect Inspections while Plan Review is selected
+    if (isPlanReviewSelected && wasInspectionsSelected && !isInspectionsSelected) {
+      // Show error and prevent the change by restoring previous state
+      setServicesError('Plan Review cannot be selected without Inspections');
+      // Restore Inspections to the selection
+      const restoredServiceIds = [...newServiceIds, inspectionsId];
+      setFormData(prev => ({ ...prev, services: restoredServiceIds }));
+      return;
+    }
+
+    // If Plan Review is being added, ensure Inspections is also included
+    if (isPlanReviewSelected && !wasPlanReviewSelected) {
+      if (!newServiceIds.includes(inspectionsId)) {
+        newServiceIds = [...newServiceIds, inspectionsId];
+      }
+    }
+
+    // If Plan Review is being removed, also remove Inspections
+    if (!isPlanReviewSelected && wasPlanReviewSelected) {
+      newServiceIds = newServiceIds.filter(id => id !== inspectionsId);
+    }
+
+    setFormData(prev => ({ ...prev, services: newServiceIds }));
   }
 
   // Additional contacts handlers
@@ -684,6 +720,20 @@ Return ONLY the JSON, no explanation.`;
   async function handleSubmit(e?: React.FormEvent) {
     if (e) {
       e.preventDefault();
+    }
+
+    // Create test run only when submitting
+    if (!runId) {
+      try {
+        const user = await getCurrentUser();
+        const runBy = user?.id || null;
+        const newRunId = await createTestRun(scenarioId, runBy);
+        setRunId(newRunId);
+      } catch (err: any) {
+        console.error('Error creating test run:', err);
+        setError('Failed to create test run. Please try again.');
+        return;
+      }
     }
 
     // Validate required fields
@@ -745,18 +795,12 @@ Return ONLY the JSON, no explanation.`;
       return;
     }
 
-    if (!runId) {
-      setError('Test run not initialized. Please refresh the page.');
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
       setResults(null);
-      setSuccessMessage(null);
 
-      // Get current user for runBy
+      // Get current user for runBy (runId already created above)
       const user = await getCurrentUser();
       const runBy = user?.id || null;
 
@@ -770,6 +814,14 @@ Return ONLY the JSON, no explanation.`;
       const fullAddress = addressParts.join(', ');
 
       // Build payload
+      console.log('[NewApplicationForm] Building payload for apply_form_submitted:', {
+        testRunId: runId,
+        scenarioId: scenarioId,
+        runBy: runBy,
+        hasRunId: !!runId,
+        hasScenarioId: !!scenarioId
+      });
+      
       const payload = {
         testRunId: runId,
         scenarioId: scenarioId,
@@ -825,7 +877,6 @@ Return ONLY the JSON, no explanation.`;
 
       if (funcError) throw funcError;
       setResults(data);
-      setSuccessMessage('Application submitted successfully!');
       setFormCollapsed(true);
     } catch (err: any) {
       console.error('Error executing scenario:', err);
@@ -1211,70 +1262,36 @@ Return ONLY the JSON, no explanation.`;
           />
 
           {/* Industry Roles */}
-          <div className="space-y-2">
-            <label className="block text-sm text-fcc-white/70 mb-2">Industry Roles</label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {industryRoles.map((role) => (
-                <label
-                  key={role.id}
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-fcc-black/50 p-2 rounded-lg transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.industryRole.includes(role.id)}
-                    onChange={() => handleMultiSelectToggle('industryRole', role.id)}
-                    disabled={formDisabled}
-                    className="w-5 h-5 rounded border-fcc-divider bg-fcc-black text-fcc-cyan focus:ring-2 focus:ring-fcc-cyan"
-                  />
-                  <span className="text-fcc-white">{role.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          <SearchableMultiSelect
+            label="Industry Roles"
+            values={formData.industryRole}
+            onChange={(values) => setFormData(prev => ({ ...prev, industryRole: values }))}
+            options={industryRoles.map(role => ({ value: role.id, label: role.name }))}
+            disabled={formDisabled}
+            placeholder="Select industry roles..."
+          />
 
           {/* Tech Tools */}
-          <div className="space-y-2">
-            <label className="block text-sm text-fcc-white/70 mb-2">Tech Tools</label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {techTools.map((tool) => (
-                <label
-                  key={tool.id}
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-fcc-black/50 p-2 rounded-lg transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.techTools.includes(tool.id)}
-                    onChange={() => handleMultiSelectToggle('techTools', tool.id)}
-                    disabled={formDisabled}
-                    className="w-5 h-5 rounded border-fcc-divider bg-fcc-black text-fcc-cyan focus:ring-2 focus:ring-fcc-cyan"
-                  />
-                  <span className="text-fcc-white">{tool.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          <SearchableMultiSelect
+            label="Tech Tools"
+            values={formData.techTools}
+            onChange={(values) => setFormData(prev => ({ ...prev, techTools: values }))}
+            options={techTools.map(tool => ({ value: tool.id, label: tool.name }))}
+            disabled={formDisabled}
+            placeholder="Select tech tools..."
+          />
 
           {/* Services */}
-          <div className="space-y-2">
-            <label className="block text-sm text-fcc-white/70 mb-2">Services *</label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {services.map((service) => (
-                <label
-                  key={service.id}
-                  className="flex items-center space-x-3 cursor-pointer hover:bg-fcc-black/50 p-2 rounded-lg transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.services.includes(service.id)}
-                    onChange={() => handleMultiSelectToggle('services', service.id)}
-                    disabled={formDisabled}
-                    className="w-5 h-5 rounded border-fcc-divider bg-fcc-black text-fcc-cyan focus:ring-2 focus:ring-fcc-cyan"
-                  />
-                  <span className="text-fcc-white">{service.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+          <SearchableMultiSelect
+            label="Services *"
+            values={formData.services}
+            onChange={handleServicesChange}
+            options={services.map(service => ({ value: service.id, label: service.name }))}
+            disabled={formDisabled}
+            placeholder="Select services..."
+            required
+            error={servicesError || undefined}
+          />
         </div>
 
         {/* Primary Contact Section */}

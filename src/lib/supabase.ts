@@ -49,3 +49,66 @@ export async function getCurrentSession() {
   return session;
 }
 
+// Edge function helpers - use supabase.functions.invoke() which handles auth automatically
+export async function callInitUpload(payload: {
+  kind: 'PLAN_SET_FILE' | 'PROJECT_FILE' | 'INSPECTION_FILE';
+  filename: string;
+  plan_set_id?: string;
+  file_type_code?: string;
+  project_id?: string;
+  inspection_session_id?: string;
+  media_type_code?: string;
+}) {
+  const { data, error } = await supabase.functions.invoke('init-upload', {
+    body: payload,
+  });
+
+  // Log full response for debugging
+  if (error || (data && data.error)) {
+    console.error('init-upload error:', { error, data, payload });
+  }
+
+  // Check for error in response data first (edge function returns error in response body)
+  if (data && data.error) {
+    const errorMessage = typeof data.error === 'string' 
+      ? data.error 
+      : data.error.message || 'init-upload failed';
+    throw new Error(errorMessage);
+  }
+
+  // Check for Supabase client error
+  if (error) {
+    // If error object has message, use it; otherwise try to extract from data
+    const errorMessage = error.message || (typeof error === 'string' ? error : 'init-upload failed');
+    throw new Error(errorMessage);
+  }
+
+  return data;
+}
+
+export async function callConfirmUpload(fileId: string, success: boolean, errorMessage?: string) {
+  const { data, error } = await supabase.functions.invoke('confirm-upload', {
+    body: {
+      file_id: fileId,
+      success: success,
+      error_message: errorMessage,
+    },
+  });
+
+  if (error) {
+    throw new Error(error.message || 'confirm-upload failed');
+  }
+
+  // Handle response that might have error in data
+  if (data && data.error) {
+    throw new Error(data.error);
+  }
+
+  return data;
+}
+
+// Legacy function name for backward compatibility - maps to confirm-upload
+export async function callCompleteUpload(fileId: string) {
+  return callConfirmUpload(fileId, true);
+}
+

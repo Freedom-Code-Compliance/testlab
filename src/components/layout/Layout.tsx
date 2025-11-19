@@ -56,20 +56,22 @@ export default function Layout({ children }: LayoutProps) {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - Desktop */}
       <div className="hidden md:block">
         <Sidebar />
       </div>
+      
+      {/* Sidebar - Mobile */}
       <div
-        className={`fixed md:hidden z-50 transition-transform ${
+        className={`fixed md:hidden z-50 transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <Sidebar />
+        <Sidebar onNavigate={() => setSidebarOpen(false)} />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col md:ml-16 transition-all duration-300">
+      <div className="flex-1 flex flex-col md:ml-16 relative transition-all duration-300">
         {/* Header */}
         <header className="bg-fcc-black border-b border-fcc-divider px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-4">

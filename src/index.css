@@ -1,6 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-fcc-black: var(--fcc-black);
+  --color-fcc-dark: var(--fcc-dark);
+  --color-fcc-divider: var(--fcc-divider);
+  --color-fcc-cyan: var(--system-color, #3366FF);
+  --color-fcc-blue: #0066ff;
+  --color-fcc-white: var(--fcc-white);
+}
 
 :root {
   --system-color: #3366FF;
