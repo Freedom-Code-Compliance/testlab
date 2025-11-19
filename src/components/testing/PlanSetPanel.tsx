@@ -8,12 +8,14 @@ interface PlanSetPanelProps {
   projectId: string;
   runId: string;
   scenarioId: string;
+  onPlanSetSubmitted?: () => void;
 }
 
 export default function PlanSetPanel({
   projectId,
   runId: _runId,
   scenarioId: _scenarioId,
+  onPlanSetSubmitted,
 }: PlanSetPanelProps) {
   const [planSetId, setPlanSetId] = useState<string | null>(null);
   const [fileTypes, setFileTypes] = useState<Array<{ id: string; code: string; name: string }>>(
@@ -231,15 +233,18 @@ export default function PlanSetPanel({
         return;
       }
 
-      // Success - could show a toast here if available
+      // Success - notify parent if callback provided
       setSubmitError(null);
+      if (onPlanSetSubmitted) {
+        onPlanSetSubmitted();
+      }
     } catch (err: any) {
       console.error('Submit error:', err);
       setSubmitError(err.message || 'Failed to submit plan set.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [planSetId, projectId, hasAnyUploaded]);
+  }, [planSetId, projectId, hasAnyUploaded, onPlanSetSubmitted]);
 
   if (isLoading) {
     return (

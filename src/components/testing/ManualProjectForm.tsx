@@ -1,5 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase, createTestRun, callEdgeFunction } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+import { debounce } from '../../lib/utils';
 import { 
   BuildingDepartment, 
   ProjectType, 
@@ -24,8 +26,45 @@ interface ManualProjectFormProps {
 
 const DEFAULT_COMPANY_NAME = 'Josh Test Project Company 1';
 const DEFAULT_CONTACT_NAME = 'John Client';
+const STORAGE_KEY = 'manual_project_form_state';
+const CURRENT_FORM_STATE_VERSION = 2;
+
+interface SavedFormState {
+  version: number;
+  userId: string;
+  scenarioId: string;
+  formData: {
+    name: string;
+    building_department_id: string;
+    project_type_id: string;
+    occupancy_id: string;
+    construction_type_id: string;
+    address_line1: string;
+    address_line2: string;
+    city: string;
+    state: string;
+    zipcode: string;
+    company_id: string;
+    contact_id: string;
+    service_ids: string[];
+    scope_of_work: string;
+    needs_quote: boolean;
+  };
+  createdProjectId: string | null;
+  runId: string | null;
+  projectCreated: boolean;
+  formCollapsed: boolean;
+  selectedConstructionType: { id: string; name: string } | null;
+  selectedOccupancy: { id: string; name: string } | null;
+  addressSearch: string;
+  addressSelected: boolean;
+  results: any | null;
+  savedAt: string;
+}
 
 export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps) {
+  const { user } = useAuth();
+  const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [runId, setRunId] = useState<string | null>(null);
   const [results, setResults] = useState<any>(null);
@@ -76,6 +115,198 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   const [showPlanSetUpload, setShowPlanSetUpload] = useState(false);
   const [servicesError, setServicesError] = useState<string | null>(null);
   const [formCollapsed, setFormCollapsed] = useState(false);
+
+  // Save form state to localStorage
+  const saveFormState = useCallback(() => {
+    if (typeof window === 'undefined' || !user?.id) return;
+
+    try {
+      const stateToSave: SavedFormState = {
+        version: CURRENT_FORM_STATE_VERSION,
+        userId: user.id,
+        scenarioId,
+        formData,
+        createdProjectId,
+        runId,
+        projectCreated,
+        formCollapsed,
+        selectedConstructionType: selectedConstructionType
+          ? { id: selectedConstructionType.id, name: selectedConstructionType.name }
+          : null,
+        selectedOccupancy: selectedOccupancy
+          ? { id: selectedOccupancy.id, name: selectedOccupancy.name }
+          : null,
+        addressSearch,
+        addressSelected,
+        results: results || null,
+        savedAt: new Date().toISOString(),
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+    } catch (err) {
+      console.warn('[ManualProjectForm] Failed to save form state:', err);
+    }
+  }, [
+    user?.id,
+    scenarioId,
+    formData,
+    createdProjectId,
+    runId,
+    projectCreated,
+    formCollapsed,
+    selectedConstructionType,
+    selectedOccupancy,
+    addressSearch,
+    addressSelected,
+    results,
+  ]);
+
+  // Store latest saveFormState in ref so debounced function always uses latest
+  const saveFormStateRef = useRef(saveFormState);
+  useEffect(() => {
+    saveFormStateRef.current = saveFormState;
+  }, [saveFormState]);
+
+  // Create debounced save function using useRef to persist across renders
+  const debouncedSaveRef = useRef<ReturnType<typeof debounce>>();
+  if (!debouncedSaveRef.current) {
+    debouncedSaveRef.current = debounce(() => {
+      saveFormStateRef.current();
+    }, 400);
+  }
+
+  // Load form state from localStorage
+  const loadFormState = useCallback(() => {
+    if (typeof window === 'undefined' || !user?.id) {
+      setHydrated(true);
+      return;
+    }
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) {
+        setHydrated(true);
+        return;
+      }
+
+      const parsed: SavedFormState = JSON.parse(saved);
+
+      // Validate version - drop old versions
+      if (parsed.version !== CURRENT_FORM_STATE_VERSION) {
+        console.warn('[ManualProjectForm] Version mismatch, clearing storage');
+        localStorage.removeItem(STORAGE_KEY);
+        setHydrated(true);
+        return;
+      }
+
+      // Validate userId
+      if (parsed.userId !== user.id) {
+        console.warn('[ManualProjectForm] User ID mismatch, ignoring saved state');
+        setHydrated(true);
+        return;
+      }
+
+      // Validate scenarioId
+      if (parsed.scenarioId !== scenarioId) {
+        console.warn('[ManualProjectForm] Scenario ID mismatch, ignoring saved state');
+        setHydrated(true);
+        return;
+      }
+
+      // Validate structure
+      if (
+        !parsed.formData ||
+        typeof parsed.formData !== 'object' ||
+        !Array.isArray(parsed.formData.service_ids)
+      ) {
+        console.warn('[ManualProjectForm] Invalid saved state structure, clearing storage');
+        localStorage.removeItem(STORAGE_KEY);
+        setHydrated(true);
+        return;
+      }
+
+      // 1. Always restore form fields / UI state first
+      setFormData(parsed.formData);
+      setAddressSearch(parsed.addressSearch || '');
+      setAddressSelected(parsed.addressSelected || false);
+
+      // Restore construction type and occupancy
+      if (parsed.selectedConstructionType) {
+        setSelectedConstructionType({
+          id: parsed.selectedConstructionType.id,
+          name: parsed.selectedConstructionType.name,
+        } as ConstructionType);
+      } else {
+        setSelectedConstructionType(null);
+      }
+      if (parsed.selectedOccupancy) {
+        setSelectedOccupancy({
+          id: parsed.selectedOccupancy.id,
+          name: parsed.selectedOccupancy.name,
+        } as Occupancy);
+      } else {
+        setSelectedOccupancy(null);
+      }
+
+      // 2. Default to form open (base state)
+      setFormCollapsed(false);
+      setProjectCreated(false);
+      setCreatedProjectId(null);
+      setRunId(null);
+      setResults(null);
+
+      // 3. Only collapse + show success if we have a complete success snapshot
+      if (parsed.createdProjectId && parsed.runId) {
+        setCreatedProjectId(parsed.createdProjectId);
+        setRunId(parsed.runId);
+        setProjectCreated(true);
+
+        // If results were saved, use them; otherwise synthesize minimal results
+        if (parsed.results) {
+          setResults(parsed.results);
+        } else {
+          setResults({
+            projectId: parsed.createdProjectId,
+            runId: parsed.runId,
+          });
+        }
+
+        setFormCollapsed(true);
+      }
+    } catch (err) {
+      console.warn('[ManualProjectForm] Failed to load form state:', err);
+      localStorage.removeItem(STORAGE_KEY);
+    } finally {
+      setHydrated(true);
+    }
+  }, [user?.id, scenarioId]);
+
+  // Load saved state on mount (when user is available)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && user?.id) {
+      loadFormState();
+    }
+  }, [user?.id, scenarioId]); // Only reload if user or scenario changes
+
+  // Save state when it changes (debounced)
+  useEffect(() => {
+    if (debouncedSaveRef.current) {
+      debouncedSaveRef.current();
+    }
+  }, [
+    formData,
+    createdProjectId,
+    runId,
+    projectCreated,
+    formCollapsed,
+    selectedConstructionType,
+    selectedOccupancy,
+    addressSearch,
+    addressSelected,
+    results,
+    user?.id,
+    scenarioId,
+  ]);
 
   useEffect(() => {
     fetchOptions();
@@ -606,6 +837,11 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   }
 
   function handleClearAndRunAgain() {
+    // Clear localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+
     // Reset form state
     setFormData({
       name: '',
@@ -633,11 +869,21 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
     setFormCollapsed(false);
     setAddressSearch('');
     setAddressSelected(false);
+    setSelectedConstructionType(null);
+    setSelectedOccupancy(null);
   }
+
+  // Don't render until we've attempted to restore state
+  if (!hydrated) {
+    return null;
+  }
+
+  const showForm = !formCollapsed;
+  const showSuccess = formCollapsed && !!createdProjectId;
 
   return (
     <div className="space-y-6">
-      {!formCollapsed && (
+      {showForm && (
         <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 1. Project Name */}
@@ -890,7 +1136,7 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       </form>
       )}
 
-      {formCollapsed && results && runId && (
+      {showSuccess && (
         <>
           <div className="bg-fcc-dark border border-green-500 rounded-lg p-6 space-y-4">
             <div className="flex items-center space-x-2">
@@ -898,10 +1144,12 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
               <span className="text-fcc-white font-semibold text-lg">Scenario Completed</span>
             </div>
 
-            <div>
-              <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
-              <p className="text-fcc-white font-mono text-sm">{runId}</p>
-            </div>
+            {runId && (
+              <div>
+                <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
+                <p className="text-fcc-white font-mono text-sm">{runId}</p>
+              </div>
+            )}
 
             <PrimaryButton
               type="button"
@@ -912,14 +1160,34 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
             </PrimaryButton>
           </div>
 
-          {createdProjectId && (
+          {createdProjectId && runId && (
             <PlanSetPanel
               projectId={createdProjectId}
               runId={runId}
               scenarioId={scenarioId}
+              onPlanSetSubmitted={() => {
+                // Optional: Could show success message or update UI here
+                // Do NOT clear localStorage - that only happens on "Clear Data"
+              }}
             />
           )}
         </>
+      )}
+
+      {/* Safety net - if both false, show a reset option instead of a black box */}
+      {!showForm && !showSuccess && (
+        <div className="p-4 rounded-lg bg-fcc-dark border border-fcc-divider">
+          <p className="mb-3 text-fcc-white/70">
+            Saved test state is incomplete or outdated. You can reset and start fresh.
+          </p>
+          <PrimaryButton
+            type="button"
+            onClick={handleClearAndRunAgain}
+            className="w-full"
+          >
+            Clear Saved Data
+          </PrimaryButton>
+        </div>
       )}
     </div>
   );
