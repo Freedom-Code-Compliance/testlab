@@ -27,7 +27,7 @@ interface ManualProjectFormProps {
 const DEFAULT_COMPANY_NAME = 'Josh Test Project Company 1';
 const DEFAULT_CONTACT_NAME = 'John Client';
 const STORAGE_KEY = 'manual_project_form_state';
-const CURRENT_FORM_STATE_VERSION = 2;
+const CURRENT_FORM_STATE_VERSION = 3;
 
 interface SavedFormState {
   version: number;
@@ -60,6 +60,10 @@ interface SavedFormState {
   addressSelected: boolean;
   results: any | null;
   savedAt: string;
+  planSetId: string | null;
+  planSetStarted: boolean;
+  planSetSubmitted: boolean;
+  uploadedFilesSummary: { id: string; name: string; fileTypeName: string }[] | null;
 }
 
 export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps) {
@@ -115,6 +119,13 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   const [showPlanSetUpload, setShowPlanSetUpload] = useState(false);
   const [servicesError, setServicesError] = useState<string | null>(null);
   const [formCollapsed, setFormCollapsed] = useState(false);
+  const [planSetId, setPlanSetId] = useState<string | null>(null);
+  const [planSetStarted, setPlanSetStarted] = useState(false);
+  const [planSetSubmitted, setPlanSetSubmitted] = useState(false);
+  const [uploadedFilesSummary, setUploadedFilesSummary] = useState<
+    { id: string; name: string; fileTypeName: string }[]
+ >([]);
+  const [isLoadingPlanSet, setIsLoadingPlanSet] = useState(false);
 
   // Save form state to localStorage
   const saveFormState = useCallback(() => {
@@ -140,6 +151,10 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
         addressSelected,
         results: results || null,
         savedAt: new Date().toISOString(),
+        planSetId,
+        planSetStarted,
+        planSetSubmitted,
+        uploadedFilesSummary: uploadedFilesSummary.length > 0 ? uploadedFilesSummary : null,
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
@@ -159,6 +174,10 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
     addressSearch,
     addressSelected,
     results,
+    planSetId,
+    planSetStarted,
+    planSetSubmitted,
+    uploadedFilesSummary,
   ]);
 
   // Store latest saveFormState in ref so debounced function always uses latest
@@ -254,6 +273,10 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       setCreatedProjectId(null);
       setRunId(null);
       setResults(null);
+      setPlanSetId(null);
+      setPlanSetStarted(false);
+      setPlanSetSubmitted(false);
+      setUploadedFilesSummary([]);
 
       // 3. Only collapse + show success if we have a complete success snapshot
       if (parsed.createdProjectId && parsed.runId) {
@@ -269,6 +292,20 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
             projectId: parsed.createdProjectId,
             runId: parsed.runId,
           });
+        }
+
+        // Restore plan set state if present
+        if (parsed.planSetId) {
+          setPlanSetId(parsed.planSetId);
+        }
+        if (parsed.planSetStarted) {
+          setPlanSetStarted(true);
+        }
+        if (parsed.planSetSubmitted) {
+          setPlanSetSubmitted(true);
+        }
+        if (parsed.uploadedFilesSummary) {
+          setUploadedFilesSummary(parsed.uploadedFilesSummary);
         }
 
         setFormCollapsed(true);
@@ -742,6 +779,31 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       const projectId = response.data?.project_id ?? response.project_id;
       if (projectId) {
         setCreatedProjectId(projectId);
+
+        // Set created_by on project (client-side follow-up update)
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.id) {
+            // Look up user_profile
+            const { data: profile, error: profileError } = await supabase
+              .from('user_profiles')
+              .select('id')
+              .eq('auth_user_id', user.id)
+              .single();
+
+            if (!profileError && profile?.id) {
+              await supabase
+                .from('projects')
+                .update({ created_by: profile.id })
+                .eq('id', projectId);
+            } else {
+              console.error('[ManualProjectForm] Failed to resolve user_profile for created_by', profileError);
+            }
+          }
+        } catch (updateErr) {
+          // Log error but don't block UI flow
+          console.error('[ManualProjectForm] Error setting created_by', updateErr);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to execute scenario');
@@ -866,12 +928,111 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
     setProjectCreated(false);
     setCreatedProjectId(null);
     setShowPlanSetUpload(false);
+    setPlanSetId(null);
+    setPlanSetStarted(false);
+    setPlanSetSubmitted(false);
+    setUploadedFilesSummary([]);
+    setIsLoadingPlanSet(false);
     setFormCollapsed(false);
     setAddressSearch('');
     setAddressSelected(false);
     setSelectedConstructionType(null);
     setSelectedOccupancy(null);
   }
+
+  const handleStartInitialPlanSet = async () => {
+    if (!createdProjectId) return;
+
+    setIsLoadingPlanSet(true);
+    try {
+      // 1. Check if an INITIAL plan set already exists
+      const { data: existing, error: existingError } = await supabase
+        .from('plan_sets')
+        .select('id')
+        .eq('project_id', createdProjectId)
+        .eq('type', 'INITIAL')
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (existingError) {
+        console.error('[ManualProjectForm] Error checking existing plan set:', existingError);
+        setError('Failed to check existing plan set.');
+        setIsLoadingPlanSet(false);
+        return;
+      }
+
+      let newPlanSetId = existing?.id;
+
+      // 2. If none exists, create one
+      if (!newPlanSetId) {
+        // Lookup draft document review status
+        const { data: draftStatusData, error: draftStatusError } = await supabase
+          .from('plan_sets_document_review_field')
+          .select('id')
+          .eq('code', 'draft')
+          .is('deleted_at', null)
+          .single();
+
+        if (draftStatusError || !draftStatusData?.id) {
+          console.error('[ManualProjectForm] Status lookup error', draftStatusError);
+          setError('Failed to resolve document status for plan set creation.');
+          setIsLoadingPlanSet(false);
+          return;
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        const createdBy = user?.id || null;
+
+        const { data: inserted, error: insertError } = await supabase
+          .from('plan_sets')
+          .insert({
+            project_id: createdProjectId,
+            type: 'INITIAL',
+            document_review_status_id: draftStatusData.id,
+            created_by: createdBy,
+          })
+          .select('id')
+          .single();
+
+        if (insertError || !inserted) {
+          console.error('[ManualProjectForm] Error creating initial plan set:', insertError);
+          setError('Failed to create initial plan set.');
+          setIsLoadingPlanSet(false);
+          return;
+        }
+
+        newPlanSetId = inserted.id;
+
+        // TestLab logging
+        if (runId && scenarioId) {
+          try {
+            const { error: logError } = await supabase.rpc('testlab_log_record', {
+              p_run_id: runId,
+              p_scenario_id: scenarioId,
+              p_table_name: 'plan_sets',
+              p_record_id: inserted.id,
+              p_created_by: createdBy,
+              p_table_id: null,
+            });
+            if (logError) {
+              console.error('Failed to log plan_sets test record:', logError);
+            }
+          } catch (logErr) {
+            console.error('Error logging plan_sets test record:', logErr);
+          }
+        }
+      }
+
+      setPlanSetId(newPlanSetId!);
+      setPlanSetStarted(true);
+      setPlanSetSubmitted(false);
+    } catch (err: any) {
+      console.error('[ManualProjectForm] Error in handleStartInitialPlanSet:', err);
+      setError(err.message || 'Failed to start initial plan set.');
+    } finally {
+      setIsLoadingPlanSet(false);
+    }
+  };
 
   // Don't render until we've attempted to restore state
   if (!hydrated) {
@@ -1138,38 +1299,88 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
 
       {showSuccess && (
         <>
-          <div className="bg-fcc-dark border border-green-500 rounded-lg p-6 space-y-4">
-            <div className="flex items-center space-x-2">
-              <StatusBadge status="success" />
-              <span className="text-fcc-white font-semibold text-lg">Scenario Completed</span>
-            </div>
-
-            {runId && (
-              <div>
-                <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
-                <p className="text-fcc-white font-mono text-sm">{runId}</p>
+          {error && (
+            <div className="bg-fcc-dark border border-red-500 rounded-lg p-4 mb-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <StatusBadge status="failed" />
+                <span className="text-red-500 font-semibold">Error</span>
               </div>
-            )}
+              <p className="text-red-400">{error}</p>
+            </div>
+          )}
 
-            <PrimaryButton
-              type="button"
-              onClick={handleClearAndRunAgain}
-              className="w-full"
-            >
-              Clear and Run Again
-            </PrimaryButton>
-          </div>
+          {projectCreated && createdProjectId && runId && (
+            <>
+              {/* Project Created Success Card */}
+              <div className="rounded-xl border border-green-500 bg-green-950/30 p-4 mb-6">
+                <div className="font-semibold text-green-400 mb-2">
+                  Project Record Created
+                </div>
+                <div className="text-sm text-zinc-200 space-y-1">
+                  <div><span className="font-mono text-xs">Run ID:</span> {runId}</div>
+                  <div><span className="font-mono text-xs">Project ID:</span> {createdProjectId}</div>
+                </div>
+                <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {!planSetStarted && (
+                    <button
+                      type="button"
+                      className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-60"
+                      onClick={handleStartInitialPlanSet}
+                      disabled={isLoadingPlanSet}
+                    >
+                      {isLoadingPlanSet ? 'Starting...' : 'Start Initial Plan Set'}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="w-full rounded-lg bg-zinc-800 px-4 py-2 text-sm font-semibold text-zinc-100 hover:bg-zinc-700"
+                    onClick={handleClearAndRunAgain}
+                  >
+                    Clear and Run Again
+                  </button>
+                </div>
+              </div>
 
-          {createdProjectId && runId && (
-            <PlanSetPanel
-              projectId={createdProjectId}
-              runId={runId}
-              scenarioId={scenarioId}
-              onPlanSetSubmitted={() => {
-                // Optional: Could show success message or update UI here
-                // Do NOT clear localStorage - that only happens on "Clear Data"
-              }}
-            />
+              {/* Plan Set Panel - Only show when started and not yet submitted */}
+              {!planSetSubmitted && planSetStarted && planSetId && createdProjectId && (
+                <PlanSetPanel
+                  projectId={createdProjectId}
+                  planSetId={planSetId}
+                  runId={runId ?? undefined}
+                  scenarioId={scenarioId}
+                  onPlanSetSubmitted={(info) => {
+                    setPlanSetSubmitted(true);
+                    setUploadedFilesSummary(info.files);
+                  }}
+                />
+              )}
+
+              {/* Final Success State - After Plan Set Submitted */}
+              {planSetSubmitted && planSetId && (
+                <div className="rounded-xl border border-green-500 bg-green-950/30 p-4 mb-6">
+                  <div className="font-semibold text-green-400 mb-2">
+                    Initial Plan Set Submitted
+                  </div>
+                  <div className="text-xs text-zinc-200 space-y-1">
+                    <div><span className="font-mono">Project ID:</span> {createdProjectId}</div>
+                    <div><span className="font-mono">Plan Set ID:</span> {planSetId}</div>
+                    <div><span className="font-mono">Run ID:</span> {runId}</div>
+                  </div>
+                  {uploadedFilesSummary.length > 0 && (
+                    <div className="mt-3 text-xs text-zinc-300">
+                      <div className="font-semibold mb-1">Files:</div>
+                      <ul className="list-disc list-inside space-y-0.5">
+                        {uploadedFilesSummary.map((f) => (
+                          <li key={f.id}>
+                            <span className="font-mono">{f.id}</span> — {f.name} ({f.fileTypeName})
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </>
       )}

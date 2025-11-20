@@ -6,8 +6,8 @@ interface PlanSetFileCardProps {
   projectId: string;
   planSetId: string;
   fileType: { id: string; code: string; name: string };
-  onFileUploaded: () => void;
-  onFileRemoved: () => void;
+  onFileUploaded?: (fileInfo: { id: string; name: string; fileTypeName: string }) => void;
+  onFileRemoved?: (fileInfo: { id: string; name: string; fileTypeName: string }) => void;
   runId?: string; // Optional: for TestLab logging
   scenarioId?: string; // Optional: for TestLab logging
 }
@@ -87,19 +87,20 @@ export default function PlanSetFileCard({
 
       try {
         // 1. Call init-upload
-        const initResponse = await callInitUpload({
-          kind: 'PLAN_SET_FILE',
+        const uploadPayload = {
+          kind: 'PLAN_SET_FILE' as const,
           filename: file.name,
-          mime_type: file.type || 'application/octet-stream',
-          size_bytes: file.size,
+          plan_set_id: planSetId,
+          file_type_code: fileType.code,
+          project_id: projectId,
+          // TestLab additions
           run_id: runId,
           scenario_id: scenarioId,
-          plan_set: {
-            project_id: projectId,
-            plan_set_id: planSetId,
-            file_type_code: fileType.code,
-          },
-        });
+        };
+
+        console.log('[UPLOAD PAYLOAD]', uploadPayload);
+
+        const initResponse = await callInitUpload(uploadPayload);
 
         if (initResponse?.error) {
           throw new Error(initResponse.error || 'init-upload failed');
@@ -170,8 +171,12 @@ export default function PlanSetFileCard({
           );
         });
 
-        // Notify parent
-        onFileUploaded();
+        // Notify parent with file info (fileId is the DB files.id from init-upload response)
+        onFileUploaded?.({
+          id: fileId, // DB file ID from files table
+          name: file.name, // Original filename
+          fileTypeName: fileType.name,
+        });
       } catch (err: any) {
         console.error('PlanSetFileCard upload failed:', err);
         console.error('Error details:', {
@@ -227,8 +232,12 @@ export default function PlanSetFileCard({
     setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
     
     // Notify parent if we removed an uploaded file
-    if (wasUploaded) {
-      onFileRemoved();
+    if (wasUploaded && fileToRemove && fileToRemove.fileId) {
+      onFileRemoved?.({
+        id: fileToRemove.fileId, // DB file ID
+        name: fileToRemove.filename,
+        fileTypeName: fileType.name,
+      });
     }
   };
 

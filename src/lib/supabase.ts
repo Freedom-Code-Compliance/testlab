@@ -53,17 +53,15 @@ export async function getCurrentSession() {
 export async function callInitUpload(payload: {
   kind: 'PLAN_SET_FILE' | 'PROJECT_FILE' | 'INSPECTION_FILE';
   filename: string;
-  mime_type: string;
-  size_bytes: number;
-  run_id?: string; // Optional: for TestLab logging
-  scenario_id?: string; // Optional: for TestLab logging
-  plan_set?: {
-    project_id: string;
-    plan_set_id: string;
-    file_type_code: string;
-  };
-  project_file?: any;
-  inspection_file?: any;
+  plan_set_id?: string;
+  file_type_code?: string;
+  project_id?: string;
+  // TestLab additions
+  run_id?: string;
+  scenario_id?: string;
+  // Other file types (from master)
+  inspection_session_id?: string;
+  media_type_code?: string;
 }) {
   const { data, error } = await supabase.functions.invoke('init-upload', {
     body: payload,
