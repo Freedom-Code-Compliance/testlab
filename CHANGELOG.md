@@ -4,7 +4,20 @@ All notable changes to FCC Test Lab will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **Project `created_by` Field**: Projects now automatically set `created_by` to the logged-in user's `user_profiles.id` after creation
+- **Project `current_plan_set_id` Field**: Projects now set `current_plan_set_id` when an Initial plan set is submitted for review
+- **Unified Success State**: Both Manual Project and Existing Project scenarios now share consistent success card UI and "Clear and Run Again" behavior
+
 ### Changed
+- **Manual Project Success Card**: Changed title from "Scenario Completed" to "Project Record Created" to better reflect the two-step workflow (project creation → plan set upload)
+- **Plan Set Creation**: Simplified `plan_sets` insert to only include `project_id`, `type`, `document_review_status_id`, and `created_by` (removed `phase_id` and `status_id` which don't exist on `plan_sets` table)
+- **Plan Set Panel Visibility**: PlanSetPanel now hides after successful submission to prevent duplicate submissions
+- **Existing Project Scenario**: Added success card with project/plan set/run IDs and uploaded files list, matching Manual Project scenario UX
+
+### Fixed
+- **Duplicate Success Cards**: Removed duplicate "Scenario Completed" cards in Manual Project scenario
+- **Schema Error on Plan Set Creation**: Fixed `phase_id` column error by removing invalid fields from `plan_sets` insert (phase/status updates belong on `projects` table, not `plan_sets`)
 - **Project Type Refactor**: Replaced work types with project types across the application
   - Updated `NewApplicationForm` to use `project_type_ids` (multi-select) instead of `workTypes`
   - Updated `apply_form_submitted` edge function to handle `project_type_ids` and create `companies__project_types` junction records

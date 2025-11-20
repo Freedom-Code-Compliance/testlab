@@ -21,6 +21,14 @@ interface AdditionalContact {
   phoneExtension: string;
 }
 
+interface CreatedApplicationEntities {
+  companyId: string | null;
+  primaryContactId: string | null;
+  additionalContactIds: string[];
+  dealId: string | null;
+  licenseId: string | null;
+}
+
 export default function NewApplicationForm({ scenarioId }: NewApplicationFormProps) {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
@@ -31,6 +39,7 @@ export default function NewApplicationForm({ scenarioId }: NewApplicationFormPro
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [aiMessage, setAiMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [servicesError, setServicesError] = useState<string | null>(null);
+  const [createdEntities, setCreatedEntities] = useState<CreatedApplicationEntities | null>(null);
 
   // Form state - Company fields
   const [formData, setFormData] = useState({
@@ -628,6 +637,7 @@ Return ONLY the JSON, no explanation.`;
     setAddressSearch('');
     setAddressSelected(false);
     setRunId(null); // Reset runId so a new one will be created on next submit
+    setCreatedEntities(null);
 
     // Re-initialize with defaults (using timestamp instead of runId)
     const timestamp = Date.now().toString().slice(-8);
@@ -877,6 +887,17 @@ Return ONLY the JSON, no explanation.`;
 
       if (funcError) throw funcError;
       setResults(data);
+      
+      // Extract created entity IDs from response
+      const responseData = data?.data || data;
+      const created: CreatedApplicationEntities = {
+        companyId: responseData?.companyId ?? null,
+        primaryContactId: responseData?.primaryContactId ?? null,
+        additionalContactIds: responseData?.additionalContactIds ?? [],
+        dealId: responseData?.dealId ?? null,
+        licenseId: responseData?.licenseId ?? null,
+      };
+      setCreatedEntities(created);
       setFormCollapsed(true);
     } catch (err: any) {
       console.error('Error executing scenario:', err);
@@ -1433,24 +1454,64 @@ Return ONLY the JSON, no explanation.`;
       )}
 
       {formCollapsed && results && runId && (
-        <div className="bg-fcc-dark border border-green-500 rounded-lg p-6 space-y-4">
-          <div className="flex items-center space-x-2">
-            <StatusBadge status="success" />
-            <span className="text-fcc-white font-semibold text-lg">Scenario Completed</span>
+        <div className="mb-6 rounded-xl border border-green-500 bg-green-950/30 p-4">
+          <div className="font-semibold text-green-400 mb-2">
+            Application Submitted
           </div>
 
-          <div>
-            <p className="text-sm text-fcc-white/70 mb-1">Run ID:</p>
-            <p className="text-fcc-white font-mono text-sm">{runId}</p>
+          <div className="text-xs text-zinc-200 space-y-1">
+            <div>
+              <span className="font-mono">Run ID:</span>{' '}
+              <span className="font-mono">{runId}</span>
+            </div>
+
+            {createdEntities?.companyId && (
+              <div>
+                <span className="font-mono">Company ID:</span>{' '}
+                <span className="font-mono">{createdEntities.companyId}</span>
+              </div>
+            )}
+
+            {createdEntities?.primaryContactId && (
+              <div>
+                <span className="font-mono">Primary Contact ID:</span>{' '}
+                <span className="font-mono">{createdEntities.primaryContactId}</span>
+              </div>
+            )}
+
+            {createdEntities?.additionalContactIds?.length ? (
+              <div>
+                <span className="font-mono">Additional Contact IDs:</span>
+                <ul className="ml-4 list-disc">
+                  {createdEntities.additionalContactIds.map(id => (
+                    <li key={id} className="font-mono">{id}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {createdEntities?.dealId && (
+              <div>
+                <span className="font-mono">Deal ID:</span>{' '}
+                <span className="font-mono">{createdEntities.dealId}</span>
+              </div>
+            )}
+
+            {createdEntities?.licenseId && (
+              <div>
+                <span className="font-mono">License ID:</span>{' '}
+                <span className="font-mono">{createdEntities.licenseId}</span>
+              </div>
+            )}
           </div>
 
-          <PrimaryButton
+          <button
             type="button"
+            className="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-60"
             onClick={handleClearAndRunAgain}
-            className="w-full"
           >
             Clear and Run Again
-          </PrimaryButton>
+          </button>
         </div>
       )}
     </div>

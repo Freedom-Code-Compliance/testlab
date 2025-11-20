@@ -214,6 +214,82 @@ Purges all test records for specified runs.
 - Updates `test_runs` with purge metadata (`purged_at`, `purged_by`, `purge_reason`)
 - Logs purge activity to `activity_log` table
 
+## Plan Set Workflow
+
+### Overview
+The plan set workflow is a two-step process:
+1. **Project Creation**: Create a project record (via `create_test_project` edge function)
+2. **Plan Set Upload**: Create an Initial plan set and upload files
+
+### Plan Set Creation
+Plan sets are created explicitly via the frontend, not automatically by edge functions.
+
+**Manual Project Scenario:**
+- After project creation, user clicks "Start Initial Plan Set"
+- Frontend checks for existing INITIAL plan set for the project
+- If none exists, creates a new `plan_sets` record with:
+  - `project_id`: The project ID
+  - `type`: `'INITIAL'`
+  - `document_review_status_id`: Draft status ID
+  - `created_by`: User profile ID
+
+**Existing Project Scenario:**
+- User selects an eligible project (no existing INITIAL plan set)
+- Frontend creates `plan_sets` record with same fields as above
+
+**Important Notes:**
+- `plan_sets` table does NOT have `phase_id` or `status_id` columns
+- Phase/status updates are handled on the `projects` table only
+- When plan set is submitted, `projects.current_plan_set_id` is set to the plan set ID
+
+### File Upload Process
+Files are uploaded using the `init-upload` and `confirm-upload` edge functions.
+
+**init-upload Request:**
+```json
+{
+  "kind": "PLAN_SET_FILE",
+  "filename": "string",
+  "plan_set_id": "uuid",
+  "file_type_code": "string",
+  "project_id": "uuid",
+  "run_id": "uuid",
+  "scenario_id": "uuid"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "file_id": "uuid",
+  "bucket": "project-files",
+  "object_key": "string",
+  "signed_upload_token": "string"
+}
+```
+
+**confirm-upload Request:**
+```json
+{
+  "file_id": "uuid",
+  "project_id": "uuid",
+  "run_id": "uuid",
+  "scenario_id": "uuid"
+}
+```
+
+### Project Metadata Updates
+
+**After Project Creation:**
+- `projects.created_by` is automatically set to the logged-in user's `user_profiles.id`
+
+**After Plan Set Submission:**
+- `projects.phase_id` → `'intake'`
+- `projects.status_id` → `'new_submission'`
+- `projects.current_plan_set_id` → plan set ID
+- `plan_sets.document_review_status_id` → `'awaiting_review'`
+
 ### monday_fetch_projects
 Fetches projects from Monday.com Completed Projects 2 board.
 

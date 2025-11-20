@@ -1,6 +1,6 @@
 # FCC Test Lab - Implementation Status
 
-**Last Updated**: 2025-01-17
+**Last Updated**: 2025-01-XX (Plan Set Workflow Improvements)
 
 ## Implementation Progress
 
@@ -25,7 +25,14 @@
 #### Scenario Implementations
 - [x] Scenario 1: New Application form
 - [x] Scenario 2: Manual Project Creation form
+  - Two-step workflow: Project creation → Plan set upload
+  - Success state with project/plan set/run IDs
+  - File upload tracking and summary
 - [x] Scenario 3: Monday.com Project Creation form
+- [x] Scenario 3 (Alternative): Upload Plan Set – Existing Project
+  - Searchable project selector (eligible projects only)
+  - Plan set creation and file upload
+  - Unified success state matching Manual Project scenario
 
 #### UI Components
 - [x] All design system components implemented
@@ -56,6 +63,10 @@
 - [x] Multi-select Project Types in New Application form
 - [x] Monday.com project search and selection
 - [x] File uploads for plan sets
+- [x] Plan set workflow with explicit creation and submission
+- [x] Project `created_by` field population
+- [x] Project `current_plan_set_id` tracking
+- [x] Unified success states across scenarios
 - [x] Run history with status tracking
 - [x] Purge operations with preview (includes `companies__project_types`)
 - [x] Sidebar hover expansion
@@ -147,6 +158,23 @@
 3. **Monday.com Board ID**
    - Status: Using placeholder ID
    - Action: Verify correct "Completed Projects 2" board ID
+
+## Recent Fixes (2025-01-XX)
+
+1. **Duplicate Success Cards**
+   - Status: Fixed
+   - Removed redundant "Scenario Completed" card in Manual Project scenario
+   - Consolidated to single "Project Record Created" card
+
+2. **Plan Set Creation Schema Error**
+   - Status: Fixed
+   - Removed `phase_id` and `status_id` from `plan_sets` insert (columns don't exist)
+   - Phase/status updates correctly handled on `projects` table only
+
+3. **Project Metadata Population**
+   - Status: Fixed
+   - `created_by` now automatically set after project creation
+   - `current_plan_set_id` now set when plan set is submitted
 
 ## Testing Checklist
 

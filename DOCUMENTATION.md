@@ -98,11 +98,21 @@ For questions or issues:
 
 ---
 
-**Last Updated**: 2025-01-17  
+**Last Updated**: 2025-01-XX (Plan Set Workflow Improvements)  
 **Version**: 1.0.0  
 **Status**: Production Ready
 
 ## Recent Updates
+
+### 2025-01-XX - Plan Set Workflow Improvements
+- Fixed duplicate success cards in Manual Project scenario
+- Fixed schema error on plan set creation (removed invalid `phase_id`/`status_id` fields)
+- Added `created_by` field population on projects after creation
+- Added `current_plan_set_id` update on projects when plan set is submitted
+- Unified success state between Manual and Existing Project scenarios
+- Changed success card title to "Project Record Created" for clarity
+- Improved PlanSetPanel visibility logic to prevent duplicate submissions
+- See [CHANGELOG.md](./CHANGELOG.md) for full details
 
 ### 2025-01-17 - Project Type Refactor
 - Replaced work types with project types across the application
