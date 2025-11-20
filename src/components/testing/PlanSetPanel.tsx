@@ -6,18 +6,24 @@ import LoadingSpinner from '../ui/LoadingSpinner';
 
 interface PlanSetPanelProps {
   projectId: string;
-  runId: string;
-  scenarioId: string;
-  onPlanSetSubmitted?: () => void;
+  planSetId: string; // REQUIRED - no longer optional
+  runId?: string;
+  scenarioId?: string;
+  onPlanSetSubmitted?: (info: {
+    planSetId: string;
+    projectId: string;
+    runId?: string | null;
+    files: { id: string; name: string; fileTypeName: string }[];
+  }) => void;
 }
 
 export default function PlanSetPanel({
   projectId,
+  planSetId,
   runId,
   scenarioId,
   onPlanSetSubmitted,
 }: PlanSetPanelProps) {
-  const [planSetId, setPlanSetId] = useState<string | null>(null);
   const [fileTypes, setFileTypes] = useState<Array<{ id: string; code: string; name: string }>>(
     []
   );
@@ -25,119 +31,9 @@ export default function PlanSetPanel({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  // 1) Ensure INITIAL plan set exists
-  useEffect(() => {
-    const ensurePlanSet = async () => {
-      if (!projectId) return;
-
-      try {
-        // Try to find existing INITIAL plan set
-        const { data: existing, error: existingError } = await supabase
-          .from('plan_sets')
-          .select('id')
-          .eq('project_id', projectId)
-          .eq('type', 'INITIAL')
-          .is('deleted_at', null)
-          .maybeSingle();
-
-        if (!existingError && existing?.id) {
-          setPlanSetId(existing.id);
-          return;
-        }
-
-        // Guardrail: Check if INITIAL plan set exists (race condition safety)
-        // TODO: This guardrail should be moved to edge function (complete_upload) when created
-        // For now, this provides frontend safety. The view v_projects_without_initial_plan_set
-        // already filters eligible projects, but this prevents race conditions.
-        const { data: guardrailCheck, error: guardrailError } = await supabase
-          .from('plan_sets')
-          .select('id')
-          .eq('project_id', projectId)
-          .eq('type', 'INITIAL')
-          .is('deleted_at', null)
-          .maybeSingle();
-
-        if (guardrailError) {
-          console.error('Guardrail check failed:', guardrailError);
-          setSubmitError('Failed to verify project eligibility');
-          return;
-        }
-
-        if (guardrailCheck?.id) {
-          setSubmitError('This project already has an Initial plan set.');
-          return;
-        }
-
-        // Lookup draft doc status id by code
-        const { data: draftStatus, error: draftError } = await supabase
-          .from('plan_sets_document_review_field')
-          .select('id')
-          .eq('code', 'draft')
-          .is('deleted_at', null)
-          .single();
-
-        if (draftError || !draftStatus?.id) {
-          console.error('Failed to lookup draft doc status', draftError);
-          setSubmitError('Failed to initialize plan set: could not find draft status');
-          return;
-        }
-
-        // Get current user for created_by
-        const { data: { user } } = await supabase.auth.getUser();
-        const createdBy = user?.id || null;
-
-        // Insert new plan set
-        const { data: created, error: insertError } = await supabase
-          .from('plan_sets')
-          .insert({
-            project_id: projectId,
-            type: 'INITIAL',
-            document_review_status_id: draftStatus.id,
-            created_by: createdBy,
-          })
-          .select('id')
-          .single();
-
-        if (insertError || !created?.id) {
-          console.error('Failed to create INITIAL plan set', insertError);
-          setSubmitError('Failed to create plan set');
-          return;
-        }
-
-        setPlanSetId(created.id);
-
-        // TestLab logging: Log plan_sets record
-        // Note: files and plan_sets__files logging should be in edge functions (init_upload/complete_upload)
-        if (runId && scenarioId) {
-          try {
-            const { data: { user } } = await supabase.auth.getUser();
-            const { error: logError } = await supabase.rpc('testlab_log_record', {
-              p_run_id: runId,
-              p_scenario_id: scenarioId,
-              p_table_name: 'plan_sets',
-              p_record_id: created.id,
-              p_created_by: user?.id || null,
-              p_table_id: null,
-            });
-
-            if (logError) {
-              console.error('Failed to log plan_sets test record:', logError);
-              // Don't throw - logging failure shouldn't break the flow
-            }
-          } catch (logErr) {
-            console.error('Error logging plan_sets test record:', logErr);
-            // Don't throw - logging failure shouldn't break the flow
-          }
-        }
-      } catch (err) {
-        console.error('Error ensuring plan set:', err);
-        setSubmitError('Failed to initialize plan set');
-      }
-    };
-
-    void ensurePlanSet();
-  }, [projectId]);
+  const [uploadedFilesByType, setUploadedFilesByType] = useState<
+    Record<string, Array<{ id: string; name: string; fileTypeName: string }>>
+  >({});
 
   // 2) Load CLIENT_PLAN_INPUT file types
   useEffect(() => {
@@ -181,23 +77,41 @@ export default function PlanSetPanel({
     void loadFileTypes();
   }, []);
 
-  const handleCardUploaded = useCallback(() => {
+  const getAllUploadedFiles = useCallback((): Array<{ id: string; name: string; fileTypeName: string }> => {
+    return Object.values(uploadedFilesByType).flat();
+  }, [uploadedFilesByType]);
+
+  const handleCardUploaded = useCallback((fileInfo: { id: string; name: string; fileTypeName: string }) => {
+    setUploadedFilesByType(prev => ({
+      ...prev,
+      [fileInfo.fileTypeName]: [...(prev[fileInfo.fileTypeName] || []), fileInfo],
+    }));
     setUploadedFileCount((count) => count + 1);
     setSubmitError(null);
   }, []);
 
-  const handleCardFileRemoved = useCallback(() => {
+  const handleCardFileRemoved = useCallback((fileInfo: { id: string; name: string; fileTypeName: string }) => {
+    setUploadedFilesByType(prev => {
+      const typeFiles = prev[fileInfo.fileTypeName] || [];
+      const updated = typeFiles.filter(f => f.id !== fileInfo.id);
+      const newState = { ...prev };
+      if (updated.length > 0) {
+        newState[fileInfo.fileTypeName] = updated;
+      } else {
+        delete newState[fileInfo.fileTypeName];
+      }
+      return newState;
+    });
     setUploadedFileCount((count) => Math.max(0, count - 1));
   }, []);
-
-  const hasAnyUploaded = uploadedFileCount > 0;
 
   const handleSubmit = useCallback(async () => {
     if (!planSetId || !projectId) return;
 
     setSubmitError(null);
 
-    if (!hasAnyUploaded) {
+    const files = getAllUploadedFiles();
+    if (files.length === 0) {
       setSubmitError('Attach at least one plan document before submitting.');
       return;
     }
@@ -254,36 +168,49 @@ export default function PlanSetPanel({
       const { data: { user } } = await supabase.auth.getUser();
       const updatedBy = user?.id || null;
 
-      // Update plan_sets + projects
-      const [planSetUpdate, projectUpdate] = await Promise.all([
-        supabase
-          .from('plan_sets')
-          .update({
-            document_review_status_id: awaitingDocStatusId,
-            updated_by: updatedBy,
-          })
-          .eq('id', planSetId),
-        supabase
-          .from('projects')
-          .update({
-            phase_id: intakePhaseId,
-            status_id: newSubmissionPhaseStatusId,
-            updated_by: updatedBy,
-          })
-          .eq('id', projectId),
-      ]);
+      // Update plan_sets
+      const { error: planSetUpdateError } = await supabase
+        .from('plan_sets')
+        .update({
+          document_review_status_id: awaitingDocStatusId,
+          updated_by: updatedBy,
+        })
+        .eq('id', planSetId);
 
-      if (planSetUpdate.error || projectUpdate.error) {
-        console.error('Submit updates failed', { planSetUpdate, projectUpdate });
+      if (planSetUpdateError) {
+        console.error('Plan set update failed', planSetUpdateError);
         setSubmitError('Failed to submit plan set.');
         setIsSubmitting(false);
         return;
       }
 
-      // Success - notify parent if callback provided
+      // Update project
+      const { error: projectUpdateError } = await supabase
+        .from('projects')
+        .update({
+          phase_id: intakePhaseId,
+          status_id: newSubmissionPhaseStatusId,
+          current_plan_set_id: planSetId,
+          updated_by: updatedBy,
+        })
+        .eq('id', projectId);
+
+      if (projectUpdateError) {
+        console.error('Project update failed', projectUpdateError);
+        setSubmitError('Failed to update project status.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Success - notify parent with file info
       setSubmitError(null);
       if (onPlanSetSubmitted) {
-        onPlanSetSubmitted();
+        onPlanSetSubmitted({
+          planSetId,
+          projectId,
+          runId: runId || null,
+          files,
+        });
       }
     } catch (err: any) {
       console.error('Submit error:', err);
@@ -291,21 +218,13 @@ export default function PlanSetPanel({
     } finally {
       setIsSubmitting(false);
     }
-  }, [planSetId, projectId, hasAnyUploaded, onPlanSetSubmitted]);
+  }, [planSetId, projectId, onPlanSetSubmitted, getAllUploadedFiles, runId]);
 
   if (isLoading) {
     return (
       <div className="mt-6 flex items-center gap-2 text-fcc-white/70">
         <LoadingSpinner />
         <span>Loading plan set...</span>
-      </div>
-    );
-  }
-
-  if (!planSetId) {
-    return (
-      <div className="mt-6 text-sm text-fcc-white/70">
-        Preparing plan set…
       </div>
     );
   }
@@ -323,8 +242,8 @@ export default function PlanSetPanel({
                 projectId={projectId}
                 planSetId={planSetId}
                 fileType={ft}
-                onFileUploaded={handleCardUploaded}
-                onFileRemoved={handleCardFileRemoved}
+                onFileUploaded={(fileInfo) => handleCardUploaded(fileInfo)}
+                onFileRemoved={(fileInfo) => handleCardFileRemoved(fileInfo)}
                 runId={runId}
                 scenarioId={scenarioId}
               />
@@ -340,7 +259,7 @@ export default function PlanSetPanel({
       <div className="flex flex-col gap-2">
         <PrimaryButton
           type="button"
-          disabled={!hasAnyUploaded || isSubmitting}
+          disabled={uploadedFileCount === 0 || isSubmitting}
           onClick={handleSubmit}
           className="w-full"
         >

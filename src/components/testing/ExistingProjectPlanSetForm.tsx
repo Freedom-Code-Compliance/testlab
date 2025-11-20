@@ -24,6 +24,11 @@ export default function ExistingProjectPlanSetForm({ scenarioId }: ExistingProje
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [runId, setRunId] = useState<string | null>(null);
+  const [planSetId, setPlanSetId] = useState<string | null>(null);
+  const [planSetSubmitted, setPlanSetSubmitted] = useState(false);
+  const [uploadedFilesSummary, setUploadedFilesSummary] = useState<
+    { id: string; name: string; fileTypeName: string }[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [fetchingProjects, setFetchingProjects] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,11 +81,97 @@ export default function ExistingProjectPlanSetForm({ scenarioId }: ExistingProje
       }
 
       setRunId(newRunId);
+
+      // Check if an INITIAL plan set already exists for this project
+      const { data: existing, error: existingError } = await supabase
+        .from('plan_sets')
+        .select('id')
+        .eq('project_id', selectedProjectId)
+        .eq('type', 'INITIAL')
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (existingError) {
+        console.error('[ExistingProjectPlanSetForm] Error checking existing plan set:', existingError);
+        setError('Failed to check existing plan set.');
+        setStartingPlanSet(false);
+        return;
+      }
+
+      let newPlanSetId = existing?.id;
+
+      // If none exists, create one
+      if (!newPlanSetId) {
+        // Lookup draft document review status
+        const { data: draftStatusData, error: draftStatusError } = await supabase
+          .from('plan_sets_document_review_field')
+          .select('id')
+          .eq('code', 'draft')
+          .is('deleted_at', null)
+          .single();
+
+        if (draftStatusError || !draftStatusData?.id) {
+          console.error('[ExistingProjectPlanSetForm] Status lookup error', draftStatusError);
+          setError('Failed to resolve document status for plan set creation.');
+          setStartingPlanSet(false);
+          return;
+        }
+
+        const { data: inserted, error: insertError } = await supabase
+          .from('plan_sets')
+          .insert({
+            project_id: selectedProjectId,
+            type: 'INITIAL',
+            document_review_status_id: draftStatusData.id,
+            created_by: user.id,
+          })
+          .select('id')
+          .single();
+
+        if (insertError || !inserted) {
+          console.error('[ExistingProjectPlanSetForm] Error creating initial plan set:', insertError);
+          setError('Failed to create initial plan set.');
+          setStartingPlanSet(false);
+          return;
+        }
+
+        newPlanSetId = inserted.id;
+
+        // TestLab logging
+        try {
+          const { error: logError } = await supabase.rpc('testlab_log_record', {
+            p_run_id: newRunId,
+            p_scenario_id: scenarioId,
+            p_table_name: 'plan_sets',
+            p_record_id: inserted.id,
+            p_created_by: user.id,
+            p_table_id: null,
+          });
+          if (logError) {
+            console.error('Failed to log plan_sets test record:', logError);
+          }
+        } catch (logErr) {
+          console.error('Error logging plan_sets test record:', logErr);
+        }
+      }
+
+      setPlanSetId(newPlanSetId!);
     } catch (err: any) {
       console.error('Error starting plan set:', err);
       setError(err.message || 'Failed to start plan set');
       setStartingPlanSet(false);
+    } finally {
+      setStartingPlanSet(false);
     }
+  };
+
+  const handleClearAndRunAgain = () => {
+    setSelectedProjectId('');
+    setRunId(null);
+    setPlanSetId(null);
+    setPlanSetSubmitted(false);
+    setUploadedFilesSummary([]);
+    setError(null);
   };
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
@@ -161,17 +252,53 @@ export default function ExistingProjectPlanSetForm({ scenarioId }: ExistingProje
         )}
       </div>
 
-      {/* Plan Set Panel - Show when runId and project are selected */}
-      {runId && selectedProjectId && (
+      {/* Plan Set Panel - Show when runId, planSetId, and project are selected, but not after submit */}
+      {!planSetSubmitted && runId && planSetId && selectedProjectId && (
         <PlanSetPanel
           projectId={selectedProjectId}
+          planSetId={planSetId}
           runId={runId}
           scenarioId={scenarioId}
-          onPlanSetSubmitted={() => {
-            // Optional: Could show success message or refresh project list
-            // The project should disappear from dropdown after it gets an Initial plan set
+          onPlanSetSubmitted={(info) => {
+            setPlanSetSubmitted(true);
+            setUploadedFilesSummary(info.files);
           }}
         />
+      )}
+
+      {/* Success Card - Show after plan set is submitted */}
+      {planSetSubmitted && planSetId && selectedProjectId && (
+        <div className="mt-6 rounded-xl border border-green-500 bg-green-950/30 p-4">
+          <div className="font-semibold text-green-400 mb-2">
+            Initial Plan Set Submitted
+          </div>
+          <div className="text-xs text-zinc-200 space-y-1">
+            <div><span className="font-mono">Project ID:</span> {selectedProjectId}</div>
+            <div><span className="font-mono">Plan Set ID:</span> {planSetId}</div>
+            {runId && (
+              <div><span className="font-mono">Run ID:</span> {runId}</div>
+            )}
+          </div>
+          {uploadedFilesSummary.length > 0 && (
+            <div className="mt-3 text-xs text-zinc-300">
+              <div className="font-semibold mb-1">Files:</div>
+              <ul className="list-disc list-inside space-y-0.5">
+                {uploadedFilesSummary.map((f) => (
+                  <li key={f.id}>
+                    <span className="font-mono">{f.id}</span> — {f.name} ({f.fileTypeName})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <button
+            type="button"
+            className="mt-4 w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+            onClick={handleClearAndRunAgain}
+          >
+            Clear and Run Again
+          </button>
+        </div>
       )}
     </div>
   );
