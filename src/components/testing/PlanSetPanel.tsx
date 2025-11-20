@@ -8,12 +8,14 @@ interface PlanSetPanelProps {
   projectId: string;
   runId: string;
   scenarioId: string;
+  onPlanSetSubmitted?: () => void;
 }
 
 export default function PlanSetPanel({
   projectId,
-  runId: _runId,
-  scenarioId: _scenarioId,
+  runId,
+  scenarioId,
+  onPlanSetSubmitted,
 }: PlanSetPanelProps) {
   const [planSetId, setPlanSetId] = useState<string | null>(null);
   const [fileTypes, setFileTypes] = useState<Array<{ id: string; code: string; name: string }>>(
@@ -41,6 +43,29 @@ export default function PlanSetPanel({
 
         if (!existingError && existing?.id) {
           setPlanSetId(existing.id);
+          return;
+        }
+
+        // Guardrail: Check if INITIAL plan set exists (race condition safety)
+        // TODO: This guardrail should be moved to edge function (complete_upload) when created
+        // For now, this provides frontend safety. The view v_projects_without_initial_plan_set
+        // already filters eligible projects, but this prevents race conditions.
+        const { data: guardrailCheck, error: guardrailError } = await supabase
+          .from('plan_sets')
+          .select('id')
+          .eq('project_id', projectId)
+          .eq('type', 'INITIAL')
+          .is('deleted_at', null)
+          .maybeSingle();
+
+        if (guardrailError) {
+          console.error('Guardrail check failed:', guardrailError);
+          setSubmitError('Failed to verify project eligibility');
+          return;
+        }
+
+        if (guardrailCheck?.id) {
+          setSubmitError('This project already has an Initial plan set.');
           return;
         }
 
@@ -81,6 +106,30 @@ export default function PlanSetPanel({
         }
 
         setPlanSetId(created.id);
+
+        // TestLab logging: Log plan_sets record
+        // Note: files and plan_sets__files logging should be in edge functions (init_upload/complete_upload)
+        if (runId && scenarioId) {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { error: logError } = await supabase.rpc('testlab_log_record', {
+              p_run_id: runId,
+              p_scenario_id: scenarioId,
+              p_table_name: 'plan_sets',
+              p_record_id: created.id,
+              p_created_by: user?.id || null,
+              p_table_id: null,
+            });
+
+            if (logError) {
+              console.error('Failed to log plan_sets test record:', logError);
+              // Don't throw - logging failure shouldn't break the flow
+            }
+          } catch (logErr) {
+            console.error('Error logging plan_sets test record:', logErr);
+            // Don't throw - logging failure shouldn't break the flow
+          }
+        }
       } catch (err) {
         console.error('Error ensuring plan set:', err);
         setSubmitError('Failed to initialize plan set');
@@ -231,15 +280,18 @@ export default function PlanSetPanel({
         return;
       }
 
-      // Success - could show a toast here if available
+      // Success - notify parent if callback provided
       setSubmitError(null);
+      if (onPlanSetSubmitted) {
+        onPlanSetSubmitted();
+      }
     } catch (err: any) {
       console.error('Submit error:', err);
       setSubmitError(err.message || 'Failed to submit plan set.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [planSetId, projectId, hasAnyUploaded]);
+  }, [planSetId, projectId, hasAnyUploaded, onPlanSetSubmitted]);
 
   if (isLoading) {
     return (
@@ -264,18 +316,20 @@ export default function PlanSetPanel({
         <h2 className="text-lg font-semibold text-fcc-white">Plan Set – INITIAL</h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        {fileTypes.map((ft) => (
-          <PlanSetFileCard
-            key={ft.id}
-            projectId={projectId}
-            planSetId={planSetId}
-            fileType={ft}
-            onFileUploaded={handleCardUploaded}
-            onFileRemoved={handleCardFileRemoved}
-          />
-        ))}
-      </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {fileTypes.map((ft) => (
+              <PlanSetFileCard
+                key={ft.id}
+                projectId={projectId}
+                planSetId={planSetId}
+                fileType={ft}
+                onFileUploaded={handleCardUploaded}
+                onFileRemoved={handleCardFileRemoved}
+                runId={runId}
+                scenarioId={scenarioId}
+              />
+            ))}
+          </div>
 
       {fileTypes.length === 0 && (
         <div className="text-sm text-fcc-white/70">

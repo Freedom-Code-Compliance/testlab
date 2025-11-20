@@ -8,6 +8,8 @@ interface PlanSetFileCardProps {
   fileType: { id: string; code: string; name: string };
   onFileUploaded: () => void;
   onFileRemoved: () => void;
+  runId?: string; // Optional: for TestLab logging
+  scenarioId?: string; // Optional: for TestLab logging
 }
 
 interface UploadedFile {
@@ -26,6 +28,8 @@ export default function PlanSetFileCard({
   fileType,
   onFileUploaded,
   onFileRemoved,
+  runId,
+  scenarioId,
 }: PlanSetFileCardProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragActive, setIsDragActive] = useState(false);
@@ -86,9 +90,15 @@ export default function PlanSetFileCard({
         const initResponse = await callInitUpload({
           kind: 'PLAN_SET_FILE',
           filename: file.name,
-          plan_set_id: planSetId,
-          file_type_code: fileType.code,
-          project_id: projectId,
+          mime_type: file.type || 'application/octet-stream',
+          size_bytes: file.size,
+          run_id: runId,
+          scenario_id: scenarioId,
+          plan_set: {
+            project_id: projectId,
+            plan_set_id: planSetId,
+            file_type_code: fileType.code,
+          },
         });
 
         if (initResponse?.error) {
