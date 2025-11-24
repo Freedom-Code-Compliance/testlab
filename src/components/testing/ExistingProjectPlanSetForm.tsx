@@ -102,27 +102,11 @@ export default function ExistingProjectPlanSetForm({ scenarioId }: ExistingProje
 
       // If none exists, create one
       if (!newPlanSetId) {
-        // Lookup draft document review status
-        const { data: draftStatusData, error: draftStatusError } = await supabase
-          .from('plan_sets_document_review_field')
-          .select('id')
-          .eq('code', 'draft')
-          .is('deleted_at', null)
-          .single();
-
-        if (draftStatusError || !draftStatusData?.id) {
-          console.error('[ExistingProjectPlanSetForm] Status lookup error', draftStatusError);
-          setError('Failed to resolve document status for plan set creation.');
-          setStartingPlanSet(false);
-          return;
-        }
-
         const { data: inserted, error: insertError } = await supabase
           .from('plan_sets')
           .insert({
             project_id: selectedProjectId,
             type: 'INITIAL',
-            document_review_status_id: draftStatusData.id,
             created_by: user.id,
           })
           .select('id')

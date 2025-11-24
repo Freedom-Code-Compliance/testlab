@@ -11,7 +11,8 @@ All notable changes to FCC Test Lab will be documented in this file.
 
 ### Changed
 - **Manual Project Success Card**: Changed title from "Scenario Completed" to "Project Record Created" to better reflect the two-step workflow (project creation → plan set upload)
-- **Plan Set Creation**: Simplified `plan_sets` insert to only include `project_id`, `type`, `document_review_status_id`, and `created_by` (removed `phase_id` and `status_id` which don't exist on `plan_sets` table)
+- **Plan Set Creation**: Simplified `plan_sets` insert to only include `project_id`, `type`, and `created_by` (removed `document_review_status_id` which no longer exists on `plan_sets` table)
+- **Document Review Schema**: Document review status moved from `plan_sets.document_review_status_id` to separate `doc_reviews` table. When submitting a plan set, a `doc_reviews` record is created with status "Not Started" (UUID: `019ab788-11a1-78af-f1ff-64337cf65117`)
 - **Plan Set Panel Visibility**: PlanSetPanel now hides after successful submission to prevent duplicate submissions
 - **Existing Project Scenario**: Added success card with project/plan set/run IDs and uploaded files list, matching Manual Project scenario UX
 

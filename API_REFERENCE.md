@@ -230,7 +230,6 @@ Plan sets are created explicitly via the frontend, not automatically by edge fun
 - If none exists, creates a new `plan_sets` record with:
   - `project_id`: The project ID
   - `type`: `'INITIAL'`
-  - `document_review_status_id`: Draft status ID
   - `created_by`: User profile ID
 
 **Existing Project Scenario:**
@@ -238,8 +237,9 @@ Plan sets are created explicitly via the frontend, not automatically by edge fun
 - Frontend creates `plan_sets` record with same fields as above
 
 **Important Notes:**
-- `plan_sets` table does NOT have `phase_id` or `status_id` columns
+- `plan_sets` table does NOT have `phase_id`, `status_id`, or `document_review_status_id` columns
 - Phase/status updates are handled on the `projects` table only
+- Document review status is tracked in the separate `doc_reviews` table
 - When plan set is submitted, `projects.current_plan_set_id` is set to the plan set ID
 
 ### File Upload Process
@@ -288,7 +288,10 @@ Files are uploaded using the `init-upload` and `confirm-upload` edge functions.
 - `projects.phase_id` → `'intake'`
 - `projects.status_id` → `'new_submission'`
 - `projects.current_plan_set_id` → plan set ID
-- `plan_sets.document_review_status_id` → `'awaiting_review'`
+- `doc_reviews` record created with:
+  - `plan_set_id`: The plan set ID
+  - `status`: `'019ab788-11a1-78af-f1ff-64337cf65117'` (Not Started)
+  - `created_by`: User profile ID
 
 ### monday_fetch_projects
 Fetches projects from Monday.com Completed Projects 2 board.

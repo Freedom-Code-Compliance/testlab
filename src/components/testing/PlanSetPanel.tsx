@@ -120,38 +120,28 @@ export default function PlanSetPanel({
 
     try {
       // Lookup status IDs by code
-      const [awaitingDocStatusRes, intakePhaseRes, newSubmissionPhaseStatusRes] =
-        await Promise.all([
-          supabase
-            .from('plan_sets_document_review_field')
-            .select('id')
-            .eq('code', 'awaiting_review')
-            .is('deleted_at', null)
-            .single(),
-          supabase
-            .from('project_phases')
-            .select('id')
-            .eq('code', 'intake')
-            .is('deleted_at', null)
-            .single(),
-          supabase
-            .from('project_phases_status_field')
-            .select('id')
-            .eq('code', 'new_submission')
-            .is('deleted_at', null)
-            .single(),
-        ]);
+      const [intakePhaseRes, newSubmissionPhaseStatusRes] = await Promise.all([
+        supabase
+          .from('project_phases')
+          .select('id')
+          .eq('code', 'intake')
+          .is('deleted_at', null)
+          .single(),
+        supabase
+          .from('project_phases_status_field')
+          .select('id')
+          .eq('code', 'new_submission')
+          .is('deleted_at', null)
+          .single(),
+      ]);
 
       if (
-        awaitingDocStatusRes.error ||
-        !awaitingDocStatusRes.data?.id ||
         intakePhaseRes.error ||
         !intakePhaseRes.data?.id ||
         newSubmissionPhaseStatusRes.error ||
         !newSubmissionPhaseStatusRes.data?.id
       ) {
         console.error('Status lookup errors', {
-          awaitingDocStatusRes,
           intakePhaseRes,
           newSubmissionPhaseStatusRes,
         });
@@ -160,29 +150,12 @@ export default function PlanSetPanel({
         return;
       }
 
-      const awaitingDocStatusId = awaitingDocStatusRes.data.id;
       const intakePhaseId = intakePhaseRes.data.id;
       const newSubmissionPhaseStatusId = newSubmissionPhaseStatusRes.data.id;
 
       // Get current user for updated_by
       const { data: { user } } = await supabase.auth.getUser();
       const updatedBy = user?.id || null;
-
-      // Update plan_sets
-      const { error: planSetUpdateError } = await supabase
-        .from('plan_sets')
-        .update({
-          document_review_status_id: awaitingDocStatusId,
-          updated_by: updatedBy,
-        })
-        .eq('id', planSetId);
-
-      if (planSetUpdateError) {
-        console.error('Plan set update failed', planSetUpdateError);
-        setSubmitError('Failed to submit plan set.');
-        setIsSubmitting(false);
-        return;
-      }
 
       // Update project
       const { error: projectUpdateError } = await supabase
@@ -200,6 +173,43 @@ export default function PlanSetPanel({
         setSubmitError('Failed to update project status.');
         setIsSubmitting(false);
         return;
+      }
+
+      // Create doc_reviews record
+      const { data: docReviewInserted, error: docReviewError } = await supabase
+        .from('doc_reviews')
+        .insert({
+          plan_set_id: planSetId,
+          status: '019ab788-11a1-78af-f1ff-64337cf65117',
+          created_by: updatedBy,
+        })
+        .select('id')
+        .single();
+
+      if (docReviewError) {
+        console.error('Failed to create doc_reviews record:', docReviewError);
+        setSubmitError('Failed to create document review record.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // TestLab logging for doc_reviews
+      if (runId && scenarioId) {
+        try {
+          const { error: logError } = await supabase.rpc('testlab_log_record', {
+            p_run_id: runId,
+            p_scenario_id: scenarioId,
+            p_table_name: 'doc_reviews',
+            p_record_id: docReviewInserted.id.toString(),
+            p_created_by: updatedBy,
+            p_table_id: null,
+          });
+          if (logError) {
+            console.error('Failed to log doc_reviews test record:', logError);
+          }
+        } catch (logErr) {
+          console.error('Error logging doc_reviews test record:', logErr);
+        }
       }
 
       // Success - notify parent with file info

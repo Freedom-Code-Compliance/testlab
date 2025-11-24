@@ -965,21 +965,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
 
       // 2. If none exists, create one
       if (!newPlanSetId) {
-        // Lookup draft document review status
-        const { data: draftStatusData, error: draftStatusError } = await supabase
-          .from('plan_sets_document_review_field')
-          .select('id')
-          .eq('code', 'draft')
-          .is('deleted_at', null)
-          .single();
-
-        if (draftStatusError || !draftStatusData?.id) {
-          console.error('[ManualProjectForm] Status lookup error', draftStatusError);
-          setError('Failed to resolve document status for plan set creation.');
-          setIsLoadingPlanSet(false);
-          return;
-        }
-
         const { data: { user } } = await supabase.auth.getUser();
         const createdBy = user?.id || null;
 
@@ -988,7 +973,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
           .insert({
             project_id: createdProjectId,
             type: 'INITIAL',
-            document_review_status_id: draftStatusData.id,
             created_by: createdBy,
           })
           .select('id')
