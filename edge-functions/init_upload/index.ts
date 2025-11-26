@@ -518,8 +518,10 @@ async function handlePlanSetFileUpload(
   // TestLab logging: log plan_sets__files record immediately
   await logTestRecord(sb, runId, scenarioId, "plan_sets__files", planSetFile.id, userProfileId);
 
-  // IMPORTANT: ensure only this row is is_latest = true
-  if (previous) {
+  // IMPORTANT: Versioning logic only applies to REVISION plan sets
+  // For QUOTE and INITIAL plan sets, all files should remain is_latest = true
+  // Multiple files of the same file_type_id are allowed and should all be marked as latest
+  if (previous && planSet.type === "REVISION") {
     const { error: updatePrevError } = await sb
       .from("plan_sets__files")
       .update({ is_latest: false })
