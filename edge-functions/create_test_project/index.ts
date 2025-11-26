@@ -298,59 +298,118 @@ Deno.serve(async (req: Request) => {
 
     // Create service junctions if service_ids provided
     const serviceJunctionIds: string[] = [];
-    if (service_ids && service_ids.length > 0) {
-      const junctionRecords = service_ids.map(serviceId => ({
-        project_id: project_id,
-        service_id: serviceId,
-      }));
+    let servicesLinked = false;
+    let servicesError: string | null = null;
 
-      const junctionResponse = await fetch(`${SUPABASE_URL}/rest/v1/projects__services`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation',
-        },
-        body: JSON.stringify(junctionRecords),
-      });
+    // Validate service_ids is an array if provided
+    if (service_ids !== undefined && service_ids !== null) {
+      if (!Array.isArray(service_ids)) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: 'service_ids must be an array' 
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        );
+      }
 
-      if (!junctionResponse.ok) {
-        const errorText = await junctionResponse.text();
-        console.error(`Failed to insert service junctions: ${errorText}`);
-      } else {
-        const insertedJunctions = await junctionResponse.json();
-        
-        // Log each service junction
-        for (const junction of insertedJunctions) {
-          serviceJunctionIds.push(junction.id);
-          
-          const logJunctionResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/testlab_log_record`, {
-            method: 'POST',
+      if (service_ids.length > 0) {
+        // Validate that all service_ids exist in the services table
+        // PostgREST in.() operator expects comma-separated values
+        const serviceIdsString = service_ids.join(',');
+        const validateServicesResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/services?id=in.(${serviceIdsString})&select=id&deleted_at=is.null`,
+          {
             headers: {
               'apikey': SUPABASE_SERVICE_ROLE_KEY,
               'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-              'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              p_run_id: run_id,
-              p_scenario_id: scenario_id,
-              p_table_name: 'projects__services',
-              p_record_id: junction.id,
-              p_created_by: run_by,
-              p_table_id: null,
-            }),
-          });
+          }
+        );
 
-          if (!logJunctionResponse.ok) {
-            console.error(`Failed to log service junction test record for ${junction.id}`);
+        if (!validateServicesResponse.ok) {
+          const errorText = await validateServicesResponse.text();
+          throw new Error(`Failed to validate services: ${errorText}`);
+        }
+
+        const validServices = await validateServicesResponse.json();
+        const validServiceIds = validServices.map((s: { id: string }) => s.id);
+        const invalidServiceIds = service_ids.filter(id => !validServiceIds.includes(id));
+
+        if (invalidServiceIds.length > 0) {
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              error: `One or more service IDs do not exist: ${invalidServiceIds.join(', ')}` 
+            }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }
+          );
+        }
+
+        // Create junction records
+        const junctionRecords = service_ids.map(serviceId => ({
+          project_id: project_id,
+          service_id: serviceId,
+        }));
+
+        const junctionResponse = await fetch(`${SUPABASE_URL}/rest/v1/projects__services`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation',
+          },
+          body: JSON.stringify(junctionRecords),
+        });
+
+        if (!junctionResponse.ok) {
+          const errorText = await junctionResponse.text();
+          const errorMessage = `Failed to insert service junctions: ${errorText}`;
+          console.error(errorMessage);
+          // Store error but don't fail the entire request - return warning in response
+          servicesError = errorMessage;
+        } else {
+          const insertedJunctions = await junctionResponse.json();
+          servicesLinked = true;
+          
+          // Log each service junction
+          for (const junction of insertedJunctions) {
+            serviceJunctionIds.push(junction.id);
+            
+            const logJunctionResponse = await fetch(`${SUPABASE_URL}/rest/v1/rpc/testlab_log_record`, {
+              method: 'POST',
+              headers: {
+                'apikey': SUPABASE_SERVICE_ROLE_KEY,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                p_run_id: run_id,
+                p_scenario_id: scenario_id,
+                p_table_name: 'projects__services',
+                p_record_id: junction.id,
+                p_created_by: run_by,
+                p_table_id: null,
+              }),
+            });
+
+            if (!logJunctionResponse.ok) {
+              console.error(`Failed to log service junction test record for ${junction.id}`);
+            }
           }
         }
       }
     }
 
     // Return success response
-    const response = {
+    const response: any = {
       success: true,
       message: 'Project created successfully',
       project_id: project_id,
@@ -362,6 +421,23 @@ Deno.serve(async (req: Request) => {
         scenario_id: scenario_id,
       },
     };
+
+    // Include service linking information in response
+    if (service_ids && service_ids.length > 0) {
+      response.services = {
+        requested: service_ids.length,
+        linked: serviceJunctionIds.length,
+        linked_ids: serviceJunctionIds,
+        success: servicesLinked,
+        error: servicesError,
+      };
+
+      // If services were requested but failed to link, add warning to message
+      if (!servicesLinked && servicesError) {
+        response.message = `Project created successfully, but services failed to link: ${servicesError}`;
+        response.warning = servicesError;
+      }
+    }
 
     return new Response(
       JSON.stringify(response),

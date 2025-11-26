@@ -30,45 +30,52 @@ export default function PlanSetPanel({
   const [uploadedFileCount, setUploadedFileCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [uploadedFilesByType, setUploadedFilesByType] = useState<
     Record<string, Array<{ id: string; name: string; fileTypeName: string }>>
   >({});
 
+  // Hardcoded CLIENT_PLAN_INPUT group ID for stability
+  // This ID remains constant even if the group code or name changes
+  const CLIENT_PLAN_INPUT_GROUP_ID = '204fbd17-d408-40d6-b0b5-a0e5d10b4ae1';
+
   // 2) Load CLIENT_PLAN_INPUT file types
   useEffect(() => {
     const loadFileTypes = async () => {
       try {
-        // First get the group_id for CLIENT_PLAN_INPUT
-        const { data: group, error: groupError } = await supabase
-          .from('plan_file_type_groups')
-          .select('id')
-          .eq('code', 'CLIENT_PLAN_INPUT')
-          .is('deleted_at', null)
-          .single();
-
-        if (groupError || !group?.id) {
-          console.error('Failed to load file type group', groupError);
-          return;
-        }
-
-        // Then get file types for this group
+        setIsLoading(true);
+        setLoadError(null);
+        
+        // Directly query file types using the hardcoded group ID
         const { data, error } = await supabase
           .from('plan_sets_file_types')
           .select('id, code, name')
-          .eq('group_id', group.id)
+          .eq('group_id', CLIENT_PLAN_INPUT_GROUP_ID)
           .eq('active', true)
           .is('deleted_at', null)
           .order('name', { ascending: true });
 
         if (error) {
-          console.error('Failed to load plan set file types', error);
+          console.error('Failed to load plan set file types:', error);
+          setLoadError(`Failed to load file types: ${error.message}`);
+          setFileTypes([]);
           return;
         }
 
+        console.log('Loaded file types:', data);
         setFileTypes(data || []);
-      } catch (err) {
+        
+        if (!data || data.length === 0) {
+          console.warn('No file types found for CLIENT_PLAN_INPUT group');
+          setLoadError('No active file types found for CLIENT_PLAN_INPUT group. Please check database configuration.');
+        } else {
+          setLoadError(null); // Clear any previous errors on success
+        }
+      } catch (err: any) {
         console.error('Error loading file types:', err);
+        setLoadError(`Error loading file types: ${err.message || 'Unknown error'}`);
+        setFileTypes([]);
       } finally {
         setIsLoading(false);
       }
@@ -260,9 +267,19 @@ export default function PlanSetPanel({
             ))}
           </div>
 
-      {fileTypes.length === 0 && (
-        <div className="text-sm text-fcc-white/70">
-          No file types found for CLIENT_PLAN_INPUT group.
+      {fileTypes.length === 0 && !isLoading && (
+        <div className="rounded-lg border border-red-500/50 bg-red-950/20 p-4">
+          <div className="text-sm text-red-400 font-semibold mb-1">
+            No file types found for CLIENT_PLAN_INPUT group
+          </div>
+          {loadError && (
+            <div className="text-xs text-red-300 mt-1">
+              {loadError}
+            </div>
+          )}
+          <div className="text-xs text-fcc-white/70 mt-2">
+            Please check that file types exist in the database and are associated with the CLIENT_PLAN_INPUT group.
+          </div>
         </div>
       )}
 
