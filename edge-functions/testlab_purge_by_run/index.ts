@@ -16,7 +16,7 @@ type PurgeRequestBody = {
 const DELETE_PRIORITY: Record<string, number> = {
   // Child junction tables first
   services__deals: 10,
-  deals__other_contacts: 10,
+  deals__contacts: 10,
   companies__contacts: 10,
   companies__professional_licenses: 10,
   projects__services: 10,

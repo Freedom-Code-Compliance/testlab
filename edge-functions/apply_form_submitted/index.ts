@@ -1107,14 +1107,13 @@ serve(async (req: Request) => {
       console.log(`[${requestId}] [STEP 8] No additional contacts to process`);
     }
     
-    // 9. Create deal record linked to company and primary contact (always required)
+    // 9. Create deal record linked to company (always required)
     console.log(`[${requestId}] [STEP 9] Creating deal record`);
     const { data: deal, error: dealError } = await supabase
       .from("deals")
       .insert({
         title: `${companyData.name} - Deal`,
         company_id: company.id,
-        primary_contact_id: primaryContactData.id,
         deal_phase_id: dealPhaseId,
         deal_qualification_id: dealQualificationId
       })
@@ -1148,6 +1147,47 @@ serve(async (req: Request) => {
     });
     await logTestRecord("deals", deal.id);
     
+    // 9.5. Link primary contact to deal (always required)
+    console.log(`[${requestId}] [STEP 9.5] Linking primary contact to deal`);
+    const { data: primaryContactJunction, error: primaryContactJunctionError } = await supabase
+      .from("deals__contacts")
+      .insert({
+        deal_id: deal.id,
+        contact_id: primaryContactData.id,
+        is_primary: true
+      })
+      .select("id")
+      .single();
+    
+    if (primaryContactJunctionError) {
+      console.error(`[${requestId}] [STEP 9.5] Primary contact junction creation failed:`, {
+        error: primaryContactJunctionError.message,
+        code: primaryContactJunctionError.code,
+        details: primaryContactJunctionError.details
+      });
+      await rollbackCreatedRecords(supabase, rollbackTracker);
+      return jsonResponse({
+        success: false,
+        error: `Failed to link primary contact to deal: ${primaryContactJunctionError.message}`
+      }, 500);
+    }
+    
+    if (primaryContactJunction) {
+      rollbackTracker.junctions.push({
+        table: "deals__contacts",
+        ids: [primaryContactJunction.id]
+      });
+      console.log(`[${requestId}] [STEP 9.5] Created primary contact junction`);
+      
+      // Log test record for primary contact junction
+      console.log(`[${requestId}] [STEP 9.5] About to log test record for primary contact junction:`, {
+        testRunId: testRunId || 'MISSING',
+        scenarioId: scenarioId || 'MISSING',
+        junctionId: primaryContactJunction.id
+      });
+      await logTestRecord("deals__contacts", primaryContactJunction.id);
+    }
+    
     // 10. Link additional contacts to deal (conditional)
     console.log(`[${requestId}] [STEP 10] Linking additional contacts to deal`);
     if (additionalContactIds.length > 0) {
@@ -1173,10 +1213,11 @@ serve(async (req: Request) => {
       
       console.log(`[${requestId}] [STEP 10] All contact IDs validated, creating deal contact junctions`);
       const { data: dealContactsJunction, error: dealContactsError } = await supabase
-        .from("deals__other_contacts")
+        .from("deals__contacts")
         .insert(additionalContactIds.map((contactId: string) => ({
           deal_id: deal.id,
-          other_contact_id: contactId
+          contact_id: contactId,
+          is_primary: false
         })))
         .select("id");
       
@@ -1195,7 +1236,7 @@ serve(async (req: Request) => {
       
       if (dealContactsJunction && dealContactsJunction.length > 0) {
         rollbackTracker.junctions.push({
-          table: "deals__other_contacts",
+          table: "deals__contacts",
           ids: dealContactsJunction.map((j: any) => j.id)
         });
         console.log(`[${requestId}] [STEP 10] Created ${dealContactsJunction.length} deal contact junction(s)`);
@@ -1207,7 +1248,7 @@ serve(async (req: Request) => {
           junctionCount: dealContactsJunction.length
         });
         for (const junction of dealContactsJunction) {
-          await logTestRecord("deals__other_contacts", junction.id);
+          await logTestRecord("deals__contacts", junction.id);
         }
       }
     } else {
