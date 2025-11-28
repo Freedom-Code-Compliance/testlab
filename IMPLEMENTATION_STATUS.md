@@ -1,6 +1,6 @@
 # FCC Test Lab - Implementation Status
 
-**Last Updated**: 2025-01-XX (Plan Set Workflow Improvements)
+**Last Updated**: 2025-11-28 (Purge Improvements & New Application Bug Fix)
 
 ## Implementation Progress
 
@@ -69,6 +69,8 @@
 - [x] Unified success states across scenarios
 - [x] Run history with status tracking
 - [x] Purge operations with preview (includes `companies__project_types`)
+- [x] Purge page entity display (projects, deals, companies with color-coded badges)
+- [x] Purge cascading deletes (automatically handles `plan_sets` foreign key dependencies)
 - [x] Sidebar hover expansion
 - [x] Theme switching
 
@@ -136,6 +138,9 @@
 ### Edge Functions
 - ✅ `monday_fetch_projects` - v3, ACTIVE
 - ✅ `monday_fetch_plan_sets` - v3, ACTIVE
+- ✅ `testlab_purge_by_run` - v6, ACTIVE (with cascading delete support)
+- ✅ `apply_form_submitted` - ACTIVE
+- ✅ `create_test_project` - ACTIVE
 - ✅ CORS headers configured
 - ✅ Secrets configured (MONDAY_API_KEY)
 
@@ -159,7 +164,27 @@
    - Status: Using placeholder ID
    - Action: Verify correct "Completed Projects 2" board ID
 
-## Recent Fixes (2025-01-XX)
+## Recent Fixes (2025-11-28)
+
+1. **New Application Test Records Not Logging**
+   - Status: Fixed
+   - Bug: React async state issue caused `testRunId` to be `null` when sent to edge function
+   - Fix: Use local variable `currentRunId` instead of relying on React state which updates asynchronously
+   - File: `src/components/testing/NewApplicationForm.tsx`
+
+2. **Purge Foreign Key Constraint Error**
+   - Status: Fixed
+   - Bug: "update or delete on table projects violates foreign key constraint fk_plan_sets_project_id"
+   - Fix: Added cascading delete logic in `testlab_purge_by_run` edge function to delete `plan_sets__files` and `plan_sets` before deleting `projects`
+   - File: `edge-functions/testlab_purge_by_run/index.ts`
+
+3. **Purge Page Entity Display**
+   - Status: Fixed
+   - Bug: Runs showing "No project or deal" even when companies were created
+   - Fix: Added company support and improved entity priority logic to show existing entities before deleted ones
+   - File: `src/pages/Purge.tsx`
+
+## Previous Fixes (2025-01-XX)
 
 1. **Duplicate Success Cards**
    - Status: Fixed
@@ -181,11 +206,13 @@
 - [x] Dashboard loads and displays data
 - [x] Scenario list displays active scenarios
 - [x] New Application scenario executes
+- [x] New Application test records logged correctly
 - [x] Manual project form validates and submits
 - [x] Monday.com integration fetches projects
 - [x] File uploads work
 - [x] Run history displays correctly
-- [x] Purge operations work
+- [x] Purge operations work (including cascading deletes)
+- [x] Purge page shows project/deal/company entities
 - [x] Theme switching works
 - [x] Responsive design works on mobile
 
@@ -196,8 +223,7 @@
 3. Implement field mapping logic for Monday.com
 4. Add more comprehensive error handling
 5. Add loading states for all async operations
-6. Test purge operations thoroughly
-7. Add unit tests for critical functions
+6. Add unit tests for critical functions
 
 
 

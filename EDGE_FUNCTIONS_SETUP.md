@@ -1,8 +1,8 @@
-# Edge Functions Setup for Monday.com Integration
+# Edge Functions Setup
 
 ## Status: ✅ Deployed and Active
 
-Both edge functions have been deployed via Supabase MCP and are currently active.
+All edge functions have been deployed via Supabase MCP and are currently active.
 
 ## Deployed Edge Functions
 
@@ -57,6 +57,44 @@ Fetches plan set files for a specific project from Monday.com.
 
 **CORS**: Handled properly with preflight OPTIONS support
 
+### 3. testlab_purge_by_run
+**Status**: v6, ACTIVE  
+**Function ID**: `1b13584e-4269-4ea3-852d-43c0acfd7c18`
+
+Purges test data created during test runs. Handles cascading deletes for foreign key dependencies.
+
+**Parameters:**
+- `runIds`: Array of test run UUIDs to purge
+- `reason`: Reason for purging (required)
+- `actorId`: User ID performing the purge
+
+**Features:**
+- Deletes records from all tables tracked in `test_records`
+- **Cascading Deletes**: Automatically deletes `plan_sets__files` and `plan_sets` before deleting `projects` to prevent foreign key constraint violations
+- Priority-based deletion order (child records before parent records)
+- Audit trail via `activity_log` entries
+- Updates `test_runs` with purge metadata
+
+**Delete Priority Order:**
+1. Junction tables (priority 10): `services__deals`, `deals__contacts`, `companies__contacts`, etc.
+2. Plan set files (priority 20): `plan_sets__files`
+3. Plan sets (priority 25): `plan_sets`
+4. Domain objects (priority 30-50): `deals`, `projects`, `contacts`, `companies`
+
+**Returns:**
+```json
+{
+  "success": true,
+  "message": "Test data purged successfully.",
+  "data": {
+    "deletedCounts": { "projects": 2, "contacts": 3, ... },
+    "totalDeleted": 15
+  }
+}
+```
+
+**CORS**: Handled properly with preflight OPTIONS support
+
 ## Configuration
 
 ### Secrets
@@ -92,6 +130,9 @@ To update these functions:
    ```bash
    supabase functions deploy monday_fetch_projects
    supabase functions deploy monday_fetch_plan_sets
+   supabase functions deploy testlab_purge_by_run
+   supabase functions deploy apply_form_submitted
+   supabase functions deploy create_test_project
    ```
 
 ## Notes
@@ -99,4 +140,6 @@ To update these functions:
 - The Monday.com API key is stored as a Supabase secret, not in frontend code
 - All Monday.com API calls are made server-side to avoid CORS issues
 - Functions handle both successful responses and errors gracefully
+- `testlab_purge_by_run` uses service role key to bypass RLS for deletion operations
+- Cascading deletes ensure foreign key constraints are respected during purge
 

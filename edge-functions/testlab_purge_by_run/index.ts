@@ -242,6 +242,55 @@ Deno.serve(async (req: Request) => {
 
     const deletedCounts: Record<string, number> = {};
 
+    // 3.5) Handle cascading deletes for foreign key dependencies
+    // Before deleting projects, we need to delete any plan_sets that reference them
+    // (even if they weren't logged as test_records)
+    const projectIds = tableMap.get('projects');
+    if (projectIds && projectIds.size > 0) {
+      const projectIdArray = Array.from(projectIds);
+      
+      // First, find plan_sets that reference these projects
+      const { data: planSetsToDelete, error: planSetsQueryError } = await supabase
+        .from('plan_sets')
+        .select('id')
+        .in('project_id', projectIdArray);
+      
+      if (planSetsQueryError) {
+        console.error('[testlab_purge_by_run] Failed to query plan_sets', planSetsQueryError);
+      } else if (planSetsToDelete && planSetsToDelete.length > 0) {
+        const planSetIds = planSetsToDelete.map(ps => ps.id);
+        console.log('[testlab_purge_by_run] Found dependent plan_sets to cascade delete', {
+          count: planSetIds.length,
+        });
+        
+        // Delete plan_sets__files first (child of plan_sets)
+        const { error: filesDeleteError, count: filesCount } = await supabase
+          .from('plan_sets__files')
+          .delete({ count: 'exact' })
+          .in('plan_set_id', planSetIds);
+        
+        if (filesDeleteError) {
+          console.error('[testlab_purge_by_run] Failed to cascade delete plan_sets__files', filesDeleteError);
+        } else {
+          deletedCounts['plan_sets__files (cascade)'] = filesCount ?? 0;
+          console.log('[testlab_purge_by_run] Cascade deleted plan_sets__files', { count: filesCount });
+        }
+        
+        // Now delete the plan_sets themselves
+        const { error: planSetsDeleteError, count: planSetsCount } = await supabase
+          .from('plan_sets')
+          .delete({ count: 'exact' })
+          .in('id', planSetIds);
+        
+        if (planSetsDeleteError) {
+          console.error('[testlab_purge_by_run] Failed to cascade delete plan_sets', planSetsDeleteError);
+        } else {
+          deletedCounts['plan_sets (cascade)'] = planSetsCount ?? 0;
+          console.log('[testlab_purge_by_run] Cascade deleted plan_sets', { count: planSetsCount });
+        }
+      }
+    }
+
     // 4) Delete rows table by table
     for (const tableName of tableNames) {
       const ids = Array.from(tableMap.get(tableName)!);

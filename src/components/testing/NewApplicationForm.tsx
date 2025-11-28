@@ -733,12 +733,14 @@ Return ONLY the JSON, no explanation.`;
     }
 
     // Create test run only when submitting
-    if (!runId) {
+    // Store in local variable to use immediately (React state updates are async)
+    let currentRunId = runId;
+    if (!currentRunId) {
       try {
         const user = await getCurrentUser();
-        const runBy = user?.id || null;
-        const newRunId = await createTestRun(scenarioId, runBy);
-        setRunId(newRunId);
+        const runByUser = user?.id || null;
+        currentRunId = await createTestRun(scenarioId, runByUser);
+        setRunId(currentRunId);
       } catch (err: any) {
         console.error('Error creating test run:', err);
         setError('Failed to create test run. Please try again.');
@@ -825,15 +827,15 @@ Return ONLY the JSON, no explanation.`;
 
       // Build payload
       console.log('[NewApplicationForm] Building payload for apply_form_submitted:', {
-        testRunId: runId,
+        testRunId: currentRunId,
         scenarioId: scenarioId,
         runBy: runBy,
-        hasRunId: !!runId,
+        hasRunId: !!currentRunId,
         hasScenarioId: !!scenarioId
       });
       
       const payload = {
-        testRunId: runId,
+        testRunId: currentRunId,
         scenarioId: scenarioId,
         runBy: runBy,
         companyData: {

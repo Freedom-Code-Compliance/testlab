@@ -8,8 +8,13 @@ All notable changes to FCC Test Lab will be documented in this file.
 - **Project `created_by` Field**: Projects now automatically set `created_by` to the logged-in user's `user_profiles.id` after creation
 - **Project `current_plan_set_id` Field**: Projects now set `current_plan_set_id` when an Initial plan set is submitted for review
 - **Unified Success State**: Both Manual Project and Existing Project scenarios now share consistent success card UI and "Clear and Run Again" behavior
+- **Company Entity Support on Purge Page**: Purge page now displays companies in addition to projects and deals, with green badge styling
+- **Deleted Entity Indicator**: Purge page shows when an entity was deleted from the database but the test run record remains, with red "deleted" badge
+- **Cascading Delete for Plan Sets**: Purge edge function now automatically deletes dependent `plan_sets` and `plan_sets__files` before deleting projects, preventing foreign key constraint violations
 
 ### Changed
+- **Purge Page Entity Priority**: Entity display now prioritizes existing entities over deleted ones (existing project > existing deal > existing company > deleted entities)
+- **Purge Page UI**: Updated to show three entity types with distinct colors (blue=project, purple=deal, green=company)
 - **Manual Project Success Card**: Changed title from "Scenario Completed" to "Project Record Created" to better reflect the two-step workflow (project creation → plan set upload)
 - **Plan Set Creation**: Simplified `plan_sets` insert to only include `project_id`, `type`, and `created_by` (removed `document_review_status_id` which no longer exists on `plan_sets` table)
 - **Document Review Schema**: Document review status moved from `plan_sets.document_review_status_id` to separate `doc_reviews` table. When submitting a plan set, a `doc_reviews` record is created with status "Not Started" (UUID: `019ab788-11a1-78af-f1ff-64337cf65117`)
@@ -17,6 +22,8 @@ All notable changes to FCC Test Lab will be documented in this file.
 - **Existing Project Scenario**: Added success card with project/plan set/run IDs and uploaded files list, matching Manual Project scenario UX
 
 ### Fixed
+- **New Application Test Records Not Logging**: Fixed React async state bug in `NewApplicationForm` where `testRunId` was passed as `null` to the edge function because React state updates are asynchronous. Now uses local variable to ensure the run ID is available immediately.
+- **Purge Foreign Key Constraint Error**: Fixed error "update or delete on table projects violates foreign key constraint fk_plan_sets_project_id" by adding cascading delete logic to `testlab_purge_by_run` edge function
 - **Duplicate Success Cards**: Removed duplicate "Scenario Completed" cards in Manual Project scenario
 - **Schema Error on Plan Set Creation**: Fixed `phase_id` column error by removing invalid fields from `plan_sets` insert (phase/status updates belong on `projects` table, not `plan_sets`)
 - **Project Type Refactor**: Replaced work types with project types across the application
