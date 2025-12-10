@@ -50,7 +50,8 @@ Welcome to the FCC Test Lab documentation. This directory contains all technical
 ### For Troubleshooting
 1. Check [EDGE_FUNCTIONS_SETUP.md](./EDGE_FUNCTIONS_SETUP.md) for edge function issues
 2. Review [CORS Error.md](./CORS%20Error.md) for CORS problems
-3. See [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) for known issues
+3. See [TROUBLESHOOTING_ENV_VARS.md](./TROUBLESHOOTING_ENV_VARS.md) for environment variable issues
+4. See [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) for known issues
 
 ### For Maintainers
 1. Review [MAINTENANCE.md](./MAINTENANCE.md) for documentation maintenance guidelines

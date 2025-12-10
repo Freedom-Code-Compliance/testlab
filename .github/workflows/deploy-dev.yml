@@ -77,12 +77,18 @@ jobs:
           
           echo ""
           echo "📦 Building application..."
-          # Explicitly pass variables to npm to ensure they're available
-          VITE_SUPABASE_URL="$VITE_SUPABASE_URL" VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" npm run build:client
+          # Export variables to ensure they're available to the build process
+          export VITE_SUPABASE_URL="$VITE_SUPABASE_URL"
+          export VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY"
+          # Run build with variables explicitly set
+          npm run build:client
           
           # Verify the build output
           echo ""
           echo "🔍 Verifying build output and variable embedding..."
+          EMBEDDED_URL=false
+          EMBEDDED_KEY=false
+          
           if ls dist/assets/index-*.js 1> /dev/null 2>&1; then
             echo "✅ Build files created successfully"
             BUILT_FILE=$(ls dist/assets/index-*.js | head -1)
@@ -96,23 +102,39 @@ jobs:
             # Check if the URL is embedded (search for parts since it might be minified)
             if grep -q "$URL_PREFIX" "$BUILT_FILE" 2>/dev/null || grep -q "$URL_SUFFIX" "$BUILT_FILE" 2>/dev/null; then
               echo "✅ Verified: Supabase URL is embedded in build"
+              EMBEDDED_URL=true
             else
-              echo "❌ WARNING: Supabase URL NOT found in built file!"
+              echo "❌ ERROR: Supabase URL NOT found in built file!"
               echo "   This means the variables were NOT embedded during build."
               echo "   The deployed app will fail. Check that secrets are set correctly."
+              EMBEDDED_URL=false
             fi
             
             # Check if the key is embedded
             if grep -q "$KEY_PREFIX" "$BUILT_FILE" 2>/dev/null; then
               echo "✅ Verified: Supabase key is embedded in build"
+              EMBEDDED_KEY=true
             else
-              echo "❌ WARNING: Supabase key NOT found in built file!"
+              echo "❌ ERROR: Supabase key NOT found in built file!"
               echo "   This means the variables were NOT embedded during build."
               echo "   The deployed app will fail. Check that secrets are set correctly."
+              EMBEDDED_KEY=false
+            fi
+            
+            # Fail the build if variables aren't embedded
+            if [ "$EMBEDDED_URL" = false ] || [ "$EMBEDDED_KEY" = false ]; then
+              echo ""
+              echo "❌ BUILD FAILED: Environment variables were not embedded in the build."
+              echo "   Please check:"
+              echo "   1. GitHub Secrets are set in: Settings → Environments → development → Secrets"
+              echo "   2. Secret names are exactly: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY"
+              echo "   3. Secrets are not empty"
+              exit 1
             fi
           else
-            echo "⚠️ WARNING: Could not find built JavaScript files to verify"
+            echo "❌ ERROR: Could not find built JavaScript files to verify"
             echo "   Build may have failed or output structure is different"
+            exit 1
           fi
           
           echo ""

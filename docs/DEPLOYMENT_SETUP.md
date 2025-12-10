@@ -61,11 +61,16 @@ netlify env:set VITE_SUPABASE_URL "your-url" --site=YOUR_SITE_ID
 netlify env:set VITE_SUPABASE_ANON_KEY "your-key" --site=YOUR_SITE_ID
 ```
 
-**Note:** Since builds happen in GitHub Actions, these variables are embedded into the built files. The Netlify environment variables are mainly for:
+**⚠️ IMPORTANT:** Since builds happen in GitHub Actions, these variables are embedded into the built files **during the build process**. The Netlify environment variables are mainly for:
 
 - Future builds if you switch to Netlify builds
 - `netlify dev` local development
 - Runtime environment (if needed)
+
+**If you see "Missing required Supabase environment variables" on the deployed site:**
+- This means the variables weren't embedded during the GitHub Actions build
+- Check that GitHub Secrets are set correctly (see [TROUBLESHOOTING_ENV_VARS.md](./TROUBLESHOOTING_ENV_VARS.md))
+- You must re-deploy after setting/fixing GitHub Secrets
 
 ## First Deployment
 
@@ -177,12 +182,33 @@ npm run build:client
 netlify deploy --prod --dir=dist --site=YOUR_SITE_ID
 ```
 
+## Troubleshooting
+
+### Environment Variables Not Working on Deployed Site
+
+If you see "Missing required Supabase environment variables" on the deployed site:
+
+**This means variables weren't embedded during the build.** See [TROUBLESHOOTING_ENV_VARS.md](./TROUBLESHOOTING_ENV_VARS.md) for detailed steps.
+
+Quick fixes:
+1. Verify GitHub Secrets are set in **Settings → Environments → [environment] → Secrets**
+2. Check secret names match exactly: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+3. Ensure secrets are in the correct environment (development for dev, production for main)
+4. **Re-deploy** after fixing secrets (push a new commit or manually trigger workflow)
+
+### Build Fails with Missing Environment Variables
+
+- Check that secrets are set in GitHub: **Settings → Environments → [environment] → Secrets**
+- Verify secret names match exactly: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+- Check workflow logs for specific error messages
+
 ## Support
 
 For deployment issues:
 
-1. Check workflow logs in GitHub Actions
-2. Review Netlify deployment logs
-3. Verify all secrets are set correctly
-4. Check that branch protection rules allow the deployment
+1. **Environment Variables?** See [TROUBLESHOOTING_ENV_VARS.md](./TROUBLESHOOTING_ENV_VARS.md)
+2. Check workflow logs in GitHub Actions
+3. Review Netlify deployment logs
+4. Verify all secrets are set correctly
+5. Check that branch protection rules allow the deployment
 
