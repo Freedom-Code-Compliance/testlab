@@ -14,7 +14,6 @@ import StyledInput from '../ui/StyledInput';
 import StyledTextarea from '../ui/StyledTextarea';
 import SearchableSelect from '../ui/SearchableSelect';
 import SearchableMultiSelect from '../ui/SearchableMultiSelect';
-import FileUpload from '../ui/FileUpload';
 import PrimaryButton from '../ui/PrimaryButton';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import StatusBadge from '../ui/StatusBadge';
@@ -73,8 +72,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   const [runId, setRunId] = useState<string | null>(null);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [fileTypes, setFileTypes] = useState<Array<{ id: string; name: string; code: string }>>([]);
-  const [fileUploads, setFileUploads] = useState<Record<string, File[]>>({});
 
   // Form state
   const [formData, setFormData] = useState({
@@ -116,7 +113,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   const [services, setServices] = useState<Array<{ id: string; name: string }>>([]);
   const [projectCreated, setProjectCreated] = useState(false);
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
-  const [showPlanSetUpload, setShowPlanSetUpload] = useState(false);
   const [servicesError, setServicesError] = useState<string | null>(null);
   const [formCollapsed, setFormCollapsed] = useState(false);
   const [planSetId, setPlanSetId] = useState<string | null>(null);
@@ -187,7 +183,7 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
   }, [saveFormState]);
 
   // Create debounced save function using useRef to persist across renders
-  const debouncedSaveRef = useRef<ReturnType<typeof debounce>>();
+  const debouncedSaveRef = useRef<(() => void) | undefined>(undefined);
   if (!debouncedSaveRef.current) {
     debouncedSaveRef.current = debounce(() => {
       saveFormStateRef.current();
@@ -379,7 +375,7 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
             lng: position.coords.longitude,
           });
         },
-        (error) => {
+        (_error) => {
           // Default to Florida center if location unavailable
           setUserLocation({ lat: 27.7663, lng: -82.6404 });
         }
@@ -601,12 +597,11 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
 
   async function fetchOptions() {
     try {
-      const [bdRes, ptRes, compRes, servicesRes, fileTypesRes] = await Promise.all([
+      const [bdRes, ptRes, compRes, servicesRes] = await Promise.all([
         supabase.from('building_departments').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('project_types').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('companies').select('id, name').is('deleted_at', null).order('name'),
         supabase.from('services').select('id, name').is('deleted_at', null).order('name'),
-        supabase.from('plan_sets_file_types').select('id, name, code').eq('active', true).is('deleted_at', null).order('name'),
       ]);
 
       if (bdRes.data) setBuildingDepartments(bdRes.data);
@@ -647,15 +642,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
             }
           }
         }
-      }
-      if (fileTypesRes.data) {
-        // Sort file types: "Other Documents" should be last
-        const sortedFileTypes = [...fileTypesRes.data].sort((a, b) => {
-          if (a.name === 'Other Documents') return 1;
-          if (b.name === 'Other Documents') return -1;
-          return a.name.localeCompare(b.name);
-        });
-        setFileTypes(sortedFileTypes);
       }
     } catch (err) {
       console.error('Error fetching options:', err);
@@ -743,10 +729,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
     }
   }
 
-  function handleFileUpload(fileTypeId: string, files: File[]) {
-    setFileUploads(prev => ({ ...prev, [fileTypeId]: files }));
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
@@ -807,46 +789,6 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       }
     } catch (err: any) {
       setError(err.message || 'Failed to execute scenario');
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handlePlanSetUpload() {
-    if (!createdProjectId) {
-      setError('Project ID is required for file upload');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Upload files
-      const filePaths: Record<string, string[]> = {};
-      for (const [fileTypeId, files] of Object.entries(fileUploads)) {
-        if (files.length > 0) {
-          const type = fileTypes.find(ft => ft.id === fileTypeId);
-          const paths: string[] = [];
-          for (const file of files) {
-            const filePath = `testlab/projects/${createdProjectId}/plans/${type?.code || 'other'}/${file.name}`;
-            const { error: uploadError } = await supabase.storage
-              .from('files')
-              .upload(filePath, file);
-            
-            if (uploadError) throw uploadError;
-            paths.push(filePath);
-          }
-          filePaths[fileTypeId] = paths;
-        }
-      }
-
-      // Call edge function to create plan set and link files
-      // This would need to be a new edge function or update to existing one
-      // For now, we'll just show success
-      setResults({ ...results, files_uploaded: filePaths });
-    } catch (err: any) {
-      setError(err.message || 'Failed to upload plan set files');
     } finally {
       setLoading(false);
     }
@@ -922,12 +864,10 @@ export default function ManualProjectForm({ scenarioId }: ManualProjectFormProps
       scope_of_work: '',
       needs_quote: false,
     });
-    setFileUploads({});
     setError(null);
     setResults(null);
     setProjectCreated(false);
     setCreatedProjectId(null);
-    setShowPlanSetUpload(false);
     setPlanSetId(null);
     setPlanSetStarted(false);
     setPlanSetSubmitted(false);

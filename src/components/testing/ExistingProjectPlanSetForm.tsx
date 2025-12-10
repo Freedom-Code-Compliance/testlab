@@ -29,7 +29,6 @@ export default function ExistingProjectPlanSetForm({ scenarioId }: ExistingProje
   const [uploadedFilesSummary, setUploadedFilesSummary] = useState<
     { id: string; name: string; fileTypeName: string }[]
   >([]);
-  const [loading, setLoading] = useState(false);
   const [fetchingProjects, setFetchingProjects] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startingPlanSet, setStartingPlanSet] = useState(false);
@@ -157,8 +156,6 @@ export default function ExistingProjectPlanSetForm({ scenarioId }: ExistingProje
     setUploadedFilesSummary([]);
     setError(null);
   };
-
-  const selectedProject = projects.find(p => p.id === selectedProjectId);
   
   // Format project display: "Project Name — City, ST ZIP"
   const formatProjectLabel = (project: Project): string => {
