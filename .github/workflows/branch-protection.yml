@@ -1,0 +1,90 @@
+name: Branch Protection Rules
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  validate-pr:
+    runs-on: ubuntu-latest
+    name: Validate Pull Request
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR info
+        id: pr
+        run: |
+          echo "title=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+          echo "author=${{ github.event.pull_request.user.login }}" >> $GITHUB_OUTPUT
+          echo "number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack - PR Validation Started
+        uses: ./.github/actions/slack-notify
+        with:
+          app_name: fcc-testlab
+          status: start
+          branch: ${{ github.head_ref }}
+          environment: pr-validation
+          commit_message: 'PR #${{ steps.pr.outputs.number }}: ${{ steps.pr.outputs.title }}'
+          commit_author: ${{ steps.pr.outputs.author }}
+          workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Validate PR source branch
+        id: validate-branch
+        run: |
+          PR_BASE="${{ github.base_ref }}"
+          PR_HEAD="${{ github.head_ref }}"
+
+          if [ "$PR_BASE" = "main" ]; then
+            if [ "$PR_HEAD" != "dev" ]; then
+              echo "❌ Error: Pull requests to 'main' must come from 'dev' branch"
+              echo "Current source branch: $PR_HEAD"
+              echo "Expected source branch: dev"
+              exit 1
+            fi
+            echo "✅ Valid: PR to main from dev branch"
+          elif [ "$PR_BASE" = "dev" ]; then
+            echo "✅ Valid: PR to dev branch from $PR_HEAD"
+          fi
+
+      # Note: Code quality checks (typecheck, test, build) are handled by pre-merge-checks.yml
+      # This workflow only validates branch rules to avoid duplicate test runs
+
+      - name: Notify Slack - PR Validation Success
+        if: success()
+        uses: ./.github/actions/slack-notify
+        with:
+          app_name: fcc-testlab
+          status: success
+          branch: ${{ github.head_ref }}
+          environment: pr-validation
+          commit_message: 'PR #${{ steps.pr.outputs.number }}: ${{ steps.pr.outputs.title }}'
+          commit_author: ${{ steps.pr.outputs.author }}
+          typecheck_status: 'skipped'
+          test_status: 'skipped'
+          workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack - PR Validation Failed
+        if: failure()
+        uses: ./.github/actions/slack-notify
+        with:
+          app_name: fcc-testlab
+          status: failure
+          branch: ${{ github.head_ref }}
+          environment: pr-validation
+          commit_message: 'PR #${{ steps.pr.outputs.number }}: ${{ steps.pr.outputs.title }}'
+          commit_author: ${{ steps.pr.outputs.author }}
+          error_message: 'Branch validation failed. Check workflow logs for details.'
+          typecheck_status: 'skipped'
+          test_status: 'skipped'
+          workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+

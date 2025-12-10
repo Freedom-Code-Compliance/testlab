@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "npm run build:client",
+    "build:client": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "type-check": "tsc --noEmit"
   },
   "repository": {
     "type": "git",

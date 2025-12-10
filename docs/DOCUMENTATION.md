@@ -4,10 +4,12 @@
 
 This directory contains comprehensive documentation for the FCC Test Lab application. All documentation has been updated to reflect the current implementation status as of January 2025.
 
+> **Note**: All documentation files are now organized in the `docs/` folder. The main project README is in the project root.
+
 ## Documentation Files
 
 ### Getting Started
-- **[README.md](./README.md)** - Main project documentation
+- **[README.md](../README.md)** - Main project documentation (in project root)
   - Overview and features
   - Setup instructions
   - Tech stack

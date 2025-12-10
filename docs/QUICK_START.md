@@ -22,6 +22,12 @@ npm install
 
 Create a `.env` file in the project root:
 
+```bash
+cp .env.example .env
+```
+
+Then edit the `.env` file and add your actual values:
+
 ```env
 VITE_SUPABASE_URL=your_supabase_url_here
 VITE_SUPABASE_ANON_KEY=your_anon_key_here
@@ -29,6 +35,8 @@ VITE_MONDAY_API_KEY=your_monday_api_key_here
 VITE_OPENAI_API_KEY=your_openai_api_key_here
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_key_here
 ```
+
+**Note:** The `.env` file is already in `.gitignore`, so it won't be committed to the repository. The `.env.example` file serves as a template.
 
 **Important**: The Monday.com API key must also be set as a Supabase secret:
 ```bash

@@ -1,0 +1,206 @@
+name: 'Slack Notification'
+description: 'Send build and deployment status notifications to Slack'
+inputs:
+  app_name:
+    description: 'Application/Project name (e.g., fcc-testlab, OtherApp)'
+    required: true
+  status:
+    description: 'Notification status (start, success, failure)'
+    required: true
+  branch:
+    description: 'Branch name'
+    required: true
+  environment:
+    description: 'Environment (development, production, pr-validation)'
+    required: true
+  commit_message:
+    description: 'Commit message'
+    required: false
+  commit_author:
+    description: 'Commit author'
+    required: false
+  deployment_url:
+    description: 'Deployment URL'
+    required: false
+  error_message:
+    description: 'Error message if failed'
+    required: false
+  typecheck_status:
+    description: 'Typecheck status (passed, failed, skipped)'
+    required: false
+  test_status:
+    description: 'Test status (passed, failed, skipped)'
+    required: false
+  workflow_run_url:
+    description: 'Workflow run URL'
+    required: false
+  slack_webhook_url:
+    description: 'Slack webhook URL (pass secrets.SLACK_WEBHOOK_URL from workflow)'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Send Slack Notification
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slack_webhook_url }}
+      shell: bash
+      run: |
+        # Determine color and emoji based on status
+        case "${{ inputs.status }}" in
+          start)
+            COLOR="#36a64f"
+            EMOJI="🚀"
+            STATUS_TEXT="In Progress"
+            ;;
+          success)
+            COLOR="#36a64f"
+            EMOJI="✅"
+            STATUS_TEXT="Success"
+            ;;
+          failure)
+            COLOR="#ff0000"
+            EMOJI="❌"
+            STATUS_TEXT="Failed"
+            ;;
+          *)
+            COLOR="#ffa500"
+            EMOJI="⚠️"
+            STATUS_TEXT="${{ inputs.status }}"
+            ;;
+        esac
+        
+        # Determine environment display name
+        case "${{ inputs.environment }}" in
+          development)
+            ENV_NAME="Development (dev)"
+            ;;
+          production)
+            ENV_NAME="Production (main)"
+            ;;
+          pr-validation)
+            ENV_NAME="PR Validation"
+            ;;
+          *)
+            ENV_NAME="${{ inputs.environment }}"
+            ;;
+        esac
+        
+        # Prepare commit message (truncate if needed)
+        COMMIT_MSG="${{ inputs.commit_message }}"
+        if [ ${#COMMIT_MSG} -gt 100 ]; then
+          COMMIT_MSG="${COMMIT_MSG:0:97}..."
+        fi
+        
+        # Prepare error message (truncate if needed)
+        ERROR_MSG="${{ inputs.error_message }}"
+        if [ ${#ERROR_MSG} -gt 500 ]; then
+          ERROR_MSG="${ERROR_MSG:0:497}..."
+        fi
+        
+        # Determine typecheck emoji
+        TYPECHECK_EMOJI=""
+        if [ -n "${{ inputs.typecheck_status }}" ]; then
+          case "${{ inputs.typecheck_status }}" in
+            passed) TYPECHECK_EMOJI="✅" ;;
+            failed) TYPECHECK_EMOJI="❌" ;;
+            skipped) TYPECHECK_EMOJI="⏭️" ;;
+          esac
+        fi
+        
+        # Determine test emoji
+        TEST_EMOJI=""
+        if [ -n "${{ inputs.test_status }}" ]; then
+          case "${{ inputs.test_status }}" in
+            passed) TEST_EMOJI="✅" ;;
+            failed) TEST_EMOJI="❌" ;;
+            skipped) TEST_EMOJI="⏭️" ;;
+          esac
+        fi
+        
+        # Build fields JSON - App name first for visibility
+        FIELDS='[{"title": "App", "value": "${{ inputs.app_name }}", "short": true}, {"title": "Branch", "value": "${{ inputs.branch }}", "short": true}, {"title": "Environment", "value": "'"$ENV_NAME"'", "short": true}'
+        
+        if [ -n "${{ inputs.commit_message }}" ]; then
+          FIELDS="$FIELDS, {\"title\": \"Commit\", \"value\": \"$COMMIT_MSG\", \"short\": false}"
+        fi
+        
+        if [ -n "${{ inputs.commit_author }}" ]; then
+          FIELDS="$FIELDS, {\"title\": \"Author\", \"value\": \"${{ inputs.commit_author }}\", \"short\": true}"
+        fi
+        
+        if [ -n "${{ inputs.typecheck_status }}" ]; then
+          FIELDS="$FIELDS, {\"title\": \"Typecheck\", \"value\": \"$TYPECHECK_EMOJI ${{ inputs.typecheck_status }}\", \"short\": true}"
+        fi
+        
+        if [ -n "${{ inputs.test_status }}" ]; then
+          FIELDS="$FIELDS, {\"title\": \"Tests\", \"value\": \"$TEST_EMOJI ${{ inputs.test_status }}\", \"short\": true}"
+        fi
+        
+        if [ -n "${{ inputs.deployment_url }}" ]; then
+          FIELDS="$FIELDS, {\"title\": \"Deployment URL\", \"value\": \"${{ inputs.deployment_url }}\", \"short\": false}"
+        fi
+        
+        if [ -n "${{ inputs.error_message }}" ] && [ "${{ inputs.status }}" = "failure" ]; then
+          FIELDS="$FIELDS, {\"title\": \"Error Details\", \"value\": \"$ERROR_MSG\", \"short\": false}"
+        fi
+        
+        FIELDS="$FIELDS]"
+        
+        # Build actions JSON
+        ACTIONS="[]"
+        if [ -n "${{ inputs.workflow_run_url }}" ]; then
+          WORKFLOW_URL="${{ inputs.workflow_run_url }}"
+          ACTIONS="[{\"type\": \"button\", \"text\": \"View Workflow\", \"url\": \"$WORKFLOW_URL\"}]"
+        fi
+        
+        # Build Slack payload using Python for proper JSON escaping
+        python3 << EOF
+        import json
+        import os
+        from datetime import datetime
+        
+        fields = json.loads('''$FIELDS''')
+        actions = json.loads('''$ACTIONS''')
+        
+        app_name = "${{ inputs.app_name }}"
+        emoji = "$EMOJI"
+        status_text = "$STATUS_TEXT"
+        env_name = "$ENV_NAME"
+        color = "$COLOR"
+        
+        payload = {
+            "channel": "#github-notifications",
+            "username": "GitHub Actions",
+            "icon_emoji": ":github:",
+            "attachments": [{
+                "color": color,
+                "title": f"{emoji} [{app_name}] Build {status_text}: {env_name}",
+                "fields": fields,
+                "footer": app_name,
+                "footer_icon": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                "ts": int(datetime.now().timestamp()),
+                "actions": actions
+            }]
+        }
+        
+        webhook_url = os.environ.get("SLACK_WEBHOOK_URL")
+        if not webhook_url or webhook_url == "":
+            print("SLACK_WEBHOOK_URL not set, skipping notification")
+            exit(0)
+        
+        import urllib.request
+        import urllib.parse
+        
+        data = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(webhook_url, data=data, headers={'Content-Type': 'application/json'})
+        
+        try:
+            with urllib.request.urlopen(req) as response:
+                print(f"Slack notification sent: {response.status}")
+        except Exception as e:
+            print(f"Failed to send Slack notification: {e}")
+            # Don't fail the workflow if Slack notification fails
+            exit(0)
+        EOF
+

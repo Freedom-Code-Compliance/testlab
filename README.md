@@ -222,7 +222,7 @@ These are NOT logged in `test_records` and NEVER purged.
 
 ## Design System
 
-The application follows the FCC Design System documented in `DESIGN_SYSTEM.md`:
+The application follows the FCC Design System documented in [`docs/DESIGN_SYSTEM.md`](./docs/DESIGN_SYSTEM.md):
 
 - **Dark Mode First**: Default theme is dark mode
 - **System Color**: #3366FF (consistent across apps)
@@ -312,6 +312,17 @@ The application follows the FCC Design System documented in `DESIGN_SYSTEM.md`:
 - `POST /functions/v1/testlab_purge_by_run`: Purge test runs
 - `POST /functions/v1/monday_fetch_projects`: Fetch Monday.com projects
 - `POST /functions/v1/monday_fetch_plan_sets`: Fetch Monday.com plan sets
+
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](./docs/) folder:
+
+- **[Quick Start Guide](./docs/QUICK_START.md)** - Get up and running quickly
+- **[API Reference](./docs/API_REFERENCE.md)** - Complete API documentation
+- **[Design System](./docs/DESIGN_SYSTEM.md)** - UI/UX guidelines
+- **[Implementation Status](./docs/IMPLEMENTATION_STATUS.md)** - Current state and known issues
+- **[Edge Functions Setup](./docs/EDGE_FUNCTIONS_SETUP.md)** - Edge function deployment guide
+- **[Full Documentation Index](./docs/README.md)** - Complete documentation index
 
 ## Contributing
 

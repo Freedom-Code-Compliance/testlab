@@ -1,0 +1,255 @@
+name: Deploy to Netlify (Development)
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Development
+    environment: development
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit info
+        id: commit
+        run: |
+          echo "message=$(git log -1 --pretty=%B | head -1)" >> $GITHUB_OUTPUT
+          echo "author=$(git log -1 --pretty=%an)" >> $GITHUB_OUTPUT
+
+      - name: Notify Slack - Deployment Started
+        uses: ./.github/actions/slack-notify
+        with:
+          app_name: fcc-testlab
+          status: start
+          branch: ${{ github.ref_name }}
+          environment: development
+          commit_message: ${{ steps.commit.outputs.message }}
+          commit_author: ${{ steps.commit.outputs.author }}
+          workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      # Note: Code quality checks (typecheck, test) are handled by pre-merge-checks.yml
+      # This workflow only builds and deploys to avoid duplicate test runs
+      # If code reached 'dev', pre-merge-checks already passed
+
+      - name: Build application
+        id: build
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔍 Verifying environment variables before build..."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          
+          # Check if variables are set and not empty
+          if [ -z "$VITE_SUPABASE_URL" ]; then
+            echo "❌ ERROR: VITE_SUPABASE_URL is not set!"
+            echo "   Please set it in: Settings → Environments → development → Secrets"
+            exit 1
+          fi
+          
+          if [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
+            echo "❌ ERROR: VITE_SUPABASE_ANON_KEY is not set!"
+            echo "   Please set it in: Settings → Environments → development → Secrets"
+            exit 1
+          fi
+          
+          echo "✅ VITE_SUPABASE_URL is set (length: ${#VITE_SUPABASE_URL} chars)"
+          echo "✅ VITE_SUPABASE_ANON_KEY is set (length: ${#VITE_SUPABASE_ANON_KEY} chars)"
+          echo ""
+          
+          # Verify they're accessible to Node/Vite
+          echo "🔍 Verifying variables are accessible to Node.js..."
+          node -e "console.log('VITE_SUPABASE_URL:', process.env.VITE_SUPABASE_URL ? 'SET (' + process.env.VITE_SUPABASE_URL.length + ' chars)' : 'NOT SET'); console.log('VITE_SUPABASE_ANON_KEY:', process.env.VITE_SUPABASE_ANON_KEY ? 'SET (' + process.env.VITE_SUPABASE_ANON_KEY.length + ' chars)' : 'NOT SET');"
+          
+          echo ""
+          echo "📦 Building application..."
+          # Explicitly pass variables to npm to ensure they're available
+          VITE_SUPABASE_URL="$VITE_SUPABASE_URL" VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" npm run build:client
+          
+          # Verify the build output
+          echo ""
+          echo "🔍 Verifying build output and variable embedding..."
+          if ls dist/assets/index-*.js 1> /dev/null 2>&1; then
+            echo "✅ Build files created successfully"
+            BUILT_FILE=$(ls dist/assets/index-*.js | head -1)
+            echo "Checking built file: $BUILT_FILE"
+            
+            # Extract a portion of the URL to search for (first 20 chars, last 10 chars)
+            URL_PREFIX="${VITE_SUPABASE_URL:0:20}"
+            URL_SUFFIX="${VITE_SUPABASE_URL: -10}"
+            KEY_PREFIX="${VITE_SUPABASE_ANON_KEY:0:20}"
+            
+            # Check if the URL is embedded (search for parts since it might be minified)
+            if grep -q "$URL_PREFIX" "$BUILT_FILE" 2>/dev/null || grep -q "$URL_SUFFIX" "$BUILT_FILE" 2>/dev/null; then
+              echo "✅ Verified: Supabase URL is embedded in build"
+            else
+              echo "❌ WARNING: Supabase URL NOT found in built file!"
+              echo "   This means the variables were NOT embedded during build."
+              echo "   The deployed app will fail. Check that secrets are set correctly."
+            fi
+            
+            # Check if the key is embedded
+            if grep -q "$KEY_PREFIX" "$BUILT_FILE" 2>/dev/null; then
+              echo "✅ Verified: Supabase key is embedded in build"
+            else
+              echo "❌ WARNING: Supabase key NOT found in built file!"
+              echo "   This means the variables were NOT embedded during build."
+              echo "   The deployed app will fail. Check that secrets are set correctly."
+            fi
+          else
+            echo "⚠️ WARNING: Could not find built JavaScript files to verify"
+            echo "   Build may have failed or output structure is different"
+          fi
+          
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Install Netlify CLI
+        run: npm install -g netlify-cli
+
+      - name: Deploy to Netlify
+        id: deploy
+        run: |
+          SITE_ID_SECRET="${{ secrets.NETLIFY_SITE_ID }}"
+          SITE_ID_SECRET=$(echo "$SITE_ID_SECRET" | xargs)  # Trim whitespace
+
+          if [ -z "$SITE_ID_SECRET" ]; then
+            echo "Creating new Netlify site for development..."
+            # Create site using Netlify API
+            SITE_RESPONSE=$(curl -s -X POST "https://api.netlify.com/api/v1/sites" \
+              -H "Authorization: Bearer ${{ secrets.NETLIFY_AUTH_TOKEN }}" \
+              -H "Content-Type: application/json" \
+              -d '{"name": "fcc-testlab-dev"}')
+            
+            SITE_ID=$(echo "$SITE_RESPONSE" | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
+            
+            if [ -z "$SITE_ID" ]; then
+              echo "Failed to create site. Response: $SITE_RESPONSE"
+              exit 1
+            fi
+            
+            echo "site_id=$SITE_ID" >> $GITHUB_OUTPUT
+            echo "Created site with ID: $SITE_ID"
+            echo "⚠️ IMPORTANT: Add NETLIFY_SITE_ID=$SITE_ID to your GitHub development environment secrets for future deployments"
+          else
+            SITE_ID="$SITE_ID_SECRET"
+            echo "site_id=$SITE_ID" >> $GITHUB_OUTPUT
+          fi
+
+          # Deploy to the site
+          DEPLOY_OUTPUT=$(netlify deploy --prod --dir=dist --site=$SITE_ID --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} 2>&1)
+          echo "$DEPLOY_OUTPUT"
+
+          # Extract deployment URL from output
+          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oP 'https://[^\s]+\.netlify\.app' | head -1 || echo "")
+          if [ -n "$DEPLOY_URL" ]; then
+            echo "deployment_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          fi
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+      - name: Set environment variables in Netlify
+        if: steps.deploy.outputs.site_id != ''
+        run: |
+          SITE_ID="${{ steps.deploy.outputs.site_id }}"
+          if [ -z "$SITE_ID" ]; then
+            SITE_ID="${{ secrets.NETLIFY_SITE_ID }}"
+          fi
+          
+          if [ -n "$SITE_ID" ]; then
+            echo "Setting environment variables for site: $SITE_ID"
+            AUTH_TOKEN="${{ secrets.NETLIFY_AUTH_TOKEN }}"
+            
+            # Method 1: Try using netlify link + env:set
+            echo "Attempting to set variables via Netlify CLI..."
+            
+            # Create .netlify directory and state file for site linking
+            mkdir -p .netlify
+            echo "{\"siteId\":\"$SITE_ID\"}" > .netlify/state.json
+            
+            # Try CLI method first
+            if netlify env:set VITE_SUPABASE_URL "${{ secrets.VITE_SUPABASE_URL }}" \
+              --auth="$AUTH_TOKEN" 2>/dev/null; then
+              echo "✅ VITE_SUPABASE_URL set via CLI"
+            else
+              echo "⚠️ CLI method failed, using Netlify API..."
+              # Method 2: Use Netlify API with PUT to update or create
+              API_RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "https://api.netlify.com/api/v1/sites/$SITE_ID/build_settings" \
+                -H "Authorization: Bearer $AUTH_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{\"env\":{\"VITE_SUPABASE_URL\":\"${{ secrets.VITE_SUPABASE_URL }}\",\"VITE_SUPABASE_ANON_KEY\":\"${{ secrets.VITE_SUPABASE_ANON_KEY }}\"}}")
+              
+              HTTP_CODE=$(echo "$API_RESPONSE" | tail -n1)
+              if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "204" ]; then
+                echo "✅ Variables set via API"
+              else
+                echo "⚠️ API method also failed (HTTP $HTTP_CODE)"
+                echo "📋 Manual setup required:"
+                echo "   Go to: https://app.netlify.com/sites/$SITE_ID/configuration/env"
+                echo "   Add: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY"
+              fi
+            fi
+            
+            if netlify env:set VITE_SUPABASE_ANON_KEY "${{ secrets.VITE_SUPABASE_ANON_KEY }}" \
+              --auth="$AUTH_TOKEN" 2>/dev/null; then
+              echo "✅ VITE_SUPABASE_ANON_KEY set via CLI"
+            else
+              echo "⚠️ VITE_SUPABASE_ANON_KEY CLI method failed (may already exist)"
+            fi
+            
+            echo ""
+            echo "ℹ️  Note: Variables are already embedded in the build from GitHub secrets."
+            echo "   Netlify env vars are for netlify dev and future reference."
+          fi
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+      - name: Notify Slack - Deployment Success
+        if: success()
+        uses: ./.github/actions/slack-notify
+        with:
+          app_name: fcc-testlab
+          status: success
+          branch: ${{ github.ref_name }}
+          environment: development
+          commit_message: ${{ steps.commit.outputs.message }}
+          commit_author: ${{ steps.commit.outputs.author }}
+          deployment_url: ${{ steps.deploy.outputs.deployment_url }}
+          typecheck_status: 'skipped'
+          test_status: 'skipped'
+          workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack - Deployment Failed
+        if: failure()
+        uses: ./.github/actions/slack-notify
+        with:
+          app_name: fcc-testlab
+          status: failure
+          branch: ${{ github.ref_name }}
+          environment: development
+          commit_message: ${{ steps.commit.outputs.message }}
+          commit_author: ${{ steps.commit.outputs.author }}
+          error_message: 'Deployment failed. Check workflow logs for details.'
+          typecheck_status: 'skipped'
+          test_status: 'skipped'
+          workflow_run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+
